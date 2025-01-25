@@ -24,11 +24,41 @@ const About = () => {
                 </div>
                 <div className="about-skills">
                     <div className="about-skill">
-                        <p>coding</p><hr style={{width:"100px"}}/>      
+                        <div className="about-skill-top">
+                            <p>coding</p><hr style={{width:"30%"}}/>      
+                        </div>
+                        <div className="about-skill-drop">
+                            <p>competitive programming - c++, python. many data structures and algorithms.</p>
+                            <p>development - html, css, js, react, wix</p>
+                        </div>
                     </div>
                     <div className="about-skill">
-                        <p>cubing</p><hr style={{width:"30px"}}/>
-                    </div>
+                        <div className="about-skill-top">
+                            <p>cubing</p><hr style={{width:"60%"}}/>
+                        </div>
+                        <div className="about-skill-drop">
+                            <p>cfop solver. 3x3 main</p>
+                            <p>single: 4.89, ao5: 7.62, ao12: 8.63</p>
+                        </div>
+                    </div> 
+                    <div className="about-skill">
+                        <div className="about-skill-top">
+                            <p>table tennis</p><hr style={{width:"45%"}}/>
+                        </div>
+                        <div className="about-skill-drop">
+                            <p>former provincial team player</p>
+                            <p>3 time singles bronze medalist at ontario championships. peaked 11th in canada</p>
+                        </div>
+                    </div> 
+                    <div className="about-skill">
+                        <div className="about-skill-top">
+                            <p>tetris</p><hr style={{width:"80%"}}/>
+                        </div>
+                        <div className="about-skill-drop">
+                            <p>modern tetris on tetr.io</p>
+                            <p>~21000 tr. top 1500 global, top 100 national</p>
+                        </div>
+                    </div> 
                 </div>
             </div>
         </div>
@@ -44,7 +74,7 @@ const About = () => {
             </div>
             <hr/>
             <div className="about-achievement">
-                <h1>top 10</h1>
+                <h1>top 15</h1>
                 <p>peak canadian rank in table tennis</p>
             </div>
         </div>
