@@ -141,3 +141,8 @@
 .about-left img {
     border-radius: 30%;
 }
+
+.about a {
+    text-decoration: none;
+    color: white;
+}

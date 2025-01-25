@@ -63,15 +63,15 @@ const About = () => {
             </div>
         </div>
         <div className="about-achievements">
-            <div className="about-achievement">
+            <a href="https://ch.tetr.io/u/uselessleaf" target="_blank" className="about-achievement">
                 <h1>20.5k+</h1>
                 <p>tr in tetr.io</p>
-            </div>
+            </a>
             <hr/>
-            <div className="about-achievement">
+            <a href="https://brawlstats.com/profile/9QRPJ8CYY" target="_blank" className="about-achievement">
                 <h1>30k+</h1>
                 <p>trophies in brawl stars</p>
-            </div>
+            </a>
             <hr/>
             <div className="about-achievement">
                 <h1>top 15</h1>

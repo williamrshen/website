@@ -30,7 +30,7 @@
     transition: 0.2s;
 }
 
-.nav-connect:hover{
+.nav-connect:hover {
     transform: scale(1.05);
 }
 
@@ -48,10 +48,10 @@
 }
 
 .nav-menu li img {
-    width: 30px;
-    height: 10px;
-    margin: auto;
-    display: flex;
+    width: 30px !important;
+    height: 10px !important;
+    margin: auto !important;
+    display: flex !important;
 }
 
 .anchor-link {
