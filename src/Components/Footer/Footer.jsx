@@ -13,7 +13,7 @@ const Footer = () => {
                 <img src={ul} alt="" />
                 <p>sheesh</p>
             </div>
-            <div className="footer-top-right">
+            {/* <div className="footer-top-right">
                 <div className="footer-email-input">
                     <img src={user_icon} alt="" />
                     <input type="email" placeholder='enter your email' />
@@ -21,7 +21,7 @@ const Footer = () => {
                 <div className="footer-subscribe">
                     subscribe
                 </div>
-            </div>
+            </div> */}
         </div>
         <hr />
         <div className="footer-bottom">

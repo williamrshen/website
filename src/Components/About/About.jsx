@@ -21,8 +21,6 @@ const About = () => {
                     <p>hi! i'm william shen, second year mathematics student at the university of waterloo. looking to pursue a specialization in computational mathematics, along with a minor
                         in combinatorics and optimization. nice to meet you!
                     </p>
-                    <p>&lt;- a cute japanese sable btw</p>
-                    <p>here are my stats</p>
                 </div>
                 <div className="about-skills">
                     <div className="about-skill">
@@ -36,18 +34,18 @@ const About = () => {
         </div>
         <div className="about-achievements">
             <div className="about-achievement">
-                <h1>5000+</h1>
-                <p>victory royales in zombsroyale</p>
-            </div>
-            <hr/>
-            <div className="about-achievement">
-                <h1>6500+</h1>
-                <p>trophies in clash royale</p>
+                <h1>20.5k+</h1>
+                <p>tr in tetr.io</p>
             </div>
             <hr/>
             <div className="about-achievement">
                 <h1>30k+</h1>
                 <p>trophies in brawl stars</p>
+            </div>
+            <hr/>
+            <div className="about-achievement">
+                <h1>top 10</h1>
+                <p>peak canadian rank in table tennis</p>
             </div>
         </div>
     </div>

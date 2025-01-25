@@ -85,7 +85,7 @@
     width: 700px;
     height: 78px;
     padding-left: 20px;
-    border-radius: 4px;
+    border-radius: 10px;
     background: #32323c;
     color:#acbf71;
     font-family: Outfit;
@@ -96,7 +96,7 @@
     width: 675px;
     border: none;
     padding: 25px;
-    border-radius: 4px;
+    border-radius: 10px;
     background: #32323c;
     color:#acbf71;
     font-family: Outfit;
@@ -118,4 +118,9 @@
 .contact-submit:hover {
     transform: scale(1.05);
     transition: 0.3s;
+}
+
+.contact-details a {
+    text-decoration: none;
+    color: white;
 }

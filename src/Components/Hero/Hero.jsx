@@ -12,7 +12,7 @@ const Hero = () => {
         <img src={orangutan} alt=""></img>
         <h1>hi. i'm <span>william shen</span></h1>
         <h2>aka uselessleaf</h2>
-        <p>coder, cuber, chatter, artist, musician</p>
+        <p>part time - coder, cuber, athlete, musician, gamer</p>
         
         <div className="hero-action">
             <div className="hero-connect">

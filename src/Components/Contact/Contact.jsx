@@ -1,10 +1,10 @@
 import React from 'react'
 import './Contact.css'
-import theme_pattern from '../../assets/theme_pattern.svg'
-import mail_icon from '../../assets/mail_icon.svg'
-import location_icon from '../../assets/location_icon.svg'
-import call_icon from '../../assets/call_icon.svg'
 import rectangle from '../../assets/rectangle.svg'
+
+import { CiLocationOn } from "react-icons/ci";
+import { CiLinkedin } from "react-icons/ci";
+import { CiMail } from "react-icons/ci";
 
 
 const Contact = () => {
@@ -44,13 +44,17 @@ const Contact = () => {
                 <h1>let us chat!</h1>
                 <p>feel free to message me about anything tbh</p>
                 <div className="contact-details">
+                    <a href="williamshen85@gmail.com" target="_blank" className="contact-detail">
+                      <CiMail />
+                      <p>williamshen85@gmail.com</p>
+                    </a>
+                    <a href="https://www.linkedin.com/in/williamrshen/" target="_blank" className="contact-detail">
+                      <CiLinkedin />
+                      <p>williamrshen</p>
+                    </a>
                     <div className="contact-detail">
-                        <img src={mail_icon} alt="" />
-                        <p>williamshen85@gmail.com</p>
-                    </div>
-                    <div className="contact-detail">
-                    <img src={location_icon} alt="" />
-                    <p>Toronto, Ontario</p>
+                      <CiLocationOn />
+                      <p>toronto, ontario</p>
                     </div>
                 </div>
             </div>

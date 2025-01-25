@@ -11,7 +11,7 @@ const Portfolio = () => {
     <div id='portfolio' className="portfolio">
         <div className="portfolio-title">
             <h1>
-                my projects
+                what i've done
             </h1>
             <img src={rectangle} alt="" />
         </div>
