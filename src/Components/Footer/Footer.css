@@ -10,15 +10,24 @@
     justify-content: space-between;
 }
 
-.footer-top-left p{
+.footer-top-left p {
     font-size: 20px;
     max-width: 100%;
 }
 
 .footer-top-right {
+    max-width: 45%;
     display: flex;
     align-items: center;
+    text-align: right;
     gap: 35px;
+}
+
+.footer-top-right span {
+    background: linear-gradient(267deg, #4AAD52, #acbf71 70%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .footer-email-input {
