@@ -1,9 +1,8 @@
 import React, { useState } from 'react'
 import './Navbar.css'
-import logo from '../../assets/logo.svg'
 import ul from '../../assets/ul.png'
-import underline from '../../assets/nav_underline.svg'
 import new_underline from '../../assets/underline.png'
+import Dropdown from './Dropdown'
 
 
 import AnchorLink from 'react-anchor-link-smooth-scroll'
@@ -28,7 +27,7 @@ const Navbar = () => {
                 {menu==="contact" ? <img src={new_underline}/> : <></>}</li>
             
             
-            <li><Link className='anchor-link' to="/website/cubing"><p onClick={()=>setMenu("resources")}>resources</p></Link> {menu==="resources" ? <img src={new_underline}/> : <></>}</li>
+            <li><Link className='anchor-link' to="/website/resources"><p onClick={()=>setMenu("resources")}>{<Dropdown/>}</p></Link> {menu==="resources" ? <img src={new_underline}/> : <></>}</li>
         </ul>
         
         <div className="nav-connect">

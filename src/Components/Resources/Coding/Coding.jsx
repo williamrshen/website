@@ -3,7 +3,9 @@ import './Coding.css'
 
 const Coding = () => {
   return (
-    <div>Coding</div>
+    <div className="coding">
+      <h1 className="develop">under development :0</h1>
+    </div>
   )
 }
 
