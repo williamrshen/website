@@ -3,8 +3,8 @@ import './Cubing.css'
 
 const Cubing = () => {
   return (
-    <div>
-        hi
+    <div className="cubing">
+        <h1 className="develop">under development :&#93;</h1>
     </div>
   )
 }

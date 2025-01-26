@@ -1,8 +1,6 @@
 import React from 'react'
 import './Portfolio.css'
-import theme_pattern from '../../assets/theme_pattern.svg'
 import portfolio from '../../assets/mywork_data'
-import arrow from '../../assets/arrow_icon.svg'
 import rectangle from '../../assets/rectangle.svg'
 
 
