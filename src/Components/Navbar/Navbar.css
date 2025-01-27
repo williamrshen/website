@@ -44,7 +44,6 @@
     flex-direction: column;
     gap: 5px;
     cursor: pointer;
-    padding: 7px 20px;
 }
 
 .nav-menu li:hover {
@@ -63,5 +62,9 @@
 .anchor-link {
     text-decoration: none;
     color: white;
+}
+
+.navbar p {
+    padding: 7px 20px;
 }
 

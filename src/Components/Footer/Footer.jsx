@@ -53,7 +53,7 @@ const Footer = () => {
             </p>
             <div className="footer-bottom-right">
                 <p>{showTime}</p>
-                <p>made with react + vite</p>
+                <p>made with react + vite + mald</p>
             </div>
         </div>
     </div>
