@@ -6,6 +6,7 @@ import Cubing from './Components/Resources/Cubing/Cubing'
 import Coding from './Components/Resources/Coding/Coding'
 import Resources from './Components/Resources/Resources'
 import Blog from './Components/Blog/Blog'
+import Error from './Components/404Page/pagenotfound'
 
 
 
@@ -20,10 +21,11 @@ const App = () => {
         <Navbar />
             <Routes>
                 <Route path="/website/" element={<Home />} />
-                <Route path="/website-resources" element={ <Resources /> } />
-                <Route path="/website-cubing" element={ <Cubing /> } />
-                <Route path="/website-coding" element={ <Coding /> } />
-                <Route path="/website-blog" element={ <Blog /> } />
+                <Route path="/website/resources" element={ <Resources /> } />
+                <Route path="/website/cubing" element={ <Cubing /> } />
+                <Route path="/website/coding" element={ <Coding /> } />
+                <Route path="/website/blog" element={ <Blog /> } />
+                <Route path="*" element= { <Error /> } />
             </Routes>
         <Footer />
     </div>

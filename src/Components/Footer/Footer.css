@@ -26,8 +26,10 @@
 .footer-top-right span {
     background: linear-gradient(267deg, #4AAD52, #acbf71 70%);
     background-clip: text;
+    color: transparent;
     -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    animation: move 4s ease-in-out infinite;
+    background-size: 200% 100%;
 }
 
 .footer-email-input {
@@ -81,4 +83,14 @@
 .footer-top-left img {
     width: 20%;
     height: auto;
+}
+
+@keyframes move {
+    0%, 100% {
+        background-position: 0 0;
+    }
+
+    50% {
+        background-position: 100% 0;
+    }
 }
