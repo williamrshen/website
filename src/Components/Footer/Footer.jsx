@@ -1,12 +1,30 @@
 import React from 'react'
+import { useEffect, useState } from "react";
 import './Footer.css'
 import footer_logo from '../../assets/footer_logo.svg'
 import user_icon from '../../assets/user_icon.svg'
 import { FaCross } from "react-icons/fa";
-import ul from '../../assets/ul.png'
 
 
 const Footer = () => {
+
+    const [time, setTime] = useState(Date.now());
+
+    useEffect(() => {
+    const interval = setInterval(() => setTime(Date.now()), 1000);
+    return () => {
+        clearInterval(interval);
+    };
+    }, []);
+
+    const date = new Date();
+    const showDate = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+    const showTime = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
   return (
     <div className='footer'>
         <div className="footer-top">
@@ -31,11 +49,11 @@ const Footer = () => {
         <hr />
         <div className="footer-bottom">
             <p className="footer-bottom-left">
-                some text
+                01/21/2025 - {showDate}
             </p>
             <div className="footer-bottom-right">
-                <p>more text</p>
-                <p>bottom right corner</p>
+                <p>{showTime}</p>
+                <p>made with react + vite</p>
             </div>
         </div>
     </div>

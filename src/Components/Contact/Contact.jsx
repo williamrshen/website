@@ -5,6 +5,7 @@ import rectangle from '../../assets/rectangle.svg'
 import { CiLocationOn } from "react-icons/ci";
 import { CiLinkedin } from "react-icons/ci";
 import { CiMail } from "react-icons/ci";
+import { RxDiscordLogo } from "react-icons/rx";
 
 
 const Contact = () => {
@@ -52,6 +53,10 @@ const Contact = () => {
                       <CiLinkedin />
                       <p>williamrshen</p>
                     </a>
+                    <div className="contact-detail">
+                    <RxDiscordLogo />
+                      <p>uselessleaf</p>
+                    </div>
                     <div className="contact-detail">
                       <CiLocationOn />
                       <p>toronto, ontario</p>

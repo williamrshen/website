@@ -30,10 +30,12 @@ const Navbar = () => {
             <li><Link className='anchor-link' to="/website/resources"><p onClick={()=>setMenu("resources")}>{<Dropdown/>}</p></Link> {menu==="resources" ? <img src={new_underline}/> : <></>}</li>
         </ul>
         
-        <div className="nav-connect">
+        <div className="nav-connect" onClick={()=>setMenu("contact")}>
           <AnchorLink className='anchor-link' offset={110} href='#contact'>
-            connect with me
-            </AnchorLink>
+            <Link className='anchor-link' to="/website/">
+                connect with me
+            </Link>
+          </AnchorLink>
         </div>
     </div>
   )

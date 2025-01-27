@@ -14,10 +14,22 @@
 }
 
 .hero span {
-    background: linear-gradient(267deg, #59ba73, #acbf71);
+    background: linear-gradient(230deg, #6EB257 35%, #acbf71, #C5E063);
     background-clip: text;
+    color: transparent;
     -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    animation: move 4s ease-in-out infinite;
+    background-size: 150% 100%;
+}
+
+@keyframes move {
+    0%,100% {
+        background-position: 0 0;
+    }
+
+    50% {
+        background-position: 100% 0;
+    }
 }
 
 .hero p {
