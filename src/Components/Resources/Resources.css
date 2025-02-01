@@ -6,6 +6,24 @@
     padding-bottom: 30px;
 }
 
-.develop {
+.resources-develop {
     font-size: 50px;
+    text-align: left;
+    padding: 30px;
+    background: linear-gradient(-230deg, #6EB257 35%, #acbf71, #C5E063);
+    background-clip: text;
+    color: transparent;
+    -webkit-background-clip: text;
+}
+
+.resources-description {
+    text-align: left;
+    max-width: 50%;
+}
+
+.resources-banner {
+    max-width: 20%;
+    height: auto;
+    border-radius: 25%;
+    padding-bottom: 20px;
 }

@@ -55,7 +55,7 @@ const About = () => {
                             <p>tetris</p><hr style={{width:"80%"}}/>
                         </div>
                         <div className="about-skill-drop">
-                            <p>modern tetris on tetr.io</p>
+                            <p>modern tetris on tetr.io, jstris</p>
                             <p>~21000 tr. top 1500 global, top 100 national</p>
                         </div>
                     </div> 
