@@ -1,11 +1,17 @@
 .error {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding-bottom: 30px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding-bottom: 30px;
 }
 
-.develop {
-    font-size: 50px;
+.error-develop {
+	font-size: 50px;
+	text-align: left;
+	padding: 30px;
+	background: linear-gradient(-230deg, #6eb257 35%, #acbf71, #c5e063);
+	background-clip: text;
+	color: transparent;
+	-webkit-background-clip: text;
 }

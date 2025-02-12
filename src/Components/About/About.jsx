@@ -20,6 +20,9 @@ const About = () => {
                 <div className="about-paragraph">
                     <p>hi! i'm william shen, second year mathematics student at the university of waterloo. looking to pursue a specialization in computational mathematics, along with a minor
                         in combinatorics and optimization. nice to meet you!
+                        <br /> <br />
+                        
+                        in my free time, i enjoy playing video games like tetris and valorant. i also enjoy speedcubing and speedstacking :)
                     </p>
                 </div>
                 <div className="about-skills">
@@ -62,7 +65,7 @@ const About = () => {
                 </div>
             </div>
         </div>
-        <div className="about-achievements">
+        {/* <div className="about-achievements">
             <a href="https://ch.tetr.io/u/uselessleaf" target="_blank" className="about-achievement">
                 <h1>20.5k+</h1>
                 <p>tr in tetr.io</p>
@@ -77,7 +80,7 @@ const About = () => {
                 <h1>top 15</h1>
                 <p>peak canadian rank in table tennis</p>
             </div>
-        </div>
+        </div> */}
     </div>
   )
 }

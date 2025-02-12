@@ -1,7 +1,7 @@
 import React from 'react'
 import './Cubing.css'
 import '.././Resources.css'
-import Cat from '../../../assets/cat2.webp'
+import Cat from '../../../assets/cat2.png'
 
 const Cubing = () => {
   return (

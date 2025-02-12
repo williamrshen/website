@@ -28,7 +28,7 @@ const Navbar = () => {
             
             
             <li><Link className='anchor-link' to="/website/resources"><p onClick={()=>setMenu("resources")}>{<Dropdown/>}</p></Link> {menu==="resources" ? <img src={new_underline}/> : <></>}</li>
-            <li><Link className='anchor-link' to="/website/blog"><p onClick={()=>setMenu("blog")}>blog</p></Link> {menu==="blog" ? <img src={new_underline}/> : <></>}</li>
+            {/* <li><Link className='anchor-link' to="/website/blog"><p onClick={()=>setMenu("blog")}>blog</p></Link> {menu==="blog" ? <img src={new_underline}/> : <></>}</li> */}
 
         </ul>
         

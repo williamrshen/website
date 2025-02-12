@@ -26,20 +26,20 @@ const MyJourney = () => {
 				<br /> <br />
 				Then I switched to another class, with another teacher. And for some
 				reason, I began to enjoy it more, maybe because I was starting to
-				understand Each week I looked forward to attending class, and would
+				understand. Each week I looked forward to attending class, and would
 				think about the homework problems whenever I could. I slowly progressed
 				and learned various topics until grade 12, when I began to muse about
 				problem ideas myself. This led me and 2 of my coding class friends to
 				create a{" "}
-				<a href="https://dmoj.ca/contest/mccc4j">mock CCC junior contest</a>,
+				<a href="https://dmoj.ca/contest/mccc4j" target="_blank">mock CCC junior contest</a>,
 				which turned out to be the most participated contest on DMOJ. I had a
 				lot of fun learning about how to generate test data, test edge cases,
 				hack solutions, writing problems statements, and just a lot about
 				problem setting in general. Although there were some technical
 				difficulties (something went wrong with the test cases), it was overall
 				very enjoyable. I contributed two problems to the contest,{" "}
-				<a href="https://dmoj.ca/problem/mccc4j1">P1</a> and{" "}
-				<a href="https://dmoj.ca/problem/mccc4j4">P4</a>, and remember being
+				<a href="https://dmoj.ca/problem/mccc4j1" target="_blank">P1</a> and{" "}
+				<a href="https://dmoj.ca/problem/mccc4j4" target="_blank">P4</a>, and remember being
 				especially proud of the latter. This was also about the time I switched
 				from Java to C++, in January of 2022.
 				<br /> <br />
@@ -57,7 +57,7 @@ const MyJourney = () => {
 				again, and scored 34/75, this time 5 points off of Honour Roll. Both
 				times I got the Distinction Award, so I was satisfied. After this CCC, I
 				basically stopped competitive programming. You can see all this on my{" "}
-				<a href="https://dmoj.ca/user/uselessleaf">DMOJ activity graph</a> lol.
+				<a href="https://dmoj.ca/user/uselessleaf" target="_blank">DMOJ activity graph</a> lol.
 				<br /> <br />
 				I would say I'm retired now. I do teaching sometimes, like at my current
 				co-op job, but not often. I think I learned a lot about programming

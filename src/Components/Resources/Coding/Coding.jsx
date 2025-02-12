@@ -1,7 +1,7 @@
 import React from "react";
 import "./Coding.css";
 import ".././Resources.css";
-import Cat from "../../../assets/cat.webp";
+import Cat from "../../../assets/cat.png";
 import AnchorLink from 'react-anchor-link-smooth-scroll'
 
 
