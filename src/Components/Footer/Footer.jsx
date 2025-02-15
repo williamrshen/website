@@ -1,8 +1,6 @@
 import React from 'react'
 import { useEffect, useState } from "react";
 import './Footer.css'
-import footer_logo from '../../assets/footer_logo.svg'
-import user_icon from '../../assets/user_icon.svg'
 import { FaCross } from "react-icons/fa";
 
 
