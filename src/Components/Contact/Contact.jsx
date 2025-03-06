@@ -43,7 +43,7 @@ const Contact = () => {
 					<p>feel free to message me about anything</p>
 					<div className="contact-details">
 						<a
-							href="williamshen85@gmail.com"
+							href="mailto:williamshen85@gmail.com"
 							target="_blank"
 							className="contact-detail"
 						>
