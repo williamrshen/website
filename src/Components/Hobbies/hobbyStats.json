@@ -1,5 +1,5 @@
 {
-	"updatedAt": "2026-09-06T13:16:41.968Z",
+	"updatedAt": "2026-09-07T15:22:30.670Z",
 	"ids": {
 		"wca": "2016SHEN13",
 		"mcsr": "uselessleaf",
@@ -17,9 +17,7 @@
 		"mcsrMatches": "https://api.mcsrranked.com/users/uselessleaf/matches?count=100&type=2&sort=oldest",
 		"ttcanProfile": "https://ttcan.onrender.com/api/players/30561"
 	},
-	"errors": [
-		"TTCAN: 500 Internal Server Error for https://ttcan.onrender.com/api/players/30561"
-	],
+	"errors": [],
 	"hobbies": [
 		{
 			"id": "tetris",
@@ -5997,7 +5995,7 @@
 				{
 					"label": "league rank",
 					"value": "U",
-					"detail": "#1,504 global · #88 Canada"
+					"detail": "#1,504 global · #87 Canada"
 				},
 				{
 					"label": "TR",
@@ -6078,7 +6076,7 @@
 				{
 					"label": "current elo",
 					"value": "1,142",
-					"detail": "rank #3,544"
+					"detail": "rank #3,633"
 				},
 				{
 					"label": "all-time best",
@@ -6216,9 +6214,7 @@
 					"label": "May 5, 2023",
 					"value": 1104
 				}
-			],
-			"stale": true,
-			"error": "Unable to refresh TTCAN stats."
+			]
 		},
 		{
 			"id": "speedcubing",
@@ -6233,7 +6229,7 @@
 				{
 					"label": "3×3 single",
 					"value": "8.15s",
-					"detail": "Canada #305 · World #8,672"
+					"detail": "Canada #305 · World #8,680"
 				},
 				{
 					"label": "3×3 average",
