@@ -220,6 +220,27 @@ test('hobbies skeleton shows sample stats and opens hobby details', async ({ pag
   await page.keyboard.press('Escape')
 })
 
+test('say hello dialog lists email, LinkedIn, and GitHub', async ({ page }) => {
+  await page.goto('/')
+  await scrollTo(page, await collapseDistance(page))
+  for (const trigger of [
+    page.getByRole('navigation').getByRole('button', { name: /Say hello/ }),
+    page.locator('#about').getByRole('button', { name: /Or just say hello/ }),
+  ]) {
+    await trigger.click()
+    const dialog = page.getByRole('dialog', { name: 'Let’s chat!' })
+    await expect(dialog).toContainText('Feel free to message me about anything.')
+    await expect(dialog.getByRole('link', { name: /Email w22shen@uwaterloo.ca/ })).toHaveAttribute('href', 'mailto:w22shen@uwaterloo.ca')
+    await expect(dialog.getByRole('link', { name: /Email/ })).not.toHaveAttribute('target')
+    const linkedIn = dialog.getByRole('link', { name: /LinkedIn/ })
+    await expect(linkedIn).toHaveAttribute('href', 'https://www.linkedin.com/in/williamrshen/')
+    await expect(linkedIn).toHaveAttribute('target', '_blank')
+    await expect(dialog.getByRole('link', { name: /GitHub/ })).toHaveAttribute('href', 'https://github.com/williamrshen')
+    await page.keyboard.press('Escape')
+    await expect(dialog).not.toBeVisible()
+  }
+})
+
 test('introduction shows identity, portrait, and current focus', async ({ page }) => {
   await page.goto('/')
   await expect(page).toHaveTitle('William Shen · uselessleaf')

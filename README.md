@@ -40,6 +40,7 @@ src/
     HobbySection.tsx               Hobby tiles with headline stats
     Sparkline.tsx                  Small SVG rating-history chart
     DetailDialog.tsx               Native modal for bullets, tags, stats, and links
+    ContactIcon.tsx                Email, LinkedIn, and GitHub icons
     Footer.tsx                     Closing copy
     Logo.tsx                       Isometric cube wordmark icon
     *.module.css                   Styles scoped to each component
@@ -48,7 +49,8 @@ src/
     experience.ts                  Roles shown in “Where I've worked”
     projects.ts                    Projects shown in “A few things I've grown”
     hobbies.ts                     Static sample hobby stats and blurbs
-    portfolio.ts                   Field notes and contact dialog copy
+    contact.ts                     Email, LinkedIn, and GitHub for “Say hello”
+    portfolio.ts                   Field notes dialog copy
     types.ts                       Shared card and dialog types
   garden/
     scene.ts                       Seeded world generation and canvas renderer
@@ -70,7 +72,8 @@ vite.config.ts                     Vite + React plugin
 - **Work experience:** edit `src/data/experience.ts`. Roles are listed newest first; the Geotab entry is a placeholder. Cards currently use company monograms until artwork is chosen.
 - **Projects:** edit `src/data/projects.ts`. The first three appear before expanding. Cards rotate through placeholder icons until project artwork is chosen.
 - **Hobbies:** edit `src/data/hobbies.ts`. It is a one-time copy of the old site's Oct 2, 2026 stats snapshot, with histories downsampled to 36 points. The table tennis entry has no profile link because the old link pointed to a raw API.
-- **Field notes and contact dialog copy:** edit `src/data/portfolio.ts`.
+- **Contact links:** edit `src/data/contact.ts`. The navbar's **Say hello** and the introduction's **Or just say hello** open the same dialog.
+- **Field notes dialog copy:** edit `src/data/portfolio.ts`. Writing has not been ported yet, so this is still placeholder copy.
 - **Colors and dimensions:** edit the CSS custom properties in `src/index.css`; component-specific layout lives alongside each component.
 - **Garden shapes and placement:** edit `src/garden/scene.ts`. Its seeded random generator keeps the landscape stable across mounts and resizes.
 - **Scroll choreography:** edit `src/hooks/useGardenExperience.ts` and `GardenExperience.module.css`. Frame-by-frame updates go straight to CSS variables and canvas rather than triggering React renders.

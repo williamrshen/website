@@ -3,6 +3,13 @@ export type DetailLink = {
   href: string
 }
 
+export type ContactLink = {
+  kind: 'email' | 'linkedin' | 'github'
+  label: string
+  value: string
+  href: string
+}
+
 export type Stat = {
   label: string
   value: string
@@ -24,6 +31,7 @@ export type Detail = {
   tags?: string[]
   stats?: Stat[]
   history?: HistorySeries
+  contacts?: ContactLink[]
   link?: DetailLink
   note?: string
 }

@@ -1,4 +1,4 @@
-import { contact } from '../data/portfolio'
+import { contact } from '../data/contact'
 import { profile } from '../data/profile'
 import type { OpenDetail } from '../data/types'
 import { Portrait } from './Portrait'

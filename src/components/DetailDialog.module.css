@@ -68,6 +68,27 @@
 .statDetail { display: block; margin-top: 5px; font-size: 10px; line-height: 1.5; color: var(--muted); }
 .dialog .note { margin: 22px 0 0; font: 9px monospace; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
 
+.contacts { display: grid; gap: 10px; margin: 24px 0 0; padding: 0; list-style: none; }
+
+.contacts a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.contacts a:hover { border-color: #b9c79f; background: #a7bd8115; }
+.contactIcon { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 50%; background: #e5e9d9; color: #4f6b46; }
+.contactIcon svg { width: 17px; height: 17px; }
+:global([data-theme='evening']) .contactIcon { background: #354739; color: #c9d9a8; }
+.contactText { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.contactLabel { font: 9px monospace; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+.contactValue { font-size: 14px; overflow-wrap: anywhere; }
+.contactArrow { margin-left: auto; color: var(--muted); }
+
 .link {
   display: inline-flex;
   gap: 10px;

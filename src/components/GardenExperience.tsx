@@ -1,4 +1,5 @@
-import { contact, notes } from '../data/portfolio'
+import { contact } from '../data/contact'
+import { notes } from '../data/portfolio'
 import { profile } from '../data/profile'
 import type { OpenDetail } from '../data/types'
 import { useGardenExperience } from '../hooks/useGardenExperience'

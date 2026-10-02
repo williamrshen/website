@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from 'react'
 import type { Detail } from '../data/types'
+import { ContactIcon } from './ContactIcon'
 import { Sparkline } from './Sparkline'
 import styles from './DetailDialog.module.css'
 
@@ -52,6 +53,26 @@ export function DetailDialog({ detail, onClose }: { detail: Detail | null; onClo
             </dl>
           )}
           {detail.history && <Sparkline series={detail.history} />}
+          {detail.contacts && detail.contacts.length > 0 && (
+            <ul className={styles.contacts}>
+              {detail.contacts.map((contact) => {
+                const isWeb = /^https?:/.test(contact.href)
+                return (
+                  <li key={contact.kind}>
+                    <a href={contact.href} {...(isWeb ? { target: '_blank', rel: 'noreferrer' } : {})}>
+                      <span className={styles.contactIcon}><ContactIcon kind={contact.kind} /></span>
+                      <span className={styles.contactText}>
+                        <span className={styles.contactLabel}>{contact.label}</span>
+                        <span className={styles.contactValue}>{contact.value}</span>
+                      </span>
+                      <span className={styles.contactArrow} aria-hidden="true">↗</span>
+                      {isWeb && <span className={styles.visuallyHidden}> (opens in a new tab)</span>}
+                    </a>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
           {detail.tags && detail.tags.length > 0 && (
             <ul className={styles.tags} aria-label="Skills and tools">
               {detail.tags.map((tag) => <li key={tag}>{tag}</li>)}
