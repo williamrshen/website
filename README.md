@@ -23,11 +23,21 @@ Open the localhost URL printed by Vite. No sharing service or deployment is need
 - Reduced-motion support, keyboard navigation, and a skip-to-introduction link. Hidden navigation is inert until revealed.
 - Canvas animation pauses when the garden is collapsed or the browser tab is hidden. Event listeners, animation frames, and resize observers are cleaned up on unmount, including React Strict Mode development remounts.
 
+## Routing
+
+The site is a single page at `/`. Navigation uses in-page anchors (`#about`, `#experience`, `#work`, `#hobbies`), and dialogs open without changing the URL.
+
+Every other path, including the old site's `/hobbies`, `/coding`, and `/blog`, shows `404.html` with a real `404` status:
+
+- **Vercel:** serves `dist/404.html` automatically for unmatched paths. Do not add a catch-all rewrite to `vercel.json`, or unknown URLs will return the homepage with status 200 instead.
+- **Local dev and preview:** `vite.config.ts` uses `appType: 'mpa'` plus a small plugin that serves the same page with status 404, matching production.
+
 ## Project structure
 
 ```text
 src/
   main.tsx                         React entry point and Strict Mode
+  not-found.tsx                    Entry point for the 404 page
   App.tsx                          Page composition, theme and dialog state
   App.module.css                   Page-level grain and skip link
   index.css                        Global reset, theme tokens, motion defaults
@@ -43,6 +53,7 @@ src/
     ContactIcon.tsx                Email, LinkedIn, and GitHub icons
     Footer.tsx                     Closing copy
     Logo.tsx                       Isometric cube wordmark icon
+    NotFound.tsx                   “Nothing's grown here yet” 404 page
     *.module.css                   Styles scoped to each component
   data/
     profile.ts                     Name, alias, portrait, introduction, Currently list
@@ -63,7 +74,8 @@ tests/
   portfolio.spec.ts                Browser checks for layout and interactions
 playwright.config.ts               Local-only browser test server
 index.html                         Page title, description, and favicon
-vite.config.ts                     Vite + React plugin
+404.html                           Not-found page shell (noindex)
+vite.config.ts                     Vite + React, 404 build entry, local 404 handling
 ```
 
 ### Customize content
@@ -101,4 +113,4 @@ To use an existing local Chrome installation instead:
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/google-chrome npm run test:e2e
 ```
 
-The tests cover the reversible scroll transition, header positioning at desktop and mobile widths, theme toggle, localized cursor glow, live reduced-motion preference changes, dialog focus return, and introduction content. Screenshots and failure traces are written to the ignored `test-results/` directory.
+The tests cover the reversible scroll transition, header positioning at desktop and mobile widths, theme toggle, localized cursor glow, live reduced-motion preference changes, dialog focus return, section content, contact links, the résumé download, and 404 responses. Screenshots and failure traces are written to the ignored `test-results/` directory.

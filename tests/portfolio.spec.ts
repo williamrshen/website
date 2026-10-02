@@ -255,6 +255,22 @@ test('résumé link downloads the ported PDF', async ({ page, request }) => {
   expect(download.suggestedFilename()).toBe('William Shen - Resume.pdf')
 })
 
+test('unknown and retired URLs return the 404 page', async ({ page }) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  expect((await page.goto('/'))!.status()).toBe(200)
+  for (const path of ['/hobbies', '/coding', '/blog', '/not/a/page']) {
+    const response = await page.goto(path)
+    expect(response!.status(), path).toBe(404)
+    await expect(page).toHaveTitle('Page not found · William Shen')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText("Nothing's grown here yet.")
+  }
+  await page.getByRole('link', { name: /Back to the garden/ }).click()
+  await expect(page).toHaveURL('/')
+  await expect(page.locator('#world')).toBeVisible()
+  expect(errors).toEqual([])
+})
+
 test('introduction shows identity, portrait, and current focus', async ({ page }) => {
   await page.goto('/')
   await expect(page).toHaveTitle('William Shen · uselessleaf')
