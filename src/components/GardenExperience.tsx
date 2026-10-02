@@ -1,5 +1,4 @@
 import { contact } from '../data/contact'
-import { notes } from '../data/portfolio'
 import { profile } from '../data/profile'
 import type { OpenDetail } from '../data/types'
 import { useGardenExperience } from '../hooks/useGardenExperience'
@@ -43,7 +42,6 @@ export function GardenExperience({ evening, dialogOpen, onToggleTheme, onOpenDet
           <a className={styles.experienceLink} href="#experience">Experience</a>
           <a href="#work">Work</a>
           <a className={styles.hobbiesLink} href="#hobbies">Hobbies</a>
-          <button className={styles.journalLink} onClick={() => onOpenDetail(notes)}>Field notes</button>
           <button className={styles.contactLink} onClick={() => onOpenDetail(contact)}>Say hello <span aria-hidden="true">↗</span></button>
         </nav>
       </header>

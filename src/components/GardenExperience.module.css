@@ -170,7 +170,7 @@
 
 @media (max-width: 1000px) {
   .navigation { gap: 22px; }
-  .hobbiesLink, .journalLink { display: none; }
+  .hobbiesLink { display: none; }
 }
 
 @media (max-width: 680px) {

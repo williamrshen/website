@@ -66,12 +66,13 @@ test('landing, scroll morph, moving theme toggle, dialogs, and local-only assets
 
   await mode.click()
   await expect(mode).toHaveAccessibleName('Switch to daylight')
-  await navigation.getByRole('button', { name: 'Field notes' }).click()
+  await expect(navigation.getByRole('button', { name: 'Field notes' })).toHaveCount(0)
+  await navigation.getByRole('button', { name: /Say hello/ }).click()
   await expect(page.getByRole('dialog')).toBeVisible()
-  await expect(page.getByRole('dialog')).toContainText('Leave room for wandering.')
+  await expect(page.getByRole('dialog')).toContainText('Let’s chat!')
   await page.keyboard.press('Escape')
   await expect(page.getByRole('dialog')).not.toBeVisible()
-  await expect(navigation.getByRole('button', { name: 'Field notes' })).toBeFocused()
+  await expect(navigation.getByRole('button', { name: /Say hello/ })).toBeFocused()
 
   await navigation.getByRole('link', { name: 'Work', exact: true }).click()
   const project = page.getByRole('button', { name: /Communal Catalogue/ })
@@ -99,7 +100,6 @@ for (const width of [320, 390, 680, 768]) {
     const nav = page.getByRole('navigation')
     const firstLink = (await nav.getByRole('link', { name: 'About', exact: true }).boundingBox())!
     await expect(nav.getByRole('link', { name: 'Experience' })).toBeVisible({ visible: width > 680 })
-    await expect(nav.getByRole('button', { name: 'Field notes' })).toBeVisible({ visible: width > 1000 })
     await expect(nav.getByRole('link', { name: 'Hobbies' })).toBeVisible({ visible: width > 1000 })
     const lastLink = (await nav.getByRole('button', { name: /Say hello/ }).boundingBox())!
     const toggle = (await page.locator('#mode').boundingBox())!
