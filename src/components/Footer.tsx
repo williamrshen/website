@@ -18,7 +18,6 @@ export function Footer() {
           <figcaption>2 Corinthians 12:9</figcaption>
         </figure>
       </div>
-      <span className={styles.signoff}>Made with intention. And a little imagination.</span>
     </footer>
   )
 }

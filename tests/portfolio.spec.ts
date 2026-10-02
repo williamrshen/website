@@ -271,18 +271,18 @@ test('unknown and retired URLs return the 404 page', async ({ page }) => {
   expect(errors).toEqual([])
 })
 
-test('footer shows faith content on the left and the sign-off on the right', async ({ page }) => {
+test('footer shows faith content on the right with no sign-off', async ({ page }) => {
   await page.goto('/')
   const footer = page.getByRole('contentinfo')
   await footer.scrollIntoViewIfNeeded()
   await expect(footer.getByText('soli deo gloria')).toBeVisible()
   await expect(footer.getByRole('blockquote')).toContainText('“My grace is sufficient for you, for my power is made perfect in weakness.”')
   await expect(footer.getByText('2 Corinthians 12:9')).toBeVisible()
-  const signoff = footer.getByText('Made with intention. And a little imagination.')
-  await expect(signoff).toBeVisible()
-  const verse = (await footer.getByRole('blockquote').boundingBox())!
-  const right = (await signoff.boundingBox())!
-  expect(verse.x + verse.width).toBeLessThan(right.x)
+  await expect(footer).not.toContainText('Made with intention')
+  const faith = (await footer.locator('div').first().boundingBox())!
+  const bounds = (await footer.boundingBox())!
+  expect(faith.x + faith.width).toBeCloseTo(bounds.x + bounds.width, 0)
+  expect(faith.x).toBeGreaterThan(bounds.x + bounds.width / 2 - 1)
 })
 
 test('introduction shows identity, portrait, and current focus', async ({ page }) => {
