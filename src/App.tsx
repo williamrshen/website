@@ -5,7 +5,7 @@ import { DetailDialog } from './components/DetailDialog'
 import { Footer } from './components/Footer'
 import { GardenExperience } from './components/GardenExperience'
 import { experience } from './data/experience'
-import { projects } from './data/portfolio'
+import { projects } from './data/projects'
 import type { Detail } from './data/types'
 import styles from './App.module.css'
 
