@@ -56,12 +56,9 @@ export function GardenExperience({ evening, dialogOpen, onToggleTheme, onOpenDet
             role="img"
             aria-label="An interactive isometric garden with a large voxel oak tree, small evergreens, flowers, and grass tiles. Move your pointer to illuminate the surrounding grid."
           />
-          <span className={styles.meta}>AKA {profile.alias.toUpperCase()}</span>
-          <a className={styles.hint} ref={hint} href="#about">
-            <span>There's more beneath the canopy</span>
+          <a className={styles.hint} ref={hint} href="#about" aria-label="Scroll to introduction">
             <span className={styles.down} aria-hidden="true">↓</span>
           </a>
-          <span className={`${styles.meta} ${styles.metaRight}`}>ROOTED IN CURIOSITY · ALWAYS GROWING</span>
         </div>
       </section>
       <div className={styles.cursor} ref={cursor} data-garden-cursor aria-hidden="true" />

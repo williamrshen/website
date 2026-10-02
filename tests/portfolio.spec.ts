@@ -297,7 +297,13 @@ test('footer shows faith content on the right with no sign-off', async ({ page }
 test('introduction shows identity, portrait, and current focus', async ({ page }) => {
   await page.goto('/')
   await expect(page).toHaveTitle('William Shen · uselessleaf')
-  await expect(page.getByText('AKA USELESSLEAF', { exact: true })).toBeVisible()
+  const garden = page.locator('#garden')
+  const arrow = garden.getByRole('link', { name: 'Scroll to introduction' })
+  await expect(arrow).toBeVisible()
+  await expect(arrow).toHaveAttribute('href', '#about')
+  for (const text of ['AKA USELESSLEAF', "There's more beneath the canopy", 'ROOTED IN CURIOSITY']) {
+    await expect(garden.getByText(text)).toHaveCount(0)
+  }
   await scrollTo(page, await collapseDistance(page))
   const about = page.locator('#about')
   await expect(about.getByText('aka uselessleaf')).toBeVisible()
