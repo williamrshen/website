@@ -14,7 +14,7 @@ export function Portrait() {
           decoding="async"
         />
       </div>
-      <figcaption className={styles.caption}><span>01 / THE PERSON BEHIND THE GARDEN</span><span>HELLO, WORLD.</span></figcaption>
+      <figcaption className={styles.caption}>01 / me in halifax with a lobster</figcaption>
     </figure>
   )
 }

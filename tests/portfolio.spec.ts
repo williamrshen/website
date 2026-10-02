@@ -305,6 +305,8 @@ test('introduction shows identity, portrait, and current focus', async ({ page }
   const portrait = about.getByRole('img', { name: /William Shen smiling/ })
   await expect(portrait).toBeVisible()
   expect(await portrait.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth)).toBe(1000)
+  await expect(about.locator('figcaption')).toHaveText('01 / me in halifax with a lobster')
+  await expect(about).not.toContainText('HELLO, WORLD')
   await expect(about.getByRole('list', { name: 'Currently' }).getByRole('listitem')).toHaveText([
     'Computational mathematics specialization',
     'Combinatorics & optimization minor',
