@@ -21,7 +21,7 @@ export function GardenExperience({ evening, dialogOpen, onToggleTheme, onOpenDet
     <div className={styles.experience} ref={experience}>
       <header className={styles.header}>
         <a className={styles.brand} ref={brand} href="#garden" aria-label={`${profile.name} home`}>
-          <Logo />{profile.wordmark}<span className={styles.brandDot}>.</span>
+          <Logo />{evening ? profile.alias : profile.wordmark}<span className={styles.brandDot}>.</span>
         </a>
         <button
           className={styles.mode}

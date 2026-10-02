@@ -31,14 +31,22 @@ test('landing, scroll morph, moving theme toggle, dialogs, and local-only assets
   expect((await page.locator('#about').boundingBox())!.y).toBeGreaterThanOrEqual(1000)
   const initialBrand = (await brand.boundingBox())!
   const initialMode = (await mode.boundingBox())!
-  expect(initialBrand.x + initialBrand.width / 2).toBeCloseTo(720, 0)
+  await expect(brand).toHaveText('william shen.')
+  expect((initialBrand.x + initialMode.x + initialMode.width) / 2).toBeCloseTo(720, 0)
   expect(initialMode.x - initialBrand.x - initialBrand.width).toBeCloseTo(18, 0)
   await page.screenshot({ path: testInfo.outputPath('landing.png') })
 
   await mode.click()
   await expect(mode).toHaveAttribute('aria-pressed', 'true')
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'evening')
+  await expect(brand).toHaveText('uselessleaf.')
+  const eveningBrand = (await brand.boundingBox())!
+  const eveningMode = (await mode.boundingBox())!
+  expect((eveningBrand.x + eveningMode.x + eveningMode.width) / 2).toBeCloseTo(720, 0)
+  expect(eveningMode.x - eveningBrand.x - eveningBrand.width).toBeCloseTo(18, 0)
+  await page.screenshot({ path: testInfo.outputPath('landing-evening.png') })
   await mode.click()
+  await expect(brand).toHaveText('william shen.')
   await scrollTo(page, (await collapseDistance(page)) / 2)
   const midMode = (await mode.boundingBox())!
   expect(midMode.x).toBeGreaterThan(initialMode.x)
@@ -74,9 +82,10 @@ test('landing, scroll morph, moving theme toggle, dialogs, and local-only assets
   await expect(project).toBeFocused()
   await scrollTo(page, 0)
   await expect(navigation).toHaveJSProperty('inert', true)
-  expect((await brand.boundingBox())!.x).toBeCloseTo(initialBrand.x, 0)
   await mode.click()
   await expect(mode).toHaveAttribute('aria-pressed', 'false')
+  expect((await brand.boundingBox())!.x).toBeCloseTo(initialBrand.x, 0)
+  expect((await mode.boundingBox())!.x).toBeCloseTo(initialMode.x, 0)
   expect(errors).toEqual([])
   expect(externalRequests).toEqual([])
 })
