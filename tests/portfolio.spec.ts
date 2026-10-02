@@ -241,6 +241,20 @@ test('say hello dialog lists email, LinkedIn, and GitHub', async ({ page }) => {
   }
 })
 
+test('résumé link downloads the ported PDF', async ({ page, request }) => {
+  await page.goto('/')
+  await scrollTo(page, await collapseDistance(page))
+  const link = page.locator('#about').getByRole('link', { name: /Résumé/ })
+  await expect(link).toHaveAttribute('href', '/resume.pdf')
+  await expect(link).toHaveAttribute('download', 'William Shen - Resume.pdf')
+  const response = await request.get('/resume.pdf')
+  expect(response.ok()).toBe(true)
+  expect(response.headers()['content-type']).toContain('application/pdf')
+  expect((await response.body()).subarray(0, 5).toString()).toBe('%PDF-')
+  const [download] = await Promise.all([page.waitForEvent('download'), link.click()])
+  expect(download.suggestedFilename()).toBe('William Shen - Resume.pdf')
+})
+
 test('introduction shows identity, portrait, and current focus', async ({ page }) => {
   await page.goto('/')
   await expect(page).toHaveTitle('William Shen · uselessleaf')

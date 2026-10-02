@@ -15,6 +15,10 @@ export function About({ onOpenDetail }: { onOpenDetail: OpenDetail }) {
         <p>{profile.bio}</p>
         <div className={styles.links}>
           <a className={styles.cta} href="#work">Explore my work <span aria-hidden="true">↗</span></a>
+          <a className={styles.secondaryLink} href={profile.resume.href} download={profile.resume.filename}>
+            Résumé <span aria-hidden="true">↓</span>
+            <span className={styles.visuallyHidden}> (PDF)</span>
+          </a>
           <button className={styles.secondaryLink} onClick={() => onOpenDetail(contact)}>Or just say hello ↗</button>
         </div>
         <div className={styles.currently}>
