@@ -1,4 +1,5 @@
-import { profile, type OpenStory } from '../data/portfolio'
+import type { OpenStory } from '../data/portfolio'
+import { profile } from '../data/profile'
 import { useGardenExperience } from '../hooks/useGardenExperience'
 import { Logo } from './Logo'
 import styles from './GardenExperience.module.css'
@@ -51,7 +52,7 @@ export function GardenExperience({ evening, dialogOpen, onToggleTheme, onOpenSto
             role="img"
             aria-label="An interactive isometric garden with a large voxel oak tree, small evergreens, flowers, and grass tiles. Move your pointer to illuminate the surrounding grid."
           />
-          <span className={styles.meta}>A LITTLE CORNER OF THE INTERNET</span>
+          <span className={styles.meta}>AKA {profile.alias.toUpperCase()}</span>
           <a className={styles.hint} ref={hint} href="#about">
             <span>There's more beneath the canopy</span>
             <span className={styles.down} aria-hidden="true">↓</span>

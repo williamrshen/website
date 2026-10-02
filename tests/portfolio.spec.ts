@@ -130,23 +130,21 @@ test('grid glow stays local and reduced motion works without a reload', async ({
   await expect(page.getByRole('navigation')).toHaveJSProperty('inert', false)
 })
 
-test('photo picker previews locally and resets after reload', async ({ page }) => {
-  const externalRequests: string[] = []
-  page.on('request', (request) => {
-    if (request.method() !== 'GET') externalRequests.push(request.url())
-  })
+test('introduction shows identity, portrait, and current focus', async ({ page }) => {
   await page.goto('/')
+  await expect(page).toHaveTitle('William Shen · uselessleaf')
+  await expect(page.getByText('AKA USELESSLEAF', { exact: true })).toBeVisible()
   await scrollTo(page, await collapseDistance(page))
-  await page.locator('#portrait-file').setInputFiles({
-    name: 'local-portrait.svg', mimeType: 'image/svg+xml',
-    buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500"><rect width="400" height="500" fill="#78905c"/></svg>'),
-  })
-  await expect(page.locator('#portrait-image')).toBeVisible()
-  await expect(page.locator('#portrait-image')).toHaveAttribute('src', /^blob:/)
-  await expect(page.getByRole('status')).toContainText('Local preview only')
-  await expect(page.getByAltText(/Portrait placeholder/)).not.toBeVisible()
-  await page.reload()
-  await expect(page.locator('#portrait-image')).toHaveCount(0)
-  await expect(page.getByAltText(/Portrait placeholder/)).toBeVisible()
-  expect(externalRequests).toEqual([])
+  const about = page.locator('#about')
+  await expect(about.getByText('aka uselessleaf')).toBeVisible()
+  await expect(about.getByText('Third-year math student at the University of Waterloo.')).toBeVisible()
+  const portrait = about.getByRole('img', { name: /William Shen smiling/ })
+  await expect(portrait).toBeVisible()
+  expect(await portrait.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth)).toBe(1000)
+  await expect(about.getByRole('list', { name: 'Currently' }).getByRole('listitem')).toHaveText([
+    'Computational mathematics specialization',
+    'Combinatorics & optimization minor',
+    'Software Development Intern at Geotab',
+    'Reading through the book of Galatians',
+  ])
 })

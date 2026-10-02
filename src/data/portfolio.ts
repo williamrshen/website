@@ -2,13 +2,6 @@ import terrariumIcon from '../assets/terrarium.svg'
 import wayfinderIcon from '../assets/wayfinder.svg'
 import experimentsIcon from '../assets/experiments.svg'
 
-// Set portraitSrc to an imported image or a local /public asset to replace the picker.
-export const profile = {
-  name: 'William Shen',
-  wordmark: 'william shen',
-  portraitSrc: '',
-}
-
 export const stories = {
   notes: {
     kicker: 'FIELD NOTES / 001',

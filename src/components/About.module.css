@@ -21,8 +21,11 @@
 .cta span { font-size: 18px; transition: transform 0.2s; }
 .cta:hover span { transform: translate(3px, -3px); }
 .secondaryLink { padding: 0; border: 0; background: none; font-size: 11px; color: var(--muted); cursor: pointer; }
-.signoff { margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--line); font-size: 9px; letter-spacing: 1.3px; color: var(--muted); display: flex; align-items: center; gap: 9px; }
-.signoff i { width: 5px; height: 5px; flex: none; border-radius: 50%; background: #87a66a; }
+.currently { margin-top: 38px; padding-top: 22px; border-top: 1px solid var(--line); }
+.currently h2 { margin: 0 0 14px; font-size: 9px; font-weight: 600; letter-spacing: 2.2px; text-transform: uppercase; color: var(--muted); }
+.currently ul { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; }
+.currently li { display: flex; align-items: baseline; gap: 11px; font-size: 13px; line-height: 1.5; }
+.currently li::before { content: ''; width: 5px; height: 5px; flex: none; border-radius: 1px; background: #87a66a; transform: translateY(-2px) rotate(45deg); }
 
 @media (max-width: 1000px) {
   .hero { gap: 45px; }
@@ -34,6 +37,6 @@
   .intro h1 { font-size: 49px; letter-spacing: -2.8px; margin: 22px 0; }
   .intro p { font-size: 14px; max-width: none; }
   .intro p.lead { font-size: 17px; }
-  .signoff { margin-top: 30px; }
+  .currently { margin-top: 30px; }
   .links { margin-top: 26px; }
 }
