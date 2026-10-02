@@ -51,7 +51,7 @@ test('landing, scroll morph, moving theme toggle, dialogs, and local-only assets
   expect(finalMode.x + finalMode.width).toBeCloseTo(1440 * 0.93, 0)
   expect((await page.locator('[data-garden-surface]').boundingBox())!.height).toBe(76)
   expect((await page.locator('#about').boundingBox())!.y).toBe(76)
-  const portrait = (await page.locator('figure').boundingBox())!
+  const portrait = (await page.locator('#about figure').boundingBox())!
   const heading = (await page.getByRole('heading', { level: 1 }).boundingBox())!
   expect(portrait.x + portrait.width).toBeLessThan(heading.x)
   await page.screenshot({ path: testInfo.outputPath('hero.png') })
@@ -100,7 +100,7 @@ for (const width of [320, 390, 680, 768]) {
     expect(toggle.x + toggle.width).toBeCloseTo(width * (width <= 680 ? 0.94 : 0.93), 0)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     if (width === 390) {
-      expect((await page.getByRole('heading', { level: 1 }).boundingBox())!.y).toBeGreaterThan((await page.locator('figure').boundingBox())!.y)
+      expect((await page.getByRole('heading', { level: 1 }).boundingBox())!.y).toBeGreaterThan((await page.locator('#about figure').boundingBox())!.y)
       await page.screenshot({ path: testInfo.outputPath('mobile-hero.png') })
       await scrollTo(page, 0)
       await page.screenshot({ path: testInfo.outputPath('mobile-landing.png') })
@@ -269,6 +269,20 @@ test('unknown and retired URLs return the 404 page', async ({ page }) => {
   await expect(page).toHaveURL('/')
   await expect(page.locator('#world')).toBeVisible()
   expect(errors).toEqual([])
+})
+
+test('footer shows faith content on the left and the sign-off on the right', async ({ page }) => {
+  await page.goto('/')
+  const footer = page.getByRole('contentinfo')
+  await footer.scrollIntoViewIfNeeded()
+  await expect(footer.getByText('soli deo gloria')).toBeVisible()
+  await expect(footer.getByRole('blockquote')).toContainText('“My grace is sufficient for you, for my power is made perfect in weakness.”')
+  await expect(footer.getByText('2 Corinthians 12:9')).toBeVisible()
+  const signoff = footer.getByText('Made with intention. And a little imagination.')
+  await expect(signoff).toBeVisible()
+  const verse = (await footer.getByRole('blockquote').boundingBox())!
+  const right = (await signoff.boundingBox())!
+  expect(verse.x + verse.width).toBeLessThan(right.x)
 })
 
 test('introduction shows identity, portrait, and current focus', async ({ page }) => {

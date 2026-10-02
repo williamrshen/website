@@ -51,7 +51,7 @@ src/
     Sparkline.tsx                  Small SVG rating-history chart
     DetailDialog.tsx               Native modal for bullets, tags, stats, and links
     ContactIcon.tsx                Email, LinkedIn, and GitHub icons
-    Footer.tsx                     Closing copy
+    Footer.tsx                     Soli deo gloria, 2 Corinthians 12:9, sign-off
     Logo.tsx                       Isometric cube wordmark icon
     NotFound.tsx                   “Nothing's grown here yet” 404 page
     *.module.css                   Styles scoped to each component
