@@ -280,7 +280,7 @@ test('unknown and retired URLs return the 404 page', async ({ page }) => {
   expect(errors).toEqual([])
 })
 
-test('footer shows faith content on the right with no sign-off', async ({ page }) => {
+test('footer shows the motto on the left and the verse on the right', async ({ page }) => {
   await page.goto('/')
   const footer = page.getByRole('contentinfo')
   await footer.scrollIntoViewIfNeeded()
@@ -288,10 +288,12 @@ test('footer shows faith content on the right with no sign-off', async ({ page }
   await expect(footer.getByRole('blockquote')).toContainText('“My grace is sufficient for you, for my power is made perfect in weakness.”')
   await expect(footer.getByText('2 Corinthians 12:9')).toBeVisible()
   await expect(footer).not.toContainText('Made with intention')
-  const faith = (await footer.locator('div').first().boundingBox())!
   const bounds = (await footer.boundingBox())!
-  expect(faith.x + faith.width).toBeCloseTo(bounds.x + bounds.width, 0)
-  expect(faith.x).toBeGreaterThan(bounds.x + bounds.width / 2 - 1)
+  const motto = (await footer.getByText('soli deo gloria').boundingBox())!
+  const verse = (await footer.locator('figure').boundingBox())!
+  expect(motto.x).toBeCloseTo(bounds.x, 0)
+  expect(verse.x + verse.width).toBeCloseTo(bounds.x + bounds.width, 0)
+  expect(motto.x + motto.width).toBeLessThan(verse.x)
 })
 
 test('introduction shows identity, portrait, and current focus', async ({ page }) => {
