@@ -1,0 +1,19 @@
+.sparkline { margin-top: 26px; }
+.compact { margin-top: 0; }
+.chart { display: block; width: 100%; height: 120px; overflow: visible; }
+.compact .chart { height: 42px; }
+.line { stroke: var(--accent); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+.header,
+.range {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font: 9px monospace;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.header { margin-bottom: 10px; }
+.range { margin-top: 8px; }

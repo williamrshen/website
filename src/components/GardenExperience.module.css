@@ -181,7 +181,7 @@
 @media (max-width: 1000px) {
   .meta { font-size: 8px; letter-spacing: 1px; }
   .navigation { gap: 22px; }
-  .journalLink { display: none; }
+  .hobbiesLink, .journalLink { display: none; }
 }
 
 @media (max-width: 680px) {

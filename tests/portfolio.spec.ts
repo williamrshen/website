@@ -91,6 +91,7 @@ for (const width of [320, 390, 680, 768]) {
     const firstLink = (await nav.getByRole('link', { name: 'About', exact: true }).boundingBox())!
     await expect(nav.getByRole('link', { name: 'Experience' })).toBeVisible({ visible: width > 680 })
     await expect(nav.getByRole('button', { name: 'Field notes' })).toBeVisible({ visible: width > 1000 })
+    await expect(nav.getByRole('link', { name: 'Hobbies' })).toBeVisible({ visible: width > 1000 })
     const lastLink = (await nav.getByRole('button', { name: /Say hello/ }).boundingBox())!
     const toggle = (await page.locator('#mode').boundingBox())!
     expect(brand.x + brand.width + 8).toBeLessThan(firstLink.x)
@@ -188,6 +189,35 @@ test('projects show three at a time, expand to all five, and open project detail
   await page.keyboard.press('Escape')
   await toggle.click()
   await expect(cards).toHaveCount(3)
+})
+
+test('hobbies skeleton shows sample stats and opens hobby details', async ({ page }) => {
+  await page.goto('/')
+  await scrollTo(page, await collapseDistance(page))
+  await page.getByRole('navigation').getByRole('link', { name: 'Hobbies' }).click()
+  const section = page.locator('#hobbies')
+  await expect(section.getByRole('heading', { name: 'What I grew up doing' })).toBeVisible()
+  await expect(section.getByText('HOBBIES / SAMPLE STATS · OCT 2, 2026')).toBeVisible()
+  const tiles = section.getByRole('listitem').getByRole('button')
+  await expect(tiles).toHaveCount(4)
+  await expect(tiles).toContainText(['TETR.IO', 'MCSR Ranked', 'Table Tennis', 'Speedcubing'])
+  await expect(tiles.first()).toContainText('SS')
+  await expect(section.getByRole('img', { name: /tetra league tr history/ })).toBeVisible()
+
+  await tiles.first().click()
+  const dialog = page.getByRole('dialog', { name: 'TETR.IO' })
+  await expect(dialog).toContainText('Started playing tetris')
+  await expect(dialog.locator('dt')).toHaveCount(6)
+  await expect(dialog.getByRole('img', { name: /tetra league tr history: 14,407 on Aug 17, 2024/ })).toBeVisible()
+  await expect(dialog.getByRole('link', { name: /View TETR.IO profile/ })).toHaveAttribute('href', 'https://ch.tetr.io/u/uselessleaf')
+  await expect(dialog).toContainText('Sample stats from Oct 2, 2026 · not live')
+  await page.keyboard.press('Escape')
+
+  await tiles.nth(3).click()
+  const cubing = page.getByRole('dialog', { name: 'Speedcubing' })
+  await expect(cubing).toContainText('8.15s')
+  await expect(cubing.getByRole('img')).toHaveCount(0)
+  await page.keyboard.press('Escape')
 })
 
 test('introduction shows identity, portrait, and current focus', async ({ page }) => {

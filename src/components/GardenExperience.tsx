@@ -41,6 +41,7 @@ export function GardenExperience({ evening, dialogOpen, onToggleTheme, onOpenDet
           <a href="#about">About</a>
           <a className={styles.experienceLink} href="#experience">Experience</a>
           <a href="#work">Work</a>
+          <a className={styles.hobbiesLink} href="#hobbies">Hobbies</a>
           <button className={styles.journalLink} onClick={() => onOpenDetail(notes)}>Field notes</button>
           <button className={styles.contactLink} onClick={() => onOpenDetail(contact)}>Say hello <span aria-hidden="true">↗</span></button>
         </nav>

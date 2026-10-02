@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from 'react'
 import type { Detail } from '../data/types'
+import { Sparkline } from './Sparkline'
 import styles from './DetailDialog.module.css'
 
 export function DetailDialog({ detail, onClose }: { detail: Detail | null; onClose: () => void }) {
@@ -37,6 +38,20 @@ export function DetailDialog({ detail, onClose }: { detail: Detail | null; onClo
           {detail.bullets && detail.bullets.length > 0 && (
             <ul className={styles.bullets}>{detail.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul>
           )}
+          {detail.stats && detail.stats.length > 0 && (
+            <dl className={styles.stats}>
+              {detail.stats.map((stat) => (
+                <div key={stat.label}>
+                  <dt>{stat.label}</dt>
+                  <dd>
+                    <span className={styles.statValue}>{stat.value}</span>
+                    {stat.detail && <span className={styles.statDetail}>{stat.detail}</span>}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          {detail.history && <Sparkline series={detail.history} />}
           {detail.tags && detail.tags.length > 0 && (
             <ul className={styles.tags} aria-label="Skills and tools">
               {detail.tags.map((tag) => <li key={tag}>{tag}</li>)}
@@ -52,6 +67,7 @@ export function DetailDialog({ detail, onClose }: { detail: Detail | null; onClo
               {external && <span className={styles.visuallyHidden}> (opens in a new tab)</span>}
             </a>
           )}
+          {detail.note && <p className={styles.note}>{detail.note}</p>}
         </>
       )}
     </dialog>

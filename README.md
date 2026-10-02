@@ -17,7 +17,8 @@ Open the localhost URL printed by Vite. No sharing service or deployment is need
 
 - Full-screen voxel garden with circular grid fades and a cursor-local glow.
 - Scrolling shrinks the garden into a leaf-green navigation bar. The centered wordmark moves left, the menu appears on the right, and the daylight/evening toggle moves from beside the name to the far right.
-- Portrait and introduction follow the garden, then work experience and selected projects. Card sections show three items and expand to show the rest.
+- Portrait and introduction follow the garden, then work experience, selected projects, and hobbies. Card sections show three items and expand to show the rest.
+- The hobbies section is a skeleton using a static sample of the old site's stats; nothing refreshes automatically.
 - Daylight/evening palettes, pollen/fireflies, native project/info dialogs, and responsive mobile layouts.
 - Reduced-motion support, keyboard navigation, and a skip-to-introduction link. Hidden navigation is inert until revealed.
 - Canvas animation pauses when the garden is collapsed or the browser tab is hidden. Event listeners, animation frames, and resize observers are cleaned up on unmount, including React Strict Mode development remounts.
@@ -30,13 +31,15 @@ src/
   App.tsx                          Page composition, theme and dialog state
   App.module.css                   Page-level grain and skip link
   index.css                        Global reset, theme tokens, motion defaults
-  assets/                          Portrait and project SVGs
+  assets/                          Portrait, project SVGs, and hobbies/ icons
   components/
     GardenExperience.tsx           Garden, animated header, theme toggle, cursor
     About.tsx                      Portrait-and-introduction section
     Portrait.tsx                   Introduction portrait
     CardSection.tsx                Experience/project cards with show-all control
-    DetailDialog.tsx               Native modal for bullets, tags, and links
+    HobbySection.tsx               Hobby tiles with headline stats
+    Sparkline.tsx                  Small SVG rating-history chart
+    DetailDialog.tsx               Native modal for bullets, tags, stats, and links
     Footer.tsx                     Closing copy
     Logo.tsx                       Isometric cube wordmark icon
     *.module.css                   Styles scoped to each component
@@ -44,6 +47,7 @@ src/
     profile.ts                     Name, alias, portrait, introduction, Currently list
     experience.ts                  Roles shown in “Where I've worked”
     projects.ts                    Projects shown in “A few things I've grown”
+    hobbies.ts                     Static sample hobby stats and blurbs
     portfolio.ts                   Field notes and contact dialog copy
     types.ts                       Shared card and dialog types
   garden/
@@ -65,6 +69,7 @@ vite.config.ts                     Vite + React plugin
 - **Portrait image:** replace `src/assets/portrait.jpg` (currently 1000 × 1162, cropped from the old site's photo with metadata removed). Keep a similar portrait aspect ratio or adjust `object-position` in `Portrait.module.css`.
 - **Work experience:** edit `src/data/experience.ts`. Roles are listed newest first; the Geotab entry is a placeholder. Cards currently use company monograms until artwork is chosen.
 - **Projects:** edit `src/data/projects.ts`. The first three appear before expanding. Cards rotate through placeholder icons until project artwork is chosen.
+- **Hobbies:** edit `src/data/hobbies.ts`. It is a one-time copy of the old site's Oct 2, 2026 stats snapshot, with histories downsampled to 36 points. The table tennis entry has no profile link because the old link pointed to a raw API.
 - **Field notes and contact dialog copy:** edit `src/data/portfolio.ts`.
 - **Colors and dimensions:** edit the CSS custom properties in `src/index.css`; component-specific layout lives alongside each component.
 - **Garden shapes and placement:** edit `src/garden/scene.ts`. Its seeded random generator keeps the landscape stable across mounts and resizes.

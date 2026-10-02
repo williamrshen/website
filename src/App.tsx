@@ -4,6 +4,7 @@ import { CardSection } from './components/CardSection'
 import { DetailDialog } from './components/DetailDialog'
 import { Footer } from './components/Footer'
 import { GardenExperience } from './components/GardenExperience'
+import { HobbySection } from './components/HobbySection'
 import { experience } from './data/experience'
 import { projects } from './data/projects'
 import type { Detail } from './data/types'
@@ -50,6 +51,7 @@ function App() {
           itemNoun="projects"
           onOpenDetail={setActiveDetail}
         />
+        <HobbySection onOpenDetail={setActiveDetail} />
       </main>
       <Footer />
       <div className={styles.grain} aria-hidden="true" />
