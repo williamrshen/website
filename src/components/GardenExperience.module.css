@@ -180,6 +180,8 @@
 
 @media (max-width: 1000px) {
   .meta { font-size: 8px; letter-spacing: 1px; }
+  .navigation { gap: 22px; }
+  .journalLink { display: none; }
 }
 
 @media (max-width: 680px) {
@@ -187,7 +189,7 @@
   .brand { font-size: 13px; gap: 7px; }
   .brand svg { width: 22px; height: 28px; }
   .navigation { inset: 0 calc(6% + var(--mode-width) + 8px) 0 6%; gap: 8px; font-size: 10px; }
-  .journalLink, .contactLink span, .mode span, .meta { display: none; }
+  .experienceLink, .contactLink span, .mode span, .meta { display: none; }
   .mode { height: 32px; }
   .hint { bottom: 36px; font-size: 8px; letter-spacing: 1.8px; }
   .down { width: 26px; height: 35px; }

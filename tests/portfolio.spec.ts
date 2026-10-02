@@ -88,7 +88,9 @@ for (const width of [320, 390, 680, 768]) {
     await scrollTo(page, await collapseDistance(page))
     const brand = (await page.getByRole('link', { name: 'William Shen home' }).boundingBox())!
     const nav = page.getByRole('navigation')
-    const firstLink = (await nav.getByRole('link', { name: 'Work', exact: true }).boundingBox())!
+    const firstLink = (await nav.getByRole('link', { name: 'About', exact: true }).boundingBox())!
+    await expect(nav.getByRole('link', { name: 'Experience' })).toBeVisible({ visible: width > 680 })
+    await expect(nav.getByRole('button', { name: 'Field notes' })).toBeVisible({ visible: width > 1000 })
     const lastLink = (await nav.getByRole('button', { name: /Say hello/ }).boundingBox())!
     const toggle = (await page.locator('#mode').boundingBox())!
     expect(brand.x + brand.width + 8).toBeLessThan(firstLink.x)
@@ -128,6 +130,40 @@ test('grid glow stays local and reduced motion works without a reload', async ({
   await page.mouse.move(700, 300)
   await expect(page.locator('body')).not.toHaveAttribute('data-garden-cursor')
   await expect(page.getByRole('navigation')).toHaveJSProperty('inert', false)
+})
+
+test('experience shows three roles, expands to all, and opens role details', async ({ page }) => {
+  await page.goto('/')
+  await scrollTo(page, await collapseDistance(page))
+  await page.getByRole('navigation').getByRole('link', { name: 'Experience' }).click()
+  const section = page.locator('#experience')
+  await expect(section.getByRole('heading', { name: "Where I've worked" })).toBeVisible()
+  await expect(section.getByText('EXPERIENCE / 04 ROLES')).toBeVisible()
+  const cards = section.getByRole('button', { name: /·/ })
+  await expect(cards).toHaveCount(3)
+  await expect(cards).toContainText(['Geotab · Current', 'Sun Life · Fall 2025', 'Code Ninjas · Winter 2025'])
+  const toggle = section.locator('button[aria-expanded]')
+  await expect(toggle).toHaveAccessibleName('Show all 4 roles')
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false')
+  await toggle.click()
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true')
+  await expect(toggle).toHaveAccessibleName('Show fewer roles')
+  await expect(cards).toHaveCount(4)
+  await expect(cards.nth(3)).toContainText('Young Engineers · Summer 2024')
+
+  await section.getByRole('button', { name: /Sun Life/ }).click()
+  const dialog = page.getByRole('dialog', { name: 'SQL Server/Infrastructure DBA' })
+  await expect(dialog).toBeVisible()
+  await expect(dialog.getByRole('listitem').first()).toContainText('400+ CIS standards')
+  await expect(dialog.getByRole('list', { name: 'Skills and tools' })).toContainText('Splunk')
+  await expect(dialog.getByRole('link', { name: /Visit Sun Life/ })).toHaveAttribute('href', 'https://www.sunlife.com/')
+  await page.keyboard.press('Escape')
+
+  await section.getByRole('button', { name: /Geotab/ }).click()
+  await expect(page.getByRole('dialog', { name: 'Software Development Intern' })).toContainText('Role details coming soon.')
+  await page.keyboard.press('Escape')
+  await toggle.click()
+  await expect(cards).toHaveCount(3)
 })
 
 test('introduction shows identity, portrait, and current focus', async ({ page }) => {

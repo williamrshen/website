@@ -17,7 +17,7 @@ Open the localhost URL printed by Vite. No sharing service or deployment is need
 
 - Full-screen voxel garden with circular grid fades and a cursor-local glow.
 - Scrolling shrinks the garden into a leaf-green navigation bar. The centered wordmark moves left, the menu appears on the right, and the daylight/evening toggle moves from beside the name to the far right.
-- Portrait and introduction follow the garden; selected projects follow the introduction.
+- Portrait and introduction follow the garden, then work experience and selected projects. Card sections show three items and expand to show the rest.
 - Daylight/evening palettes, pollen/fireflies, native project/info dialogs, and responsive mobile layouts.
 - Reduced-motion support, keyboard navigation, and a skip-to-introduction link. Hidden navigation is inert until revealed.
 - Canvas animation pauses when the garden is collapsed or the browser tab is hidden. Event listeners, animation frames, and resize observers are cleaned up on unmount, including React Strict Mode development remounts.
@@ -35,14 +35,16 @@ src/
     GardenExperience.tsx           Garden, animated header, theme toggle, cursor
     About.tsx                      Portrait-and-introduction section
     Portrait.tsx                   Introduction portrait
-    ProjectSection.tsx             Data-driven selected-project cards
-    StoryDialog.tsx                Native modal with focus return / Escape support
+    CardSection.tsx                Experience/project cards with show-all control
+    DetailDialog.tsx               Native modal for bullets, tags, and links
     Footer.tsx                     Closing copy
     Logo.tsx                       Isometric cube wordmark icon
     *.module.css                   Styles scoped to each component
   data/
     profile.ts                     Name, alias, portrait, introduction, Currently list
+    experience.ts                  Roles shown in “Where I've worked”
     portfolio.ts                   Projects and dialog copy
+    types.ts                       Shared card and dialog types
   garden/
     scene.ts                       Seeded world generation and canvas renderer
   hooks/
@@ -60,6 +62,7 @@ vite.config.ts                     Vite + React plugin
 
 - **Name, alias, introduction, Currently list, and portrait:** edit `src/data/profile.ts`. The introduction headline lives in `src/components/About.tsx`.
 - **Portrait image:** replace `src/assets/portrait.jpg` (currently 1000 × 1162, cropped from the old site's photo with metadata removed). Keep a similar portrait aspect ratio or adjust `object-position` in `Portrait.module.css`.
+- **Work experience:** edit `src/data/experience.ts`. Roles are listed newest first; the Geotab entry is a placeholder. Cards currently use company monograms until artwork is chosen.
 - **Projects and dialog copy:** edit `src/data/portfolio.ts`.
 - **Colors and dimensions:** edit the CSS custom properties in `src/index.css`; component-specific layout lives alongside each component.
 - **Garden shapes and placement:** edit `src/garden/scene.ts`. Its seeded random generator keeps the landscape stable across mounts and resizes.

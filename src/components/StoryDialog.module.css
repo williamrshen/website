@@ -1,6 +1,0 @@
-.dialog { border: 1px solid var(--line); border-radius: 14px; background: var(--paper); color: var(--ink); padding: 38px; max-width: 480px; width: calc(100% - 36px); box-shadow: 0 24px 100px #14251c25; }
-.dialog::backdrop { background: #17271f50; backdrop-filter: blur(5px); }
-.dialog h2 { font-weight: 400; letter-spacing: -1px; font-size: 30px; }
-.dialog p { font-size: 14px; line-height: 1.9; color: var(--muted); }
-.close { position: absolute; right: 16px; top: 12px; background: none; border: 0; font-size: 24px; cursor: pointer; }
-.kicker { text-transform: uppercase; letter-spacing: 2px; font-size: 9px; color: var(--accent); }

@@ -1,5 +1,6 @@
-import type { OpenStory } from '../data/portfolio'
+import { contact, notes } from '../data/portfolio'
 import { profile } from '../data/profile'
+import type { OpenDetail } from '../data/types'
 import { useGardenExperience } from '../hooks/useGardenExperience'
 import { Logo } from './Logo'
 import styles from './GardenExperience.module.css'
@@ -8,10 +9,10 @@ type Props = {
   evening: boolean
   dialogOpen: boolean
   onToggleTheme: () => void
-  onOpenStory: OpenStory
+  onOpenDetail: OpenDetail
 }
 
-export function GardenExperience({ evening, dialogOpen, onToggleTheme, onOpenStory }: Props) {
+export function GardenExperience({ evening, dialogOpen, onToggleTheme, onOpenDetail }: Props) {
   const { experience, garden, canvas, brand, mode, navigation, hint, cursor } = useGardenExperience(evening, dialogOpen)
   const themeLabel = evening ? 'Switch to daylight' : 'Switch to evening'
 
@@ -37,10 +38,11 @@ export function GardenExperience({ evening, dialogOpen, onToggleTheme, onOpenSto
           <span>{evening ? 'Evening' : 'Daylight'}</span>
         </button>
         <nav className={styles.navigation} ref={navigation} aria-label="Main navigation">
-          <a href="#work">Work</a>
           <a href="#about">About</a>
-          <button className={styles.journalLink} onClick={() => onOpenStory('notes')}>Field notes</button>
-          <button className={styles.contactLink} onClick={() => onOpenStory('contact')}>Say hello <span aria-hidden="true">↗</span></button>
+          <a className={styles.experienceLink} href="#experience">Experience</a>
+          <a href="#work">Work</a>
+          <button className={styles.journalLink} onClick={() => onOpenDetail(notes)}>Field notes</button>
+          <button className={styles.contactLink} onClick={() => onOpenDetail(contact)}>Say hello <span aria-hidden="true">↗</span></button>
         </nav>
       </header>
       <section className={styles.garden} ref={garden} id="garden" aria-label="Welcome to my little corner of the internet">

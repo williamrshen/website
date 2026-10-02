@@ -1,9 +1,10 @@
-import type { OpenStory } from '../data/portfolio'
+import { contact } from '../data/portfolio'
 import { profile } from '../data/profile'
+import type { OpenDetail } from '../data/types'
 import { Portrait } from './Portrait'
 import styles from './About.module.css'
 
-export function About({ onOpenStory }: { onOpenStory: OpenStory }) {
+export function About({ onOpenDetail }: { onOpenDetail: OpenDetail }) {
   return (
     <section className={styles.hero} id="about" aria-labelledby="intro-heading" tabIndex={-1}>
       <Portrait />
@@ -14,7 +15,7 @@ export function About({ onOpenStory }: { onOpenStory: OpenStory }) {
         <p>{profile.bio}</p>
         <div className={styles.links}>
           <a className={styles.cta} href="#work">Explore my work <span aria-hidden="true">↗</span></a>
-          <button className={styles.secondaryLink} onClick={() => onOpenStory('contact')}>Or just say hello ↗</button>
+          <button className={styles.secondaryLink} onClick={() => onOpenDetail(contact)}>Or just say hello ↗</button>
         </div>
         <div className={styles.currently}>
           <h2 id="currently-heading">Currently</h2>

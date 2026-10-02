@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react'
 import { About } from './components/About'
+import { CardSection } from './components/CardSection'
+import { DetailDialog } from './components/DetailDialog'
 import { Footer } from './components/Footer'
 import { GardenExperience } from './components/GardenExperience'
-import { ProjectSection } from './components/ProjectSection'
-import { StoryDialog } from './components/StoryDialog'
-import type { StoryKey } from './data/portfolio'
+import { experience } from './data/experience'
+import { projects } from './data/portfolio'
+import type { Detail } from './data/types'
 import styles from './App.module.css'
+
+const count = (items: unknown[]) => String(items.length).padStart(2, '0')
 
 function App() {
   const [evening, setEvening] = useState(false)
-  const [activeStory, setActiveStory] = useState<StoryKey | null>(null)
+  const [activeDetail, setActiveDetail] = useState<Detail | null>(null)
 
   useEffect(() => {
     document.documentElement.dataset.theme = evening ? 'evening' : 'daylight'
@@ -25,16 +29,31 @@ function App() {
       <GardenExperience
         evening={evening}
         onToggleTheme={() => setEvening((value) => !value)}
-        onOpenStory={setActiveStory}
-        dialogOpen={activeStory !== null}
+        onOpenDetail={setActiveDetail}
+        dialogOpen={activeDetail !== null}
       />
       <main>
-        <About onOpenStory={setActiveStory} />
-        <ProjectSection onOpenStory={setActiveStory} />
+        <About onOpenDetail={setActiveDetail} />
+        <CardSection
+          id="experience"
+          title="Where I've worked"
+          meta={`EXPERIENCE / ${count(experience)} ROLES`}
+          items={experience}
+          itemNoun="roles"
+          onOpenDetail={setActiveDetail}
+        />
+        <CardSection
+          id="work"
+          title="A few things I've grown"
+          meta={`SELECTED WORK / 01—${count(projects)}`}
+          items={projects}
+          itemNoun="projects"
+          onOpenDetail={setActiveDetail}
+        />
       </main>
       <Footer />
       <div className={styles.grain} aria-hidden="true" />
-      <StoryDialog storyKey={activeStory} onClose={() => setActiveStory(null)} />
+      <DetailDialog detail={activeDetail} onClose={() => setActiveDetail(null)} />
     </div>
   )
 }
