@@ -1,0 +1,9 @@
+.footer { width: min(var(--content-width), 86%); margin-inline: auto; padding: 0 0 30px; display: flex; justify-content: space-between; align-items: center; gap: 24px; font-size: 9px; letter-spacing: 0.3px; color: var(--muted); }
+.availability { display: flex; align-items: center; gap: 7px; }
+.availability i { width: 5px; height: 5px; flex: none; border-radius: 50%; background: #87a66a; }
+
+@media (max-width: 680px) {
+  .footer { align-items: flex-start; gap: 18px; line-height: 1.8; }
+  .availability { max-width: 150px; }
+  .signoff { text-align: right; }
+}

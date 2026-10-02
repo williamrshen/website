@@ -1,0 +1,39 @@
+.hero {
+  width: min(var(--content-width), 86%);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(48px, 7vw, 112px);
+  align-items: center;
+  padding: 88px 0 100px;
+  min-height: calc(100svh - var(--nav-height));
+}
+
+.hero:focus { outline: none; }
+.eyebrow { text-transform: uppercase; font-size: 9px; font-weight: 600; letter-spacing: 2.4px; display: flex; align-items: center; gap: 9px; }
+.dot { width: 6px; height: 6px; background: #91a96c; border-radius: 50%; box-shadow: 0 0 0 4px #91a96c18; }
+.intro h1 { font-size: clamp(44px, 4.8vw, 69px); font-weight: 400; line-height: 1.1; letter-spacing: -3.5px; margin: 27px 0 29px; }
+.intro h1 em { font-family: Georgia, serif; font-weight: 400; color: var(--accent); }
+.intro p { font-size: 15px; line-height: 1.95; color: var(--muted); max-width: 365px; margin: 0 0 17px; }
+.intro p.lead { font-size: 18px; line-height: 1.7; color: var(--ink); }
+.links { display: flex; align-items: center; gap: 30px; margin-top: 31px; }
+.cta { display: inline-flex; align-items: center; gap: 23px; font-size: 12px; font-weight: 600; border-bottom: 1px solid #9ba98b; padding-bottom: 10px; white-space: nowrap; }
+.cta span { font-size: 18px; transition: transform 0.2s; }
+.cta:hover span { transform: translate(3px, -3px); }
+.secondaryLink { padding: 0; border: 0; background: none; font-size: 11px; color: var(--muted); cursor: pointer; }
+.signoff { margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--line); font-size: 9px; letter-spacing: 1.3px; color: var(--muted); display: flex; align-items: center; gap: 9px; }
+.signoff i { width: 5px; height: 5px; flex: none; border-radius: 50%; background: #87a66a; }
+
+@media (max-width: 1000px) {
+  .hero { gap: 45px; }
+}
+
+@media (max-width: 680px) {
+  .hero { grid-template-columns: 1fr; gap: 34px; padding: 38px 0 60px; min-height: 0; }
+  .eyebrow { font-size: 8px; }
+  .intro h1 { font-size: 49px; letter-spacing: -2.8px; margin: 22px 0; }
+  .intro p { font-size: 14px; max-width: none; }
+  .intro p.lead { font-size: 17px; }
+  .signoff { margin-top: 30px; }
+  .links { margin-top: 26px; }
+}

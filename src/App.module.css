@@ -1,0 +1,32 @@
+.page {
+  min-height: 100svh;
+}
+
+.skipLink {
+  position: fixed;
+  z-index: 30;
+  top: 12px;
+  left: 12px;
+  padding: 12px 16px;
+  transform: translateY(-160%);
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 4px;
+}
+
+.skipLink:focus {
+  transform: translateY(0);
+}
+
+.grain {
+  position: fixed;
+  z-index: 15;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 150 150' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23000' filter='url(%23n)' opacity='.5' d='M0 0h150v150H0z'/%3E%3C/svg%3E");
+}
+
+@media (max-width: 680px) {
+  .grain { opacity: 0.025; }
+}
