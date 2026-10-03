@@ -22,7 +22,7 @@
 }
 
 .motto svg { width: 11px; height: 15px; flex: none; }
-.verse { max-width: 520px; margin: 0; }
+.verse { max-width: 520px; margin: 0; text-align: right; }
 .verse blockquote { margin: 0; }
 .verse p { margin: 0; font-size: 12px; line-height: 1.85; }
 .verse em { font-style: normal; color: var(--ink); }
