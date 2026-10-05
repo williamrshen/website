@@ -1,0 +1,83 @@
+/* Split view: cards collapse into a single scrollable column beside the detail panel. */
+.split {
+  display: grid;
+  grid-template-columns: minmax(250px, 330px) minmax(0, 1fr);
+  grid-template-areas: 'items panel';
+  gap: 40px;
+  align-items: start;
+}
+
+/* Mirrored: card column on the right, panel on the left. */
+.split.mirrored { grid-template-columns: minmax(0, 1fr) minmax(250px, 330px); grid-template-areas: 'panel items'; }
+.split.mirrored .panel { --panel-from: -16px; }
+
+.split .items {
+  grid-area: items;
+  position: sticky;
+  top: calc(var(--nav-height) + 24px);
+  max-height: min(calc(100svh - var(--nav-height) - 48px), 640px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+  padding-right: 6px;
+}
+
+.panel {
+  grid-area: panel;
+  position: relative;
+  min-width: 0;
+  padding: 36px 40px 40px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  scroll-margin-top: calc(var(--nav-height) + 16px);
+  /*
+   * A CSS animation rather than a view-transition-name: elements that only exist in the
+   * new state are layered above everything (including the fixed nav) during a view transition.
+   */
+  animation: panelEnter 0.42s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes panelEnter {
+  from { opacity: 0; transform: translateX(var(--panel-from, 16px)); }
+}
+
+.panelBody { animation: panelIn 0.3s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
+.close {
+  position: absolute;
+  right: 14px;
+  top: 10px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.close:hover { background: #a7bd8120; color: var(--ink); }
+
+@media (max-width: 1000px) {
+  .split { grid-template-columns: minmax(220px, 270px) minmax(0, 1fr); gap: 28px; }
+  .split.mirrored { grid-template-columns: minmax(0, 1fr) minmax(220px, 270px); }
+  .panel { padding: 30px 28px 32px; }
+}
+
+@media (max-width: 680px) {
+  .split,
+  .split.mirrored { grid-template-columns: 1fr; grid-template-areas: 'items' 'panel'; gap: 20px; }
+  .split .items { position: static; max-height: 40svh; }
+  .panel { padding: 28px 22px 30px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel, .panelBody { animation: none; }
+}

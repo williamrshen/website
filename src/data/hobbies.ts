@@ -110,7 +110,7 @@ export const hobbies: Hobby[] = [
   {
     id: 'table-tennis',
     title: 'Table Tennis',
-    eyebrow: 'TTCAN Ratings',
+    eyebrow: 'Provincial Level',
     blurb: 'Playing since 2014. Trained a lot and got up to provincial level. Top Canadian competitor up until age 15.',
     stats: [
       { label: 'latest rating', value: '1,104', detail: 'rating period May 5, 2023' },
@@ -150,7 +150,8 @@ export const hobbies: Hobby[] = [
   {
     id: 'speedcubing',
     title: 'Speedcubing',
-    eyebrow: 'World Cube Association',
+    // "×" rather than "x": the eyebrow is uppercased, which would turn "3x3" into "3X3".
+    eyebrow: '3×3 Main',
     blurb: 'Been cubing since 2012! Started with a Rubik\'s brand cube and truly started speedcubing in 2015. A 3x3 main through and through. Trying to learn some more events now!',
     stats: [
       { label: '3×3 single', value: '8.15s', detail: 'Canada #305 · World #8,767' },

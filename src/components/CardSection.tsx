@@ -1,7 +1,8 @@
-import { useId, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
-import { flushSync } from 'react-dom'
+import { useId, useState, type CSSProperties } from 'react'
 import type { CardItem, OpenDetail } from '../data/types'
-import { DetailContent } from './DetailContent'
+import { useDetailPanel } from '../hooks/useDetailPanel'
+import { DetailPanel } from './DetailPanel'
+import split from './DetailPanel.module.css'
 import styles from './CardSection.module.css'
 
 type Props = {
@@ -22,98 +23,30 @@ type Props = {
   mirrored?: boolean
 }
 
-const transitionName = (...parts: string[]) => parts.join('-').replace(/[^a-zA-Z0-9_-]/g, '-')
-
-/**
- * Animate a layout change with the View Transitions API where available.
- *
- * Only elements visible *before* the change get a view-transition-name. Elements that exist
- * only in the new state are layered above the whole page (including the fixed nav) during
- * the transition, so those are left in the root snapshot and use their own CSS entrance.
- */
-function morph(elements: Map<string, HTMLElement>, prefix: string, update: () => void) {
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  if (!('startViewTransition' in document) || reduceMotion) {
-    update()
-    return
-  }
-  const named = [...elements].filter(([, element]) => element.getClientRects().length > 0)
-  for (const [key, element] of named) element.style.viewTransitionName = transitionName(prefix, key)
-  document.startViewTransition(update).finished.finally(() => {
-    for (const [, element] of named) element.style.viewTransitionName = ''
-  })
-}
-
 export function CardSection({
   id, title, meta, items, itemNoun, onOpenDetail, initialCount = 3, layout = 'dialog', mirrored = false,
 }: Props) {
   const [expanded, setExpanded] = useState(false)
-  const [selectedId, setSelectedId] = useState<string | null>(null)
   const extraId = useId()
-  const panelId = useId()
-  const panelTitleId = useId()
-  const cardRefs = useRef(new Map<string, HTMLButtonElement>())
-  const itemsRef = useRef<HTMLDivElement>(null)
-  const panelRef = useRef<HTMLDivElement>(null)
   const headingId = `${id}-heading`
   const visible = items.slice(0, initialCount)
   const extra = items.slice(initialCount)
-  const selected = layout === 'panel' ? items.find((item) => item.id === selectedId) ?? null : null
-  const split = selected !== null
-
-  // On entering the split view, make sure the chosen card is visible in the list
-  // and the panel is on screen (it sits below the list on narrow viewports).
-  useLayoutEffect(() => {
-    if (!split || !selectedId) return
-    const list = itemsRef.current
-    const card = cardRefs.current.get(selectedId)
-    if (list && card) {
-      const listBox = list.getBoundingClientRect()
-      const cardBox = card.getBoundingClientRect()
-      if (cardBox.top < listBox.top || cardBox.bottom > listBox.bottom) list.scrollTop += cardBox.top - listBox.top - 8
-    }
-    const panel = panelRef.current
-    if (panel && panel.getBoundingClientRect().top > window.innerHeight * 0.75) {
-      panel.scrollIntoView({ block: 'start' })
-    }
-  }, [split, selectedId])
-
-  const select = (item: CardItem) => {
-    if (layout === 'dialog') {
-      onOpenDetail(item.detail)
-      return
-    }
-    if (split && item.id === selectedId) close()
-    else if (split) setSelectedId(item.id)
-    else morph(cardRefs.current, `${id}-card`, () => flushSync(() => setSelectedId(item.id)))
-  }
-
-  const close = () => {
-    const card = selectedId ? cardRefs.current.get(selectedId) : undefined
+  const panel = useDetailPanel(layout === 'panel' ? items : [], `${id}-card`, {
     // Keep the extra cards open if the selection lives there, so focus can return to it.
-    const inExtra = extra.some((item) => item.id === selectedId)
-    morph(cardRefs.current, `${id}-card`, () => {
-      flushSync(() => {
-        setSelectedId(null)
-        if (inExtra) setExpanded(true)
-      })
-      card?.focus({ preventScroll: true })
-    })
-  }
+    onClose: (closedId) => {
+      if (extra.some((item) => item.id === closedId)) setExpanded(true)
+    },
+  })
+  const { selected, split: isSplit, itemsRef, panelRef } = panel
 
   const renderCard = (item: CardItem, index: number) => {
-    const isSelected = split && item.id === selectedId
+    const cardProps = panel.cardProps(item.id)
     return (
       <li key={item.id} style={{ '--i': index - initialCount } as CSSProperties}>
         <button
-          ref={(element) => {
-            if (element) cardRefs.current.set(item.id, element)
-            else cardRefs.current.delete(item.id)
-          }}
+          {...cardProps}
           className={styles.card}
-          aria-current={isSelected ? 'true' : undefined}
-          aria-controls={split ? panelId : undefined}
-          onClick={() => select(item)}
+          onClick={layout === 'panel' ? cardProps.onClick : () => onOpenDetail(item.detail)}
         >
           <span className={styles.visual} data-tone={index % 3}>
             {item.visual.type === 'image'
@@ -141,35 +74,29 @@ export function CardSection({
         <span>{meta}</span>
       </div>
       <div
-        className={split ? styles.split : undefined}
-        onKeyDown={(event) => {
-          if (split && event.key === 'Escape') close()
-        }}
+        className={isSplit ? `${split.split} ${styles.split} ${mirrored ? split.mirrored : ''}` : undefined}
+        {...panel.containerProps}
       >
-        <div className={styles.items} ref={itemsRef}>
+        <div className={split.items} ref={itemsRef}>
           <ul className={styles.grid}>{visible.map(renderCard)}</ul>
           {extra.length > 0 && (
-            <ul className={`${styles.grid} ${styles.extra}`} id={extraId} hidden={!expanded && !split}>
+            <ul className={`${styles.grid} ${styles.extra}`} id={extraId} hidden={!expanded && !isSplit}>
               {extra.map((item, index) => renderCard(item, index + initialCount))}
             </ul>
           )}
         </div>
         {selected && (
-          <div
-            className={styles.panel}
-            id={panelId}
-            ref={panelRef}
-            role="region"
-            aria-labelledby={panelTitleId}
-          >
-            <button className={styles.close} aria-label="Close details" onClick={close}>×</button>
-            <div className={styles.panelBody} key={selected.id}>
-              <DetailContent detail={selected.detail} titleId={panelTitleId} headingLevel={3} />
-            </div>
-          </div>
+          <DetailPanel
+            detail={selected.detail}
+            itemKey={selected.id}
+            id={panel.panelId}
+            titleId={panel.panelTitleId}
+            panelRef={panelRef}
+            onClose={panel.close}
+          />
         )}
       </div>
-      {extra.length > 0 && !split && (
+      {extra.length > 0 && !isSplit && (
         <button
           className={styles.toggle}
           aria-expanded={expanded}

@@ -52,7 +52,7 @@ function App() {
           layout="panel"
           mirrored
         />
-        <HobbySection onOpenDetail={setActiveDetail} />
+        <HobbySection />
       </main>
       <Footer />
       <div className={styles.grain} aria-hidden="true" />

@@ -60,6 +60,14 @@ body[data-garden-cursor='true'] button { cursor: none; }
   animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
+/* Hobby tiles shrink to their header: crop the snapshots from the top instead of squashing them. */
+::view-transition-old(*.hobby-tile),
+::view-transition-new(*.hobby-tile) {
+  height: 100%;
+  object-fit: none;
+  object-position: left top;
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 

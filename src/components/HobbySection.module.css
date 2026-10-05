@@ -74,6 +74,18 @@
 .secondary b { font-weight: 600; color: var(--ink); }
 .more { display: flex; justify-content: space-between; padding-top: 14px; border-top: 1px solid var(--line); font-size: 11px; color: var(--muted); }
 
+/*
+ * Split view: tiles collapse to just their header in a single column. The split layout
+ * itself lives in DetailPanel.module.css; `.split` here is applied alongside it.
+ */
+.split .grid { grid-template-columns: 1fr; gap: 10px; }
+.split .tile { gap: 0; padding: 16px 18px; transition: background 0.2s, border-color 0.2s; }
+.split .stat, .split .trend, .split .more { display: none; }
+.split .tile:hover { transform: none; }
+.split .tile[aria-current='true'] { border-color: #b9c79f; background: #a7bd8124; }
+:global([data-theme='evening']) .split .tile[aria-current='true'] { border-color: #5d7155; background: #a7bd8114; }
+.split .tile:focus-visible { outline-offset: -2px; }
+
 @media (max-width: 1000px) {
   .grid { grid-template-columns: repeat(2, 1fr); }
 }

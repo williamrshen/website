@@ -279,33 +279,55 @@ test('projects show three at a time, expand to all five, and show project detail
   await expect(snowballistic).toBeFocused()
 })
 
-test('hobbies skeleton shows sample stats and opens hobby details', async ({ page }) => {
+test('hobbies show sample stats and open hobby details in a side panel', async ({ page }) => {
   await page.goto('/')
   await scrollTo(page, await collapseDistance(page))
   await page.getByRole('navigation').getByRole('link', { name: 'for fun', exact: true }).click()
   const section = page.locator('#hobbies')
   await expect(section.getByRole('heading', { name: 'What I grew up doing' })).toBeVisible()
-  await expect(section.getByText('HOBBIES / SAMPLE STATS · OCT 2, 2026')).toBeVisible()
+  await expect(section.getByText('HOBBIES /', { exact: true })).toBeVisible()
   const tiles = section.getByRole('listitem').getByRole('button')
   await expect(tiles).toHaveCount(4)
   await expect(tiles).toContainText(['TETR.IO', 'MCSR Ranked', 'Table Tennis', 'Speedcubing'])
   await expect(tiles.first()).toContainText('SS')
   await expect(section.getByRole('img', { name: /tetra league tr history/ })).toBeVisible()
 
-  await tiles.first().click()
-  const dialog = page.getByRole('dialog', { name: 'TETR.IO' })
-  await expect(dialog).toContainText('Started playing tetris')
-  await expect(dialog.locator('dt')).toHaveCount(6)
-  await expect(dialog.getByRole('img', { name: /tetra league tr history: 14,407 on Aug 17, 2024/ })).toBeVisible()
-  await expect(dialog.getByRole('link', { name: /View TETR.IO profile/ })).toHaveAttribute('href', 'https://ch.tetr.io/u/uselessleaf')
-  await expect(dialog).toContainText('Sample stats from Oct 2, 2026 · not live')
-  await page.keyboard.press('Escape')
+  // Selecting a hobby collapses the tiles to header-only rows in a column beside the panel.
+  const tetris = tiles.first()
+  await tetris.click()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  const panel = section.getByRole('region', { name: 'TETR.IO' })
+  await expect(panel).toBeVisible()
+  await expect(tetris).toHaveAttribute('aria-current', 'true')
+  await expect(tetris).toHaveAccessibleName('Competitive Tetris TETR.IO')
+  await expect(tetris.getByText('View stats')).toBeHidden()
+  const boxes = await Promise.all([0, 1, 2, 3].map(async (index) => (await tiles.nth(index).boundingBox())!))
+  for (const box of boxes) expect(box.x).toBeCloseTo(boxes[0].x, 0)
+  expect(boxes[0].x + boxes[0].width).toBeLessThan((await panel.boundingBox())!.x)
+  await expect(panel).toContainText('Started playing tetris')
+  await expect(panel.locator('dt')).toHaveCount(6)
+  await expect(panel.getByRole('img', { name: /tetra league tr history: 14,407 on Aug 17, 2024/ })).toBeVisible()
+  await expect(panel.getByRole('link', { name: /View TETR.IO profile/ })).toHaveAttribute('href', 'https://ch.tetr.io/u/uselessleaf')
+  await expect(panel).toContainText('Sample stats from Oct 2, 2026 · not live')
 
-  await tiles.nth(3).click()
-  const cubing = page.getByRole('dialog', { name: 'Speedcubing' })
+  // Switching hobbies swaps the panel in place.
+  const cubingTile = tiles.nth(3)
+  await cubingTile.click()
+  const cubing = section.getByRole('region', { name: 'Speedcubing' })
   await expect(cubing).toContainText('8.15s')
   await expect(cubing.getByRole('img')).toHaveCount(0)
+
+  // Clicking the selected hobby again closes the panel and restores the full tiles.
+  await cubingTile.click()
+  await expect(section.getByRole('region')).toHaveCount(0)
+  await expect(cubingTile).toBeFocused()
+  await expect(cubingTile.getByText('View stats')).toBeVisible()
+
+  await tetris.click()
+  await expect(panel).toBeVisible()
   await page.keyboard.press('Escape')
+  await expect(section.getByRole('region')).toHaveCount(0)
+  await expect(tetris).toBeFocused()
 })
 
 test('contact dialog lists email, LinkedIn, and GitHub', async ({ page }) => {
