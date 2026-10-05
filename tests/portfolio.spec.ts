@@ -7,6 +7,8 @@ async function collapseDistance(page: Page) {
 }
 
 async function scrollTo(page: Page, top: number) {
+  // Programmatic scrolls during a card/panel view transition can land a few pixels off.
+  await page.waitForFunction(() => !document.documentElement.matches(':active-view-transition'))
   await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), top)
   await expect.poll(() => page.locator('[data-garden-surface]').evaluate((surface) => {
     const navHeight = parseFloat(getComputedStyle(surface).getPropertyValue('--nav-height'))
@@ -86,11 +88,12 @@ test('landing, scroll morph, moving theme toggle, dialogs, and local-only assets
   await expect(navigation.getByRole('button', { name: 'contact', exact: true })).toBeFocused()
 
   await navigation.getByRole('link', { name: 'projects', exact: true }).click()
-  const project = page.getByRole('button', { name: /Communal Catalogue/ })
+  const projects = page.locator('#work')
+  const project = projects.getByRole('button', { name: /Communal Catalogue/ })
   await project.click()
-  await expect(page.getByRole('dialog')).toContainText('Communal Catalogue')
-  await page.getByRole('button', { name: 'Close dialog' }).click()
-  await expect(page.getByRole('dialog')).not.toBeVisible()
+  await expect(projects.getByRole('region', { name: 'Communal Catalogue' })).toBeVisible()
+  await projects.getByRole('button', { name: 'Close details' }).click()
+  await expect(projects.getByRole('region')).toHaveCount(0)
   await expect(project).toBeFocused()
   await scrollTo(page, 0)
   await expect(navigation).toHaveJSProperty('inert', true)
@@ -159,7 +162,7 @@ test('experience shows three roles, expands to all, and shows role details in a 
   await page.getByRole('navigation').getByRole('link', { name: 'work', exact: true }).click()
   const section = page.locator('#experience')
   await expect(section.getByRole('heading', { name: "Where I've worked" })).toBeVisible()
-  await expect(section.getByText('EXPERIENCE / 04 ROLES')).toBeVisible()
+  await expect(section.getByText('EXPERIENCE /', { exact: true })).toBeVisible()
   const cards = section.getByRole('button', { name: /·/ })
   await expect(cards).toHaveCount(3)
   await expect(cards).toContainText(['Geotab · Current', 'Sun Life · Fall 2025', 'Code Ninjas · Winter 2025'])
@@ -219,12 +222,16 @@ test('experience shows three roles, expands to all, and shows role details in a 
   await expect(sunLife).toBeFocused()
 })
 
-test('projects show three at a time, expand to all five, and open project details', async ({ page }) => {
+test('projects show three at a time, expand to all five, and show project details in a side panel', async ({ page }) => {
   await page.goto('/')
   await scrollTo(page, await collapseDistance(page))
   await page.getByRole('navigation').getByRole('link', { name: 'projects', exact: true }).click()
   const section = page.locator('#work')
-  await expect(section.getByText('SELECTED WORK / 01—05')).toBeVisible()
+  const meta = section.getByText('PROJECTS /', { exact: true })
+  await expect(meta).toBeVisible()
+  // Projects mirror the experience section: title on the right, meta on the left.
+  const heading = (await section.getByRole('heading', { name: "A few things I've grown" }).boundingBox())!
+  expect((await meta.boundingBox())!.x).toBeLessThan(heading.x)
   const cards = section.getByRole('listitem').getByRole('button')
   await expect(cards).toHaveCount(3)
   await expect(cards).toContainText(['Communal Catalogue', 'Snowballistic', 'Competitive Programming'])
@@ -234,13 +241,42 @@ test('projects show three at a time, expand to all five, and open project detail
   await expect(toggle).toHaveAccessibleName('Show fewer projects')
   await expect(cards).toContainText(['Communal Catalogue', 'Snowballistic', 'Competitive Programming', 'Gendentify', 'YouTube Channel'])
 
-  await section.getByRole('button', { name: /YouTube Channel/ }).click()
-  const dialog = page.getByRole('dialog', { name: 'YouTube Channel' })
-  await expect(dialog).toContainText('PROJECT · 2020 – PRESENT')
-  await expect(dialog.getByRole('link', { name: /Visit YouTube channel/ })).toHaveAttribute('href', 'https://www.youtube.com/@uselessleaf')
-  await page.keyboard.press('Escape')
   await toggle.click()
   await expect(cards).toHaveCount(3)
+
+  // Selecting a project lists every project in one column on the right, with the details panel on the left.
+  const snowballistic = section.getByRole('button', { name: /Snowballistic/ })
+  await snowballistic.click()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  const panel = section.getByRole('region', { name: 'Snowballistic' })
+  await expect(panel).toBeVisible()
+  await expect(snowballistic).toHaveAttribute('aria-current', 'true')
+  await expect(toggle).toHaveCount(0)
+  await expect(cards).toHaveCount(5)
+  const boxes = await Promise.all([0, 1, 2, 3, 4].map(async (index) => (await cards.nth(index).boundingBox())!))
+  for (const box of boxes) expect(box.x).toBeCloseTo(boxes[0].x, 0)
+  const panelBox = (await panel.boundingBox())!
+  expect(panelBox.x + panelBox.width).toBeLessThan(boxes[0].x)
+
+  // Switching projects swaps the panel; a hidden-by-default project can be chosen from the list.
+  const youtube = section.getByRole('button', { name: /YouTube Channel/ })
+  await youtube.click()
+  const youtubePanel = section.getByRole('region', { name: 'YouTube Channel' })
+  await expect(youtubePanel).toContainText('PROJECT · 2020 – PRESENT')
+  await expect(youtubePanel.getByRole('link', { name: /Visit YouTube channel/ })).toHaveAttribute('href', 'https://www.youtube.com/@uselessleaf')
+  await expect(snowballistic).not.toHaveAttribute('aria-current')
+
+  // Clicking the selected project again closes the panel; its card stays visible and focused.
+  await youtube.click()
+  await expect(section.getByRole('region')).toHaveCount(0)
+  await expect(youtube).toBeFocused()
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true')
+
+  await snowballistic.click()
+  await expect(panel).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(section.getByRole('region')).toHaveCount(0)
+  await expect(snowballistic).toBeFocused()
 })
 
 test('hobbies skeleton shows sample stats and opens hobby details', async ({ page }) => {

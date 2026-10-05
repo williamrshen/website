@@ -18,6 +18,8 @@ type Props = {
    * the left and shows the selected item's details in a panel on the right.
    */
   layout?: 'dialog' | 'panel'
+  /** Swap sides: heading title and card column on the right, meta and detail panel on the left. */
+  mirrored?: boolean
 }
 
 const transitionName = (...parts: string[]) => parts.join('-').replace(/[^a-zA-Z0-9_-]/g, '-')
@@ -43,7 +45,7 @@ function morph(elements: Map<string, HTMLElement>, prefix: string, update: () =>
 }
 
 export function CardSection({
-  id, title, meta, items, itemNoun, onOpenDetail, initialCount = 3, layout = 'dialog',
+  id, title, meta, items, itemNoun, onOpenDetail, initialCount = 3, layout = 'dialog', mirrored = false,
 }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -129,7 +131,11 @@ export function CardSection({
   }
 
   return (
-    <section className={styles.section} id={id} aria-labelledby={headingId}>
+    <section
+      className={mirrored ? `${styles.section} ${styles.mirrored}` : styles.section}
+      id={id}
+      aria-labelledby={headingId}
+    >
       <div className={styles.heading}>
         <h2 id={headingId}>{title}</h2>
         <span>{meta}</span>

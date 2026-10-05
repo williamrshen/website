@@ -10,8 +10,6 @@ import { projects } from './data/projects'
 import type { Detail } from './data/types'
 import styles from './App.module.css'
 
-const count = (items: unknown[]) => String(items.length).padStart(2, '0')
-
 function App() {
   const [evening, setEvening] = useState(false)
   const [activeDetail, setActiveDetail] = useState<Detail | null>(null)
@@ -38,7 +36,7 @@ function App() {
         <CardSection
           id="experience"
           title="Where I've worked"
-          meta={`EXPERIENCE / ${count(experience)} ROLES`}
+          meta="EXPERIENCE /"
           items={experience}
           itemNoun="roles"
           onOpenDetail={setActiveDetail}
@@ -47,10 +45,12 @@ function App() {
         <CardSection
           id="work"
           title="A few things I've grown"
-          meta={`SELECTED WORK / 01—${count(projects)}`}
+          meta="PROJECTS /"
           items={projects}
           itemNoun="projects"
           onOpenDetail={setActiveDetail}
+          layout="panel"
+          mirrored
         />
         <HobbySection onOpenDetail={setActiveDetail} />
       </main>
