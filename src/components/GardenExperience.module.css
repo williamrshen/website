@@ -98,7 +98,6 @@
 }
 
 .navigation a:hover, .navigation button:hover { text-decoration: underline; text-underline-offset: 6px; }
-.contactLink span { margin-left: 9px; opacity: 0.6; }
 .experience[data-nav-ready='true'] .header { color: #1f3022; }
 .experience[data-nav-ready='true'] .brandDot { color: inherit; }
 :global([data-theme='evening']) .experience[data-nav-ready='true'] .header { color: #eef1df; }
@@ -170,7 +169,7 @@
 
 @media (max-width: 1000px) {
   .navigation { gap: 22px; }
-  .hobbiesLink { display: none; }
+  .forFunLink { display: none; }
 }
 
 @media (max-width: 680px) {
@@ -178,7 +177,7 @@
   .brand { font-size: 13px; gap: 7px; }
   .brand svg { width: 22px; height: 28px; }
   .navigation { inset: 0 calc(6% + var(--mode-width) + 8px) 0 6%; gap: 8px; font-size: 10px; }
-  .experienceLink, .contactLink span, .mode span { display: none; }
+  .workLink, .mode span { display: none; }
   .mode { height: 32px; }
   .hint { bottom: 36px; }
   .down { width: 26px; height: 35px; }

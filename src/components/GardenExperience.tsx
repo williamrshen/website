@@ -14,7 +14,7 @@ type Props = {
 
 export function GardenExperience({ evening, dialogOpen, onToggleTheme, onOpenDetail }: Props) {
   const { experience, garden, canvas, brand, mode, navigation, hint, cursor } = useGardenExperience(evening, dialogOpen)
-  const themeLabel = evening ? 'Switch to daylight' : 'Switch to evening'
+  const themeLabel = evening ? 'switch to daytime' : 'switch to evening'
 
   return (
     <div className={styles.experience} ref={experience}>
@@ -35,14 +35,14 @@ export function GardenExperience({ evening, dialogOpen, onToggleTheme, onOpenDet
             <circle cx="10" cy="10" r="3" stroke="currentColor" />
             <path d="M10 1v3m0 12v3M1 10h3m12 0h3M4 4l2 2m8 8 2 2M4 16l2-2m8-8 2-2" stroke="currentColor" />
           </svg>
-          <span>{evening ? 'Evening' : 'Daylight'}</span>
+          <span>{evening ? 'evening' : 'daytime'}</span>
         </button>
-        <nav className={styles.navigation} ref={navigation} aria-label="Main navigation">
-          <a href="#about">About</a>
-          <a className={styles.experienceLink} href="#experience">Experience</a>
-          <a href="#work">Work</a>
-          <a className={styles.hobbiesLink} href="#hobbies">Hobbies</a>
-          <button className={styles.contactLink} onClick={() => onOpenDetail(contact)}>Say hello <span aria-hidden="true">↗</span></button>
+        <nav className={styles.navigation} ref={navigation} aria-label="main navigation">
+          <a href="#about">about</a>
+          <a className={styles.workLink} href="#experience">work</a>
+          <a href="#work">projects</a>
+          <a className={styles.forFunLink} href="#hobbies">for fun</a>
+          <button className={styles.contactLink} onClick={() => onOpenDetail(contact)}>contact</button>
         </nav>
       </header>
       <section className={styles.garden} ref={garden} id="garden" aria-label="Welcome to my little corner of the internet">
