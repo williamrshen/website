@@ -55,12 +55,16 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
       const eased = smooth(progress)
       visibleHeight = Math.max(navHeight, gardenElement.offsetHeight - window.scrollY)
       const brandInset = width * (width <= 680 ? 0.06 : 0.07)
-      const modeStart = brandElement.offsetWidth / 2 + (width <= 680 ? 10 : 18)
+      const gap = width <= 680 ? 10 : 18
+      // Brand and toggle start centered as one group, then split to the bar edges.
+      const brandStart = -(modeElement.offsetWidth + gap) / 2
+      const brandEnd = brandInset - (width - brandElement.offsetWidth) / 2
+      const modeStart = brandElement.offsetWidth / 2 + gap + brandStart
       const modeEnd = width / 2 - brandInset - modeElement.offsetWidth
       const properties: Record<string, string | number> = {
         '--garden-height': `${visibleHeight}px`,
         '--header-height': `${(width <= 680 ? 104 : 132) * (1 - eased) + navHeight * eased}px`,
-        '--brand-x': `${(brandInset - (width - brandElement.offsetWidth) / 2) * eased}px`,
+        '--brand-x': `${brandStart + (brandEnd - brandStart) * eased}px`,
         '--mode-x': `${modeStart + (modeEnd - modeStart) * eased}px`,
         '--scene-scale': 1 - 0.88 * eased,
         '--scene-y': `${(navHeight / 2 - height * 0.5 * 0.12) * eased + height * 0.04 * Math.sin(progress * Math.PI)}px`,
@@ -101,7 +105,8 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
     const onMotionChange = () => { syncAnimation(); render() }
 
     controller.current = {
-      setEvening(value) { night = value; render() },
+      // The wordmark changes width with the theme, so re-measure the header.
+      setEvening(value) { night = value; updateScroll(); render() },
       setDialogOpen(value) { modalOpen = value; if (value) hideCursor() },
     }
     resize()

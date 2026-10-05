@@ -98,7 +98,6 @@
 }
 
 .navigation a:hover, .navigation button:hover { text-decoration: underline; text-underline-offset: 6px; }
-.contactLink span { margin-left: 9px; opacity: 0.6; }
 .experience[data-nav-ready='true'] .header { color: #1f3022; }
 .experience[data-nav-ready='true'] .brandDot { color: inherit; }
 :global([data-theme='evening']) .experience[data-nav-ready='true'] .header { color: #eef1df; }
@@ -134,15 +133,7 @@
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 13px;
-  font-size: 9px;
-  letter-spacing: 2.2px;
-  text-transform: uppercase;
-  color: var(--muted);
   opacity: var(--hint-opacity);
-  white-space: nowrap;
   z-index: 3;
 }
 
@@ -158,8 +149,6 @@
 }
 
 .hint:hover .down { background: #a7bd8120; }
-.meta { position: absolute; bottom: 48px; left: 6%; font: 9px monospace; letter-spacing: 1.5px; color: var(--muted); opacity: var(--hint-opacity); z-index: 3; pointer-events: none; }
-.metaRight { left: auto; right: 6%; text-align: right; }
 
 .cursor {
   position: fixed;
@@ -179,9 +168,8 @@
 .cursor[data-active='true'] { width: 30px; height: 30px; }
 
 @media (max-width: 1000px) {
-  .meta { font-size: 8px; letter-spacing: 1px; }
   .navigation { gap: 22px; }
-  .hobbiesLink, .journalLink { display: none; }
+  .forFunLink { display: none; }
 }
 
 @media (max-width: 680px) {
@@ -189,9 +177,9 @@
   .brand { font-size: 13px; gap: 7px; }
   .brand svg { width: 22px; height: 28px; }
   .navigation { inset: 0 calc(6% + var(--mode-width) + 8px) 0 6%; gap: 8px; font-size: 10px; }
-  .experienceLink, .contactLink span, .mode span, .meta { display: none; }
+  .workLink, .mode span { display: none; }
   .mode { height: 32px; }
-  .hint { bottom: 36px; font-size: 8px; letter-spacing: 1.8px; }
+  .hint { bottom: 36px; }
   .down { width: 26px; height: 35px; }
 }
 

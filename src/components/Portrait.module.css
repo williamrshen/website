@@ -1,7 +1,7 @@
 .portrait { margin: 0; position: relative; min-width: 0; }
 .frame { aspect-ratio: 4 / 4.65; position: relative; overflow: hidden; border-radius: 3px 3px 80px 3px; background: #d8decc; }
 .image { width: 100%; height: 100%; position: absolute; inset: 0; object-fit: cover; object-position: 50% 20%; }
-.caption { margin-top: 17px; display: flex; justify-content: space-between; gap: 10px; font: 9px monospace; letter-spacing: 1.2px; color: var(--muted); }
+.caption { margin-top: 17px; font: 9px monospace; letter-spacing: 1.2px; color: var(--muted); }
 
 @media (max-width: 680px) {
   .portrait { width: 100%; }

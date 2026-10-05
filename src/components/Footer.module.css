@@ -5,12 +5,10 @@
   border-top: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 40px;
   color: var(--muted);
 }
-
-.faith { max-width: 520px; }
 
 .motto {
   display: flex;
@@ -24,13 +22,12 @@
 }
 
 .motto svg { width: 11px; height: 15px; flex: none; }
-.verse { margin: 16px 0 0; }
+.verse { max-width: 520px; margin: 0; text-align: right; }
 .verse blockquote { margin: 0; }
 .verse p { margin: 0; font-size: 12px; line-height: 1.85; }
 .verse em { font-style: normal; color: var(--ink); }
 .verse figcaption { margin-top: 10px; font: 9px monospace; letter-spacing: 1px; text-transform: uppercase; }
-.signoff { flex: none; font-size: 9px; letter-spacing: 0.3px; }
 
 @media (max-width: 680px) {
-  .footer { flex-direction: column; align-items: flex-start; gap: 28px; padding-top: 32px; }
+  .footer { flex-direction: column; gap: 16px; padding-top: 32px; }
 }

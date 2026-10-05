@@ -1,5 +1,4 @@
 import { contact } from '../data/contact'
-import { notes } from '../data/portfolio'
 import { profile } from '../data/profile'
 import type { OpenDetail } from '../data/types'
 import { useGardenExperience } from '../hooks/useGardenExperience'
@@ -15,13 +14,13 @@ type Props = {
 
 export function GardenExperience({ evening, dialogOpen, onToggleTheme, onOpenDetail }: Props) {
   const { experience, garden, canvas, brand, mode, navigation, hint, cursor } = useGardenExperience(evening, dialogOpen)
-  const themeLabel = evening ? 'Switch to daylight' : 'Switch to evening'
+  const themeLabel = evening ? 'switch to daytime' : 'switch to evening'
 
   return (
     <div className={styles.experience} ref={experience}>
       <header className={styles.header}>
         <a className={styles.brand} ref={brand} href="#garden" aria-label={`${profile.name} home`}>
-          <Logo />{profile.wordmark}<span className={styles.brandDot}>.</span>
+          <Logo />{evening ? profile.alias : profile.wordmark}<span className={styles.brandDot}>.</span>
         </a>
         <button
           className={styles.mode}
@@ -36,15 +35,14 @@ export function GardenExperience({ evening, dialogOpen, onToggleTheme, onOpenDet
             <circle cx="10" cy="10" r="3" stroke="currentColor" />
             <path d="M10 1v3m0 12v3M1 10h3m12 0h3M4 4l2 2m8 8 2 2M4 16l2-2m8-8 2-2" stroke="currentColor" />
           </svg>
-          <span>{evening ? 'Evening' : 'Daylight'}</span>
+          <span>{evening ? 'evening' : 'daytime'}</span>
         </button>
-        <nav className={styles.navigation} ref={navigation} aria-label="Main navigation">
-          <a href="#about">About</a>
-          <a className={styles.experienceLink} href="#experience">Experience</a>
-          <a href="#work">Work</a>
-          <a className={styles.hobbiesLink} href="#hobbies">Hobbies</a>
-          <button className={styles.journalLink} onClick={() => onOpenDetail(notes)}>Field notes</button>
-          <button className={styles.contactLink} onClick={() => onOpenDetail(contact)}>Say hello <span aria-hidden="true">↗</span></button>
+        <nav className={styles.navigation} ref={navigation} aria-label="main navigation">
+          <a href="#about">about</a>
+          <a className={styles.workLink} href="#experience">work</a>
+          <a href="#work">projects</a>
+          <a className={styles.forFunLink} href="#hobbies">for fun</a>
+          <button className={styles.contactLink} onClick={() => onOpenDetail(contact)}>contact</button>
         </nav>
       </header>
       <section className={styles.garden} ref={garden} id="garden" aria-label="Welcome to my little corner of the internet">
@@ -56,12 +54,9 @@ export function GardenExperience({ evening, dialogOpen, onToggleTheme, onOpenDet
             role="img"
             aria-label="An interactive isometric garden with a large voxel oak tree, small evergreens, flowers, and grass tiles. Move your pointer to illuminate the surrounding grid."
           />
-          <span className={styles.meta}>AKA {profile.alias.toUpperCase()}</span>
-          <a className={styles.hint} ref={hint} href="#about">
-            <span>There's more beneath the canopy</span>
+          <a className={styles.hint} ref={hint} href="#about" aria-label="Scroll to introduction">
             <span className={styles.down} aria-hidden="true">↓</span>
           </a>
-          <span className={`${styles.meta} ${styles.metaRight}`}>ROOTED IN CURIOSITY · ALWAYS GROWING</span>
         </div>
       </section>
       <div className={styles.cursor} ref={cursor} data-garden-cursor aria-hidden="true" />

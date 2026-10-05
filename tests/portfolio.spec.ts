@@ -31,20 +31,35 @@ test('landing, scroll morph, moving theme toggle, dialogs, and local-only assets
   expect((await page.locator('#about').boundingBox())!.y).toBeGreaterThanOrEqual(1000)
   const initialBrand = (await brand.boundingBox())!
   const initialMode = (await mode.boundingBox())!
-  expect(initialBrand.x + initialBrand.width / 2).toBeCloseTo(720, 0)
+  await expect(brand).toHaveText('william shen.')
+  expect((initialBrand.x + initialMode.x + initialMode.width) / 2).toBeCloseTo(720, 0)
   expect(initialMode.x - initialBrand.x - initialBrand.width).toBeCloseTo(18, 0)
   await page.screenshot({ path: testInfo.outputPath('landing.png') })
 
   await mode.click()
   await expect(mode).toHaveAttribute('aria-pressed', 'true')
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'evening')
+  await expect(mode).toHaveText('evening')
+  await expect(mode).toHaveAccessibleName('switch to daytime')
+  await expect(brand).toHaveText('uselessleaf.')
+  const eveningBrand = (await brand.boundingBox())!
+  const eveningMode = (await mode.boundingBox())!
+  expect((eveningBrand.x + eveningMode.x + eveningMode.width) / 2).toBeCloseTo(720, 0)
+  expect(eveningMode.x - eveningBrand.x - eveningBrand.width).toBeCloseTo(18, 0)
+  await page.screenshot({ path: testInfo.outputPath('landing-evening.png') })
   await mode.click()
+  await expect(brand).toHaveText('william shen.')
+  await expect(mode).toHaveText('daytime')
+  await expect(mode).toHaveAccessibleName('switch to evening')
   await scrollTo(page, (await collapseDistance(page)) / 2)
   const midMode = (await mode.boundingBox())!
   expect(midMode.x).toBeGreaterThan(initialMode.x)
   await page.screenshot({ path: testInfo.outputPath('mid-scroll.png') })
   await scrollTo(page, await collapseDistance(page))
   await expect(navigation).toHaveJSProperty('inert', false)
+  await expect(navigation.locator(':scope > a, :scope > button')).toHaveText([
+    'about', 'work', 'projects', 'for fun', 'contact',
+  ])
   const finalBrand = (await brand.boundingBox())!
   const finalMode = (await mode.boundingBox())!
   expect(finalBrand.x).toBeCloseTo(1440 * 0.07, 0)
@@ -57,15 +72,20 @@ test('landing, scroll morph, moving theme toggle, dialogs, and local-only assets
   await page.screenshot({ path: testInfo.outputPath('hero.png') })
 
   await mode.click()
-  await expect(mode).toHaveAccessibleName('Switch to daylight')
-  await navigation.getByRole('button', { name: 'Field notes' }).click()
+  await expect(mode).toHaveAccessibleName('switch to daytime')
+  await expect(mode).toHaveText('evening')
+  await expect(navigation.getByRole('button', { name: 'Field notes' })).toHaveCount(0)
+  const contactButton = navigation.getByRole('button', { name: 'contact', exact: true })
+  await contactButton.click()
+  await expect(contactButton).toHaveText('contact')
+  await expect(contactButton.locator('span')).toHaveCount(0)
   await expect(page.getByRole('dialog')).toBeVisible()
-  await expect(page.getByRole('dialog')).toContainText('Leave room for wandering.')
+  await expect(page.getByRole('dialog')).toContainText('Let’s chat!')
   await page.keyboard.press('Escape')
   await expect(page.getByRole('dialog')).not.toBeVisible()
-  await expect(navigation.getByRole('button', { name: 'Field notes' })).toBeFocused()
+  await expect(navigation.getByRole('button', { name: 'contact', exact: true })).toBeFocused()
 
-  await navigation.getByRole('link', { name: 'Work', exact: true }).click()
+  await navigation.getByRole('link', { name: 'projects', exact: true }).click()
   const project = page.getByRole('button', { name: /Communal Catalogue/ })
   await project.click()
   await expect(page.getByRole('dialog')).toContainText('Communal Catalogue')
@@ -74,9 +94,10 @@ test('landing, scroll morph, moving theme toggle, dialogs, and local-only assets
   await expect(project).toBeFocused()
   await scrollTo(page, 0)
   await expect(navigation).toHaveJSProperty('inert', true)
-  expect((await brand.boundingBox())!.x).toBeCloseTo(initialBrand.x, 0)
   await mode.click()
   await expect(mode).toHaveAttribute('aria-pressed', 'false')
+  expect((await brand.boundingBox())!.x).toBeCloseTo(initialBrand.x, 0)
+  expect((await mode.boundingBox())!.x).toBeCloseTo(initialMode.x, 0)
   expect(errors).toEqual([])
   expect(externalRequests).toEqual([])
 })
@@ -88,11 +109,10 @@ for (const width of [320, 390, 680, 768]) {
     await scrollTo(page, await collapseDistance(page))
     const brand = (await page.getByRole('link', { name: 'William Shen home' }).boundingBox())!
     const nav = page.getByRole('navigation')
-    const firstLink = (await nav.getByRole('link', { name: 'About', exact: true }).boundingBox())!
-    await expect(nav.getByRole('link', { name: 'Experience' })).toBeVisible({ visible: width > 680 })
-    await expect(nav.getByRole('button', { name: 'Field notes' })).toBeVisible({ visible: width > 1000 })
-    await expect(nav.getByRole('link', { name: 'Hobbies' })).toBeVisible({ visible: width > 1000 })
-    const lastLink = (await nav.getByRole('button', { name: /Say hello/ }).boundingBox())!
+    const firstLink = (await nav.getByRole('link', { name: 'about', exact: true }).boundingBox())!
+    await expect(nav.getByRole('link', { name: 'work', exact: true })).toBeVisible({ visible: width > 680 })
+    await expect(nav.getByRole('link', { name: 'for fun', exact: true })).toBeVisible({ visible: width > 1000 })
+    const lastLink = (await nav.getByRole('button', { name: 'contact', exact: true }).boundingBox())!
     const toggle = (await page.locator('#mode').boundingBox())!
     expect(brand.x + brand.width + 8).toBeLessThan(firstLink.x)
     expect(lastLink.x + lastLink.width + 7).toBeLessThan(toggle.x)
@@ -136,7 +156,7 @@ test('grid glow stays local and reduced motion works without a reload', async ({
 test('experience shows three roles, expands to all, and opens role details', async ({ page }) => {
   await page.goto('/')
   await scrollTo(page, await collapseDistance(page))
-  await page.getByRole('navigation').getByRole('link', { name: 'Experience' }).click()
+  await page.getByRole('navigation').getByRole('link', { name: 'work', exact: true }).click()
   const section = page.locator('#experience')
   await expect(section.getByRole('heading', { name: "Where I've worked" })).toBeVisible()
   await expect(section.getByText('EXPERIENCE / 04 ROLES')).toBeVisible()
@@ -170,7 +190,7 @@ test('experience shows three roles, expands to all, and opens role details', asy
 test('projects show three at a time, expand to all five, and open project details', async ({ page }) => {
   await page.goto('/')
   await scrollTo(page, await collapseDistance(page))
-  await page.getByRole('navigation').getByRole('link', { name: 'Work', exact: true }).click()
+  await page.getByRole('navigation').getByRole('link', { name: 'projects', exact: true }).click()
   const section = page.locator('#work')
   await expect(section.getByText('SELECTED WORK / 01—05')).toBeVisible()
   const cards = section.getByRole('listitem').getByRole('button')
@@ -194,7 +214,7 @@ test('projects show three at a time, expand to all five, and open project detail
 test('hobbies skeleton shows sample stats and opens hobby details', async ({ page }) => {
   await page.goto('/')
   await scrollTo(page, await collapseDistance(page))
-  await page.getByRole('navigation').getByRole('link', { name: 'Hobbies' }).click()
+  await page.getByRole('navigation').getByRole('link', { name: 'for fun', exact: true }).click()
   const section = page.locator('#hobbies')
   await expect(section.getByRole('heading', { name: 'What I grew up doing' })).toBeVisible()
   await expect(section.getByText('HOBBIES / SAMPLE STATS · OCT 2, 2026')).toBeVisible()
@@ -220,11 +240,11 @@ test('hobbies skeleton shows sample stats and opens hobby details', async ({ pag
   await page.keyboard.press('Escape')
 })
 
-test('say hello dialog lists email, LinkedIn, and GitHub', async ({ page }) => {
+test('contact dialog lists email, LinkedIn, and GitHub', async ({ page }) => {
   await page.goto('/')
   await scrollTo(page, await collapseDistance(page))
   for (const trigger of [
-    page.getByRole('navigation').getByRole('button', { name: /Say hello/ }),
+    page.getByRole('navigation').getByRole('button', { name: 'contact', exact: true }),
     page.locator('#about').getByRole('button', { name: /Or just say hello/ }),
   ]) {
     await trigger.click()
@@ -271,24 +291,32 @@ test('unknown and retired URLs return the 404 page', async ({ page }) => {
   expect(errors).toEqual([])
 })
 
-test('footer shows faith content on the left and the sign-off on the right', async ({ page }) => {
+test('footer shows the motto on the left and the verse on the right', async ({ page }) => {
   await page.goto('/')
   const footer = page.getByRole('contentinfo')
   await footer.scrollIntoViewIfNeeded()
   await expect(footer.getByText('soli deo gloria')).toBeVisible()
   await expect(footer.getByRole('blockquote')).toContainText('“My grace is sufficient for you, for my power is made perfect in weakness.”')
   await expect(footer.getByText('2 Corinthians 12:9')).toBeVisible()
-  const signoff = footer.getByText('Made with intention. And a little imagination.')
-  await expect(signoff).toBeVisible()
-  const verse = (await footer.getByRole('blockquote').boundingBox())!
-  const right = (await signoff.boundingBox())!
-  expect(verse.x + verse.width).toBeLessThan(right.x)
+  await expect(footer).not.toContainText('Made with intention')
+  const bounds = (await footer.boundingBox())!
+  const motto = (await footer.getByText('soli deo gloria').boundingBox())!
+  const verse = (await footer.locator('figure').boundingBox())!
+  expect(motto.x).toBeCloseTo(bounds.x, 0)
+  expect(verse.x + verse.width).toBeCloseTo(bounds.x + bounds.width, 0)
+  expect(motto.x + motto.width).toBeLessThan(verse.x)
 })
 
 test('introduction shows identity, portrait, and current focus', async ({ page }) => {
   await page.goto('/')
   await expect(page).toHaveTitle('William Shen · uselessleaf')
-  await expect(page.getByText('AKA USELESSLEAF', { exact: true })).toBeVisible()
+  const garden = page.locator('#garden')
+  const arrow = garden.getByRole('link', { name: 'Scroll to introduction' })
+  await expect(arrow).toBeVisible()
+  await expect(arrow).toHaveAttribute('href', '#about')
+  for (const text of ['AKA USELESSLEAF', "There's more beneath the canopy", 'ROOTED IN CURIOSITY']) {
+    await expect(garden.getByText(text)).toHaveCount(0)
+  }
   await scrollTo(page, await collapseDistance(page))
   const about = page.locator('#about')
   await expect(about.getByText('aka uselessleaf')).toBeVisible()
@@ -296,6 +324,8 @@ test('introduction shows identity, portrait, and current focus', async ({ page }
   const portrait = about.getByRole('img', { name: /William Shen smiling/ })
   await expect(portrait).toBeVisible()
   expect(await portrait.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth)).toBe(1000)
+  await expect(about.locator('figcaption')).toHaveText('01 / me in halifax with a lobster')
+  await expect(about).not.toContainText('HELLO, WORLD')
   await expect(about.getByRole('list', { name: 'Currently' }).getByRole('listitem')).toHaveText([
     'Computational mathematics specialization',
     'Combinatorics & optimization minor',
