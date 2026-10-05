@@ -86,13 +86,104 @@
   font-size: 11px;
   letter-spacing: 0.3px;
   cursor: pointer;
+  /* Reappears after the cards settle when the detail panel closes. */
+  animation: fadeIn 0.25s 0.2s both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
 }
 
 .toggle:hover { background: #a7bd8120; }
 .chevron { color: var(--accent); transition: transform 0.25s; }
 .toggle[aria-expanded='true'] .chevron { transform: rotate(180deg); }
 
+/* Split view: cards collapse into a single scrollable column, details on the right. */
+.split {
+  display: grid;
+  grid-template-columns: minmax(250px, 330px) minmax(0, 1fr);
+  gap: 40px;
+  align-items: start;
+}
+
+.split .items {
+  position: sticky;
+  top: calc(var(--nav-height) + 24px);
+  max-height: min(calc(100svh - var(--nav-height) - 48px), 640px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+  padding-right: 6px;
+}
+
+.split .grid { grid-template-columns: 1fr; gap: 4px; }
+.split .extra { margin-top: 4px; }
+
+.split .card {
+  flex-wrap: nowrap;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.split .card:hover { transform: none; background: #a7bd8115; }
+.split .card[aria-current='true'] { background: #a7bd8124; border-color: var(--line); }
+.split .visual { width: 46px; height: 46px; border-radius: 7px; }
+.split .visual img { width: 31px; height: 31px; }
+.split .monogram { font-size: 17px; }
+.split .title { font-size: 13px; margin-bottom: 4px; }
+.split .arrow { display: block; font-size: 14px; opacity: 0; transform: translateX(-4px); transition: opacity 0.2s, transform 0.2s; }
+.split .card:hover .arrow { opacity: 1; transform: none; }
+.split .card[aria-current='true'] .arrow { visibility: hidden; }
+.split .card:focus-visible { outline-offset: -2px; }
+
+.panel {
+  position: relative;
+  min-width: 0;
+  padding: 36px 40px 40px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  scroll-margin-top: calc(var(--nav-height) + 16px);
+  /*
+   * A CSS animation rather than a view-transition-name: elements that only exist in the
+   * new state are layered above everything (including the fixed nav) during a view transition.
+   */
+  animation: panelEnter 0.42s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes panelEnter {
+  from { opacity: 0; transform: translateX(16px); }
+}
+
+.panelBody { animation: panelIn 0.3s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
+.close {
+  position: absolute;
+  right: 14px;
+  top: 10px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.close:hover { background: #a7bd8120; color: var(--ink); }
+
 @media (max-width: 1000px) {
+  .split { grid-template-columns: minmax(220px, 270px) minmax(0, 1fr); gap: 28px; }
+  .panel { padding: 30px 28px 32px; }
   .grid { gap: 20px; }
   .extra { margin-top: 20px; }
   .card { flex-wrap: wrap; gap: 13px; }
@@ -112,8 +203,11 @@
   .title { font-size: 14px; }
   .summary { font-size: 11px; }
   .arrow { display: block; }
+  .split { grid-template-columns: 1fr; gap: 20px; }
+  .split .items { position: static; max-height: 40svh; }
+  .panel { padding: 28px 22px 30px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .extra li { animation: none; }
+  .extra li, .panel, .panelBody, .toggle { animation: none; }
 }

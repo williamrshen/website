@@ -153,7 +153,7 @@ test('grid glow stays local and reduced motion works without a reload', async ({
   await expect(page.getByRole('navigation')).toHaveJSProperty('inert', false)
 })
 
-test('experience shows three roles, expands to all, and opens role details', async ({ page }) => {
+test('experience shows three roles, expands to all, and shows role details in a side panel', async ({ page }, testInfo) => {
   await page.goto('/')
   await scrollTo(page, await collapseDistance(page))
   await page.getByRole('navigation').getByRole('link', { name: 'work', exact: true }).click()
@@ -171,20 +171,52 @@ test('experience shows three roles, expands to all, and opens role details', asy
   await expect(toggle).toHaveAccessibleName('Show fewer roles')
   await expect(cards).toHaveCount(4)
   await expect(cards.nth(3)).toContainText('Young Engineers · Summer 2024')
-
-  await section.getByRole('button', { name: /Sun Life/ }).click()
-  const dialog = page.getByRole('dialog', { name: 'SQL Server/Infrastructure DBA' })
-  await expect(dialog).toBeVisible()
-  await expect(dialog.getByRole('listitem').first()).toContainText('400+ CIS standards')
-  await expect(dialog.getByRole('list', { name: 'Skills and tools' })).toContainText('Splunk')
-  await expect(dialog.getByRole('link', { name: /Visit Sun Life/ })).toHaveAttribute('href', 'https://www.sunlife.com/')
-  await page.keyboard.press('Escape')
-
-  await section.getByRole('button', { name: /Geotab/ }).click()
-  await expect(page.getByRole('dialog', { name: 'Software Development Intern' })).toContainText('Role details coming soon.')
-  await page.keyboard.press('Escape')
   await toggle.click()
   await expect(cards).toHaveCount(3)
+
+  // Selecting a role collapses the cards into one column and opens the panel on the right.
+  const sunLife = section.getByRole('button', { name: /Sun Life/ })
+  await sunLife.click()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  const panel = section.getByRole('region', { name: 'SQL Server/Infrastructure DBA' })
+  await expect(panel).toBeVisible()
+  await expect(sunLife).toHaveAttribute('aria-current', 'true')
+  await expect(toggle).toHaveCount(0)
+  await expect(cards).toHaveCount(4)
+  const boxes = await Promise.all([0, 1, 2, 3].map(async (index) => (await cards.nth(index).boundingBox())!))
+  for (const box of boxes) expect(box.x).toBeCloseTo(boxes[0].x, 0)
+  expect(boxes[1].y).toBeGreaterThan(boxes[0].y)
+  expect(boxes[0].x + boxes[0].width).toBeLessThan((await panel.boundingBox())!.x)
+  await expect(panel.getByRole('listitem').first()).toContainText('400+ CIS standards')
+  await expect(panel.getByRole('list', { name: 'Skills and tools' })).toContainText('Splunk')
+  await expect(panel.getByRole('link', { name: /Visit Sun Life/ })).toHaveAttribute('href', 'https://www.sunlife.com/')
+  await page.screenshot({ path: testInfo.outputPath('experience-panel.png') })
+
+  // Choosing another role swaps the panel content in place.
+  await section.getByRole('button', { name: /Geotab/ }).click()
+  const geotab = section.getByRole('region', { name: 'Software Development Intern' })
+  await expect(geotab).toContainText('Role details coming soon.')
+  await expect(sunLife).not.toHaveAttribute('aria-current')
+  await section.getByRole('button', { name: /Young Engineers/ }).click()
+  await expect(section.getByRole('region')).toContainText('Young Engineers')
+
+  // Escape closes the panel, restores the grid, and returns focus to the selected card.
+  await page.keyboard.press('Escape')
+  await expect(section.getByRole('region')).toHaveCount(0)
+  await expect(section.getByRole('button', { name: /Young Engineers/ })).toBeFocused()
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true')
+
+  await sunLife.click()
+  await section.getByRole('button', { name: 'Close details' }).click()
+  await expect(section.getByRole('region')).toHaveCount(0)
+  await expect(sunLife).toBeFocused()
+
+  // Clicking the selected card again also closes the panel.
+  await sunLife.click()
+  await expect(panel).toBeVisible()
+  await sunLife.click()
+  await expect(section.getByRole('region')).toHaveCount(0)
+  await expect(sunLife).toBeFocused()
 })
 
 test('projects show three at a time, expand to all five, and open project details', async ({ page }) => {

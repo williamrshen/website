@@ -1,7 +1,6 @@
 import { useLayoutEffect, useRef } from 'react'
 import type { Detail } from '../data/types'
-import { ContactIcon } from './ContactIcon'
-import { Sparkline } from './Sparkline'
+import { DetailContent } from './DetailContent'
 import styles from './DetailDialog.module.css'
 
 export function DetailDialog({ detail, onClose }: { detail: Detail | null; onClose: () => void }) {
@@ -13,8 +12,6 @@ export function DetailDialog({ detail, onClose }: { detail: Detail | null; onClo
     if (detail && !dialog.open) dialog.showModal()
     else if (!detail && dialog.open) dialog.close()
   }, [detail])
-
-  const external = detail?.link && /^https?:/.test(detail.link.href)
 
   return (
     <dialog
@@ -30,67 +27,7 @@ export function DetailDialog({ detail, onClose }: { detail: Detail | null; onClo
       }}
     >
       <button className={styles.close} aria-label="Close dialog" onClick={() => ref.current?.close()}>×</button>
-      {detail && (
-        <>
-          <span className={styles.kicker}>{detail.kicker}</span>
-          <h2 id="dialog-title">{detail.title}</h2>
-          {detail.subtitle && <p className={styles.subtitle}>{detail.subtitle}</p>}
-          {detail.description && <p id="dialog-description">{detail.description}</p>}
-          {detail.bullets && detail.bullets.length > 0 && (
-            <ul className={styles.bullets}>{detail.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul>
-          )}
-          {detail.stats && detail.stats.length > 0 && (
-            <dl className={styles.stats}>
-              {detail.stats.map((stat) => (
-                <div key={stat.label}>
-                  <dt>{stat.label}</dt>
-                  <dd>
-                    <span className={styles.statValue}>{stat.value}</span>
-                    {stat.detail && <span className={styles.statDetail}>{stat.detail}</span>}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          )}
-          {detail.history && <Sparkline series={detail.history} />}
-          {detail.contacts && detail.contacts.length > 0 && (
-            <ul className={styles.contacts}>
-              {detail.contacts.map((contact) => {
-                const isWeb = /^https?:/.test(contact.href)
-                return (
-                  <li key={contact.kind}>
-                    <a href={contact.href} {...(isWeb ? { target: '_blank', rel: 'noreferrer' } : {})}>
-                      <span className={styles.contactIcon}><ContactIcon kind={contact.kind} /></span>
-                      <span className={styles.contactText}>
-                        <span className={styles.contactLabel}>{contact.label}</span>
-                        <span className={styles.contactValue}>{contact.value}</span>
-                      </span>
-                      <span className={styles.contactArrow} aria-hidden="true">↗</span>
-                      {isWeb && <span className={styles.visuallyHidden}> (opens in a new tab)</span>}
-                    </a>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-          {detail.tags && detail.tags.length > 0 && (
-            <ul className={styles.tags} aria-label="Skills and tools">
-              {detail.tags.map((tag) => <li key={tag}>{tag}</li>)}
-            </ul>
-          )}
-          {detail.link && (
-            <a
-              className={styles.link}
-              href={detail.link.href}
-              {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
-            >
-              {detail.link.label} <span aria-hidden="true">↗</span>
-              {external && <span className={styles.visuallyHidden}> (opens in a new tab)</span>}
-            </a>
-          )}
-          {detail.note && <p className={styles.note}>{detail.note}</p>}
-        </>
-      )}
+      {detail && <DetailContent detail={detail} titleId="dialog-title" descriptionId="dialog-description" />}
     </dialog>
   )
 }

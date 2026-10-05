@@ -42,6 +42,7 @@ function App() {
           items={experience}
           itemNoun="roles"
           onOpenDetail={setActiveDetail}
+          layout="panel"
         />
         <CardSection
           id="work"

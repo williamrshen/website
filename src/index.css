@@ -54,6 +54,15 @@ body[data-garden-cursor='true'],
 body[data-garden-cursor='true'] a,
 body[data-garden-cursor='true'] button { cursor: none; }
 
+/* Layout morphs (e.g. card grid -> list + detail panel) animate only the named elements. */
+::view-transition-group(*) {
+  animation-duration: 0.42s;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+
 @media (max-width: 680px) {
   :root { --nav-height: 72px; }
 }

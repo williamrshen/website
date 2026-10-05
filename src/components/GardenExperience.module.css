@@ -23,6 +23,8 @@
   background: var(--paper);
   isolation: isolate;
   will-change: height;
+  /* Captured as its own layer so view-transition snapshots of page content stay beneath it. */
+  view-transition-name: garden-surface;
 }
 
 .surface::after {
@@ -56,6 +58,7 @@
   align-items: center;
   justify-content: center;
   pointer-events: none;
+  view-transition-name: garden-header;
 }
 
 .brand {
