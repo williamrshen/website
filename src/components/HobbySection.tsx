@@ -36,7 +36,7 @@ export function HobbySection() {
   return (
     <section className={styles.section} id="hobbies" aria-labelledby="hobbies-heading">
       <div className={styles.heading}>
-        <h2 id="hobbies-heading">What I grew up doing</h2>
+        <h2 id="hobbies-heading">in my spare time</h2>
         <span>HOBBIES /</span>
       </div>
       <div className={isSplit ? `${split.split} ${styles.split}` : undefined} {...panel.containerProps}>

@@ -35,7 +35,7 @@ function App() {
         <About onOpenDetail={setActiveDetail} />
         <CardSection
           id="experience"
-          title="Where I've worked"
+          title="where i've worked"
           meta="EXPERIENCE /"
           items={experience}
           itemNoun="roles"
@@ -44,7 +44,7 @@ function App() {
         />
         <CardSection
           id="work"
-          title="A few things I've grown"
+          title="a few things i've grown"
           meta="PROJECTS /"
           items={projects}
           itemNoun="projects"

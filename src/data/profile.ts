@@ -12,12 +12,6 @@ export const profile = {
     href: '/resume.pdf',
     filename: 'William Shen - Resume.pdf',
   },
-  lead: 'Third-year math student at the University of Waterloo.',
-  bio: 'I like algorithms, games, and learning! Always excited to eat food, chat about random topics, and go on adventures.',
-  currently: [
-    'Computational mathematics specialization',
-    'Combinatorics & optimization minor',
-    'Software Development Intern at Geotab',
-    'Reading through the book of Galatians',
-  ],
+  bio: 'Third-year math student at Waterloo who likes algorithms, games, and good food.',
+  now: 'swe intern @ geotab',
 }

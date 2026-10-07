@@ -57,8 +57,8 @@ src/
     *.module.css                   Styles scoped to each component
   data/
     profile.ts                     Name, alias, portrait, introduction, Currently list
-    experience.ts                  Roles shown in “Where I've worked”
-    projects.ts                    Projects shown in “A few things I've grown”
+    experience.ts                  Roles shown in “where i've worked”
+    projects.ts                    Projects shown in “a few things i've grown”
     hobbies.ts                     Static sample hobby stats and blurbs
     contact.ts                     Email, LinkedIn, and GitHub for “Say hello”
     portfolio.ts                   Field notes dialog copy

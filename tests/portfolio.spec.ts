@@ -161,7 +161,7 @@ test('experience shows three roles, expands to all, and shows role details in a 
   await scrollTo(page, await collapseDistance(page))
   await page.getByRole('navigation').getByRole('link', { name: 'work', exact: true }).click()
   const section = page.locator('#experience')
-  await expect(section.getByRole('heading', { name: "Where I've worked" })).toBeVisible()
+  await expect(section.getByRole('heading', { name: "where i've worked" })).toBeVisible()
   await expect(section.getByText('EXPERIENCE /', { exact: true })).toBeVisible()
   const cards = section.getByRole('button', { name: /·/ })
   await expect(cards).toHaveCount(3)
@@ -230,7 +230,7 @@ test('projects show three at a time, expand to all five, and show project detail
   const meta = section.getByText('PROJECTS /', { exact: true })
   await expect(meta).toBeVisible()
   // Projects mirror the experience section: title on the right, meta on the left.
-  const heading = (await section.getByRole('heading', { name: "A few things I've grown" }).boundingBox())!
+  const heading = (await section.getByRole('heading', { name: "a few things i've grown" }).boundingBox())!
   expect((await meta.boundingBox())!.x).toBeLessThan(heading.x)
   const cards = section.getByRole('listitem').getByRole('button')
   await expect(cards).toHaveCount(3)
@@ -284,7 +284,7 @@ test('hobbies show sample stats and open hobby details in a side panel', async (
   await scrollTo(page, await collapseDistance(page))
   await page.getByRole('navigation').getByRole('link', { name: 'for fun', exact: true }).click()
   const section = page.locator('#hobbies')
-  await expect(section.getByRole('heading', { name: 'What I grew up doing' })).toBeVisible()
+  await expect(section.getByRole('heading', { name: 'in my spare time' })).toBeVisible()
   await expect(section.getByText('HOBBIES /', { exact: true })).toBeVisible()
   const tiles = section.getByRole('listitem').getByRole('button')
   await expect(tiles).toHaveCount(4)
@@ -335,7 +335,7 @@ test('contact dialog lists email, LinkedIn, and GitHub', async ({ page }) => {
   await scrollTo(page, await collapseDistance(page))
   for (const trigger of [
     page.getByRole('navigation').getByRole('button', { name: 'contact', exact: true }),
-    page.locator('#about').getByRole('button', { name: /Or just say hello/ }),
+    page.locator('#about').getByRole('button', { name: /Say hello/ }),
   ]) {
     await trigger.click()
     const dialog = page.getByRole('dialog', { name: 'Let’s chat!' })
@@ -409,17 +409,15 @@ test('introduction shows identity, portrait, and current focus', async ({ page }
   }
   await scrollTo(page, await collapseDistance(page))
   const about = page.locator('#about')
-  await expect(about.getByText('aka uselessleaf')).toBeVisible()
-  await expect(about.getByText('Third-year math student at the University of Waterloo.')).toBeVisible()
+  await expect(about.getByRole('heading', { level: 1 })).toHaveText("I'm William.Curious by nature.")
+  await expect(about.getByText('Third-year math student at Waterloo who likes algorithms, games, and good food.')).toBeVisible()
   const portrait = about.getByRole('img', { name: /William Shen smiling/ })
   await expect(portrait).toBeVisible()
   expect(await portrait.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth)).toBe(1000)
   await expect(about.locator('figcaption')).toHaveText('01 / me in halifax with a lobster')
   await expect(about).not.toContainText('HELLO, WORLD')
-  await expect(about.getByRole('list', { name: 'Currently' }).getByRole('listitem')).toHaveText([
-    'Computational mathematics specialization',
-    'Combinatorics & optimization minor',
-    'Software Development Intern at Geotab',
-    'Reading through the book of Galatians',
-  ])
+  await expect(about.getByText('now — swe intern @ geotab')).toBeVisible()
+  for (const removed of ['aka uselessleaf', 'Explore my work']) {
+    await expect(about.getByText(removed)).toHaveCount(0)
+  }
 })
