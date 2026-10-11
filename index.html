@@ -18,6 +18,24 @@
       content="Math student at the University of Waterloo who likes algorithms, games, and learning."
     />
     <title>William Shen · uselessleaf</title>
+    <script>
+      (function () {
+        var evening;
+        try {
+          var saved = localStorage.getItem('theme');
+          if (saved === 'evening') evening = true;
+          else if (saved === 'daylight') evening = false;
+        } catch (e) {}
+        if (evening === undefined) {
+          var h = new Date().getHours();
+          evening = h < 8 || h >= 18;
+        }
+        document.documentElement.dataset.theme = evening ? 'evening' : 'daylight';
+        document
+          .querySelector('meta[name="theme-color"]')
+          .setAttribute('content', evening ? '#192a29' : '#f3f2e9');
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

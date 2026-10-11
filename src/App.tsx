@@ -10,8 +10,20 @@ import { projects } from './data/projects'
 import type { Detail } from './data/types'
 import styles from './App.module.css'
 
+const THEME_KEY = 'theme'
+
+function initialEvening() {
+  try {
+    const saved = localStorage.getItem(THEME_KEY)
+    if (saved === 'evening') return true
+    if (saved === 'daylight') return false
+  } catch { /* storage unavailable */ }
+  const hour = new Date().getHours()
+  return hour < 8 || hour >= 18
+}
+
 function App() {
-  const [evening, setEvening] = useState(false)
+  const [evening, setEvening] = useState(initialEvening)
   const [activeDetail, setActiveDetail] = useState<Detail | null>(null)
 
   useEffect(() => {
@@ -27,7 +39,11 @@ function App() {
       <a className={styles.skipLink} href="#about">Skip to introduction</a>
       <GardenExperience
         evening={evening}
-        onToggleTheme={() => setEvening((value) => !value)}
+        onToggleTheme={() => {
+          const next = !evening
+          setEvening(next)
+          try { localStorage.setItem(THEME_KEY, next ? 'evening' : 'daylight') } catch { /* ignore */ }
+        }}
         onOpenDetail={setActiveDetail}
         dialogOpen={activeDetail !== null}
       />
