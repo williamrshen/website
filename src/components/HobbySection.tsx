@@ -1,14 +1,19 @@
+import { useState } from 'react'
 import mcsrIcon from '../assets/hobbies/mcsr.svg'
 import speedcubingIcon from '../assets/hobbies/speedcubing.svg'
 import tableTennisIcon from '../assets/hobbies/table-tennis.svg'
 import tetrisIcon from '../assets/hobbies/tetris.svg'
 import { hobbies, hobbySnapshotDate } from '../data/hobbies'
+import { cubingProfileUrl, cubingSnapshot, featuredCubingEvent, getCubingView, type CubingSource } from '../data/cubing'
 import type { Detail, Hobby } from '../data/types'
 import { useDetailPanel } from '../hooks/useDetailPanel'
 import { DetailPanel } from './DetailPanel'
+import { CubingControls, CubingExtras } from './CubingStats'
+import { CubingProgression } from './CubingProgression'
 import { Sparkline } from './Sparkline'
 import split from './DetailPanel.module.css'
 import styles from './HobbySection.module.css'
+import cubingStyles from './CubingStats.module.css'
 
 const icons: Record<string, string> = {
   tetris: tetrisIcon,
@@ -28,10 +33,23 @@ const toDetail = (hobby: Hobby): Detail => ({
 })
 
 export function HobbySection() {
+  const [cubingSource, setCubingSource] = useState<CubingSource>('official')
+  const [cubingEvent, setCubingEvent] = useState(featuredCubingEvent)
+  const headline = getCubingView(cubingSource, featuredCubingEvent)
+  const cubingView = getCubingView(cubingSource, cubingEvent)
+  const items = hobbies.map(hobby => hobby.id === 'speedcubing' ? {
+    ...hobby,
+    stats: [
+      { ...headline.stats[0], label: `${headline.stats[0].label} · ${cubingSource}` },
+      headline.stats[1],
+    ],
+    link: { label: 'View WCA profile', href: cubingProfileUrl },
+  } : hobby)
   // Tiles shrink to just their header in the side list; `hobby-tile` crops (rather than
   // squashes) their snapshots during the morph. See index.css.
-  const panel = useDetailPanel(hobbies, 'hobby', { transitionClass: 'hobby-tile' })
+  const panel = useDetailPanel(items, 'hobby', { transitionClass: 'hobby-tile' })
   const { selected, split: isSplit, itemsRef, panelRef } = panel
+  const isCubing = selected?.id === 'speedcubing'
 
   return (
     <section className={styles.section} id="hobbies" aria-labelledby="hobbies-heading">
@@ -42,7 +60,7 @@ export function HobbySection() {
       <div className={isSplit ? `${split.split} ${styles.split}` : undefined} {...panel.containerProps}>
         <div className={split.items} ref={itemsRef}>
           <ul className={styles.grid}>
-            {hobbies.map((hobby, index) => {
+            {items.map((hobby, index) => {
               const [featured, secondary] = hobby.stats
               return (
                 <li key={hobby.id}>
@@ -72,12 +90,21 @@ export function HobbySection() {
         </div>
         {selected && (
           <DetailPanel
-            detail={toDetail(selected)}
+            detail={isCubing ? { ...toDetail(selected), stats: cubingView.stats, note: cubingView.note } : toDetail(selected)}
             itemKey={selected.id}
             id={panel.panelId}
             titleId={panel.panelTitleId}
             panelRef={panelRef}
             onClose={panel.close}
+            contentClassName={isCubing ? cubingStyles.detail : undefined}
+            beforeStats={isCubing ? <CubingControls source={cubingSource} eventId={cubingEvent} snapshot={cubingSnapshot}
+              onSourceChange={setCubingSource} onEventChange={setCubingEvent}
+              emptyMessage={cubingView.emptyMessage} announcement={cubingView.announcement} /> : undefined}
+            afterStats={isCubing ? <>
+              <CubingExtras stats={cubingView.extraStats} />
+              <CubingProgression key={`${cubingSource}-${cubingEvent}`} histories={cubingView.progression}
+                metrics={cubingView.progressionMetrics} updatedAt={cubingView.updatedAt} />
+            </> : undefined}
           />
         )}
       </div>

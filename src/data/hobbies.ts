@@ -1,5 +1,6 @@
 // Static sample copied once from the old site's stats snapshot (2026-10-02T16:00:42.073Z).
-// These numbers do not refresh. Histories are downsampled to at most 36 points.
+// Other hobbies use these sample numbers. Speedcubing is supplied by the generated snapshot.
+// Histories are downsampled to at most 36 points.
 import type { Hobby } from './types'
 
 export const hobbySnapshotDate = 'Oct 2, 2026'
@@ -154,9 +155,8 @@ export const hobbies: Hobby[] = [
     eyebrow: '3×3 Main',
     blurb: 'Been cubing since 2012! Started with a Rubik\'s brand cube and truly started speedcubing in 2015. A 3x3 main through and through. Trying to learn some more events now!',
     stats: [
-      { label: '3×3 single', value: '8.15s', detail: 'Canada #305 · World #8,767' },
-      { label: '3×3 average', value: '8.79s', detail: 'Canada #144 · World #3,832' },
-      { label: 'competitions', value: '6', detail: 'CA competitor since 2016' },
+      { label: '3×3 single', value: '—' },
+      { label: '3×3 average', value: '—' },
     ],
     link: { label: 'View WCA profile', href: 'https://www.worldcubeassociation.org/persons/2016SHEN13' },
   },

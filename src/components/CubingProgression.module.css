@@ -1,0 +1,40 @@
+.progression { margin: 28px 0 0; padding-top: 22px; border-top: 1px solid var(--line); min-width: 0; }
+.header, .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.header h4 { margin: 0; font: 9px monospace; letter-spacing: 1px; text-transform: uppercase; }
+.metric { display: flex; align-items: center; gap: 8px; }
+.metric label { font: 9px monospace; letter-spacing: 1px; text-transform: uppercase; }
+.metric select { min-height: 36px; max-width: 165px; padding: 7px 24px 7px 9px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 11px; }
+.toolbar { margin-top: 12px; }
+.summary { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px; max-width: 100%; }
+.zoom { display: inline-flex; gap: 5px; }
+.zoom button { min-width: 34px; min-height: 34px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: transparent; font-size: 11px; cursor: pointer; }
+.zoom button:hover:not(:disabled) { border-color: var(--accent); background: #a7bd8115; }
+.zoom button:disabled { opacity: 0.45; cursor: default; }
+.zoom button:focus-visible { outline-offset: 2px; }
+.best { font: 10px monospace; white-space: nowrap; }
+.best b { margin-left: 6px; font: 15px Arial, Helvetica, sans-serif; }
+.plot { position: relative; margin-top: 16px; min-width: 0; }
+.chart { display: block; width: 100%; height: 220px; overflow: visible; }
+.axis { fill: var(--muted); font: 9px monospace; }
+.grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 5; }
+.line { stroke: var(--accent); stroke-width: 1.7; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.point { fill: var(--accent); }
+.activePoint { fill: var(--paper); stroke: var(--accent); stroke-width: 2; }
+.guide { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 4; }
+.inspector { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; border-radius: 6px; background: transparent; cursor: crosshair; touch-action: pan-y pinch-zoom; }
+.inspector[data-dragging='pan'] { cursor: grabbing; }
+.brush { fill: var(--accent); fill-opacity: 0.13; stroke: var(--accent); stroke-width: 1; }
+.inspector:focus-visible { outline-offset: 2px; }
+.tooltip { position: absolute; top: 6px; right: 10px; display: flex; flex-direction: column; gap: 5px; max-width: min(220px, calc(100% - 20px)); padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); box-shadow: 0 3px 12px #14251c12; pointer-events: none; }
+.tooltip b { font-size: 15px; font-weight: 400; }
+.tooltip span { font-size: 10px; line-height: 1.5; }
+.progression .empty { margin: 20px 0 0; font-size: 12px; }
+.datedOnly { display: block; margin-top: 8px; font-size: 10px; }
+.viewport { display: block; margin-top: 8px; font: 10px monospace; line-height: 1.5; }
+.visuallyHidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+@media (max-width: 680px) {
+  .metric select, .zoom button { min-height: 44px; }
+  .zoom button { min-width: 44px; }
+  .best b { font-size: 14px; }
+}

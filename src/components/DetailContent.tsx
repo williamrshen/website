@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import type { Detail } from '../data/types'
 import { ContactIcon } from './ContactIcon'
 import { Sparkline } from './Sparkline'
@@ -10,15 +11,18 @@ type Props = {
   /** id for the description, if the container wants aria-describedby. */
   descriptionId?: string
   headingLevel?: 2 | 3
+  className?: string
+  beforeStats?: ReactNode
+  afterStats?: ReactNode
 }
 
 /** Shared body for a Detail: used by the modal dialog and the inline detail panel. */
-export function DetailContent({ detail, titleId, descriptionId, headingLevel = 2 }: Props) {
+export function DetailContent({ detail, titleId, descriptionId, headingLevel = 2, className, beforeStats, afterStats }: Props) {
   const Heading = headingLevel === 3 ? 'h3' : 'h2'
   const external = detail.link && /^https?:/.test(detail.link.href)
 
   return (
-    <div className={styles.content}>
+    <div className={className ? `${styles.content} ${className}` : styles.content}>
       <span className={styles.kicker}>{detail.kicker}</span>
       <Heading className={styles.title} id={titleId}>{detail.title}</Heading>
       {detail.subtitle && <p className={styles.subtitle}>{detail.subtitle}</p>}
@@ -26,6 +30,7 @@ export function DetailContent({ detail, titleId, descriptionId, headingLevel = 2
       {detail.bullets && detail.bullets.length > 0 && (
         <ul className={styles.bullets}>{detail.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul>
       )}
+      {beforeStats}
       {detail.stats && detail.stats.length > 0 && (
         <dl className={styles.stats}>
           {detail.stats.map((stat) => (
@@ -39,6 +44,7 @@ export function DetailContent({ detail, titleId, descriptionId, headingLevel = 2
           ))}
         </dl>
       )}
+      {afterStats}
       {detail.history && <Sparkline series={detail.history} />}
       {detail.contacts && detail.contacts.length > 0 && (
         <ul className={styles.contacts}>

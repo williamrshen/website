@@ -1,0 +1,25 @@
+{
+  "wcaId": "2016SHEN13",
+  "featuredEvent": "333",
+  "practice": {
+    "includeSessionNames": null,
+    "excludeSessionNames": []
+  },
+  "events": {
+    "333": { "label": "3×3", "averageKind": "ao5", "sessionNames": ["3x3"] },
+    "222": { "label": "2×2", "averageKind": "ao5", "sessionNames": ["2x2"] },
+    "444": { "label": "4×4", "averageKind": "ao5", "sessionNames": ["4x4"] },
+    "555": { "label": "5×5", "averageKind": "ao5", "sessionNames": [] },
+    "666": { "label": "6×6", "averageKind": "mo3", "sessionNames": [] },
+    "777": { "label": "7×7", "averageKind": "mo3", "sessionNames": [] },
+    "333oh": { "label": "3×3 one-handed", "averageKind": "ao5", "sessionNames": ["oh"] },
+    "333bf": { "label": "3×3 blindfolded", "averageKind": "mo3", "sessionNames": ["bld"] },
+    "444bf": { "label": "4×4 blindfolded", "averageKind": null, "sessionNames": [] },
+    "555bf": { "label": "5×5 blindfolded", "averageKind": null, "sessionNames": [] },
+    "minx": { "label": "Megaminx", "averageKind": "ao5", "sessionNames": [] },
+    "pyram": { "label": "Pyraminx", "averageKind": "ao5", "sessionNames": [] },
+    "skewb": { "label": "Skewb", "averageKind": "ao5", "sessionNames": ["skewb"] },
+    "clock": { "label": "Clock", "averageKind": "ao5", "sessionNames": ["clock"] },
+    "sq1": { "label": "Square-1", "averageKind": "ao5", "sessionNames": ["sq1"] }
+  }
+}

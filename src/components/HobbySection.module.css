@@ -66,7 +66,7 @@
 .eyebrow { display: block; margin-bottom: 4px; font-size: 9px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted); }
 .title { display: block; font-size: 15px; font-weight: 600; }
 .stat { display: flex; flex-direction: column; gap: 6px; }
-.value { font-size: 30px; letter-spacing: -1px; line-height: 1; }
+.value { font-size: 30px; letter-spacing: -1px; line-height: 1; font-variant-numeric: tabular-nums; }
 .label { font: 9px monospace; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
 .trend { min-height: 42px; display: flex; align-items: flex-end; margin-top: auto; }
 .trend > * { width: 100%; }

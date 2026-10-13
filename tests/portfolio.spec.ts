@@ -1,4 +1,10 @@
 import { expect, test, type Page } from '@playwright/test'
+import cubingSnapshot from '../src/data/generated/cubing.json' with { type: 'json' }
+
+test.beforeEach(async ({ page }) => {
+  // Theme interactions start from an explicit preference, independent of the clock.
+  await page.addInitScript(() => localStorage.setItem('theme', 'daylight'))
+})
 
 async function collapseDistance(page: Page) {
   return page.locator('#garden').evaluate((garden) =>
@@ -314,8 +320,10 @@ test('hobbies show sample stats and open hobby details in a side panel', async (
   const cubingTile = tiles.nth(3)
   await cubingTile.click()
   const cubing = section.getByRole('region', { name: 'Speedcubing' })
-  await expect(cubing).toContainText('8.15s')
-  await expect(cubing.getByRole('img')).toHaveCount(0)
+  const single = cubingSnapshot.sources.official.events['333'].single
+  await expect(cubing).toContainText(`${(single.timeMs / 1000).toFixed(2)}s`)
+  await expect(cubing.getByRole('button', { name: 'Official', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(cubing.getByRole('img', { name: /personal-best progression/ })).toHaveCount(1)
 
   // Clicking the selected hobby again closes the panel and restores the full tiles.
   await cubingTile.click()

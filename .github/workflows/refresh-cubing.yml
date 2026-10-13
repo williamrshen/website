@@ -1,0 +1,50 @@
+name: Refresh cubing stats
+
+on:
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-cubing
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Refresh official and practice snapshots
+        run: npm run stats:refresh
+        env:
+          CSTIMER_ID: ${{ secrets.CSTIMER_ID }}
+      - run: npm test
+      - run: npm run lint
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: Save the last-good snapshot
+        run: |
+          if ! git diff --quiet -- src/data/generated/cubing.json; then
+            git add src/data/generated/cubing.json
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Refresh cubing stats'
+            git push
+          fi
+      - name: Trigger the website deployment
+        env:
+          DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -n "$DEPLOY_HOOK" ]; then
+            curl --fail --silent --show-error --request POST "$DEPLOY_HOOK"
+          else
+            echo 'Set VERCEL_DEPLOY_HOOK to explicitly redeploy the website after a refresh.'
+          fi
