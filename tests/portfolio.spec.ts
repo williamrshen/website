@@ -329,7 +329,7 @@ test('hobbies show live and sample stats and open hobby details in a side panel'
   await expect(mcsr.getByRole('img', { name: /ranked elo history/ })).toBeVisible()
   await expect(mcsr).toContainText('Live stats from')
   await tiles.nth(2).click()
-  await expect(section.getByRole('region', { name: 'Table Tennis' })).toContainText('Sample stats from Oct 2, 2026 · not live')
+  await expect(section.getByRole('region', { name: 'Table Tennis' })).toContainText('Last updated Oct 2, 2026 · not live')
 
   // Switching hobbies swaps the panel in place.
   const cubingTile = tiles.nth(3)

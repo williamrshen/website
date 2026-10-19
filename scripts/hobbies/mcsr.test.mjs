@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { fetchMcsr, normalizeMcsr } from './mcsr.mjs'
+import { fetchMcsr, normalizeMcsr, rankName } from './mcsr.mjs'
 
 const config = { username: 'uselessleaf' }
 const me = '18bf'
@@ -17,8 +17,8 @@ const raw = () => ({
 test('MCSR Ranked responses become formatted stats and an Elo history', () => {
   const snapshot = normalizeMcsr(raw(), config, '2026-10-19T04:00:00.000Z')
   assert.deepEqual(snapshot.stats.map(stat => [stat.label, stat.value, stat.detail]), [
-    ['current elo', '1,178', 'rank #4,494'],
-    ['all-time best', '13:35.658', 'ranked RSG'],
+    ['current elo', '1,178', 'rank #4,494 · Gold III'],
+    ['all-time best', '13:35.658', 'ranked PB'],
     ['ranked record', '374–346', '51.9% win rate'],
   ])
   // Oldest first, using the rating after each match; placement matches are skipped.
@@ -45,4 +45,10 @@ test('MCSR Ranked requests the profile and ranked matches, and surfaces API fail
   ])
   await assert.rejects(fetchMcsr('x', async () => Response.json({ status: 'error', data: 'Rate limited' })), /Rate limited/)
   await assert.rejects(fetchMcsr('x', async () => new Response('', { status: 429 })), /429/)
+})
+
+test('Elo maps to the same tier and division names as the site', () => {
+  const names = [[0, 'Coal I'], [399, 'Coal I'], [400, 'Coal II'], [599, 'Coal III'], [600, 'Iron I'], [1099, 'Gold II'], [1178, 'Gold III'],
+    [1200, 'Emerald I'], [1649, 'Diamond I'], [1800, 'Diamond III'], [1999, 'Diamond III'], [2000, 'Netherite'], [2600, 'Netherite']]
+  for (const [elo, name] of names) assert.equal(rankName(elo), name, String(elo))
 })

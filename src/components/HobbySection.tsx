@@ -28,7 +28,7 @@ const toDetail = (hobby: Hobby): Detail => ({
   stats: hobby.stats,
   history: hobby.history,
   link: hobby.link,
-  note: hobby.note ?? `Sample stats from ${hobbySnapshotDate} · not live`,
+  note: hobby.note ?? `Last updated ${hobbySnapshotDate} · not live`,
 })
 
 export function HobbySection() {

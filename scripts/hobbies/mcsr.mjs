@@ -16,6 +16,19 @@ export async function fetchMcsr(username, fetcher = fetch) {
   return { profile, matches }
 }
 
+// Elo cut-offs for each tier's divisions, mirrored from mcsrranked.com (the API has no tier field).
+const tiers = [
+  ['Coal', [0, 400, 500]], ['Iron', [600, 700, 800]], ['Gold', [900, 1000, 1100]],
+  ['Emerald', [1200, 1300, 1400]], ['Diamond', [1500, 1650, 1800]], ['Netherite', [2000]],
+]
+
+/** e.g. 1178 -> "Gold III". Divisions count up from I at the tier's lowest cut-off. */
+export function rankName(elo) {
+  const [name, cutoffs] = tiers.findLast(([, cutoffs]) => elo >= cutoffs[0]) ?? tiers[0]
+  if (cutoffs.length === 1) return name
+  return `${name} ${'I'.repeat(cutoffs.findLastIndex(cutoff => elo >= cutoff) + 1)}`
+}
+
 /** m:ss.mmm for times over a minute, matching how runs are quoted. */
 function formatRun(ms) {
   const minutes = Math.floor(ms / 60_000)
@@ -32,8 +45,8 @@ export function normalizeMcsr({ profile, matches }, config, fetchedAt) {
 
   const decided = wins + losses
   const stats = [
-    { label: 'current elo', value: integer(profile.eloRate), detail: `rank #${integer(profile.eloRank)}` },
-    { label: 'all-time best', value: Number.isFinite(best) && best > 0 ? formatRun(best) : '—', detail: 'ranked RSG' },
+    { label: 'current elo', value: integer(profile.eloRate), detail: `rank #${integer(profile.eloRank)} · ${rankName(profile.eloRate)}` },
+    { label: 'all-time best', value: Number.isFinite(best) && best > 0 ? formatRun(best) : '—', detail: 'ranked PB' },
     { label: 'ranked record', value: `${integer(wins)}–${integer(losses)}`, ...(decided ? { detail: `${(wins / decided * 100).toFixed(1)}% win rate` } : {}) },
   ]
   // Matches arrive newest first. A change's `eloRate` is the rating before the match, so the

@@ -36,7 +36,7 @@ export const hobbies: Hobby[] = [
     id: 'table-tennis',
     title: 'Table Tennis',
     eyebrow: 'Provincial Level',
-    blurb: 'Playing since 2014. Trained a lot and got up to provincial level. Top Canadian competitor up until age 15.',
+    blurb: 'Playing since 2014. Trained a lot and got up to provincial level. Top Canadian competitor up until age 15. I no longer play.',
     stats: [
       { label: 'latest rating', value: '1,104', detail: 'rating period May 5, 2023' },
       { label: 'peak rating', value: '1,184', detail: 'reached May 5, 2022' },
