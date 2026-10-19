@@ -1,7 +1,12 @@
 // Static sample copied once from the old site's stats snapshot (2026-10-02T16:00:42.073Z).
-// Other hobbies use these sample numbers. Speedcubing is supplied by the generated snapshot.
+// Table tennis and MCSR Ranked use these sample numbers. TETR.IO and speedcubing come from generated snapshots.
 // Histories are downsampled to at most 36 points.
+import tetrio from './generated/tetrio.json'
 import type { Hobby } from './types'
+
+/** Hobbies backed by a weekly API refresh say when they were last fetched instead of "sample". */
+const liveNote = (fetchedAt: string) =>
+  `Live stats from ${new Date(fetchedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })} · refreshed weekly`
 
 export const hobbySnapshotDate = 'Oct 2, 2026'
 
@@ -11,55 +16,9 @@ export const hobbies: Hobby[] = [
     title: 'TETR.IO',
     eyebrow: 'Competitive Tetris',
     blurb: 'Started playing tetris when introduced by a friend in grade 11. Grinded a lot in highschool, both in class and out of class (oops). Now just playing for fun here and there.',
-    stats: [
-      { label: 'league rank', value: 'SS', detail: '#1,802 global · #109 Canada' },
-      { label: 'TR', value: '20433', detail: 'best rank U' },
-      { label: 'APM / PPS / VS', value: '86.1 / 2.02 / 172.3', detail: 'last 10 games stats' },
-      { label: '40L PB', value: '32.950s', detail: '#402 Canada · #6,437 global' },
-      { label: 'Blitz PB', value: '587,087', detail: '#143 Canada · #1,958 global' },
-      { label: 'win rate', value: '49.8%', detail: '3,359 / 6,741 games played · 852h time played' },
-    ],
-    history: {
-      label: 'tetra league tr history',
-      points: [
-        { label: 'Aug 17, 2024', value: 14407 },
-        { label: 'Sep 5, 2024', value: 18158 },
-        { label: 'Oct 6, 2024', value: 18997 },
-        { label: 'Oct 21, 2024', value: 20168 },
-        { label: 'Nov 7, 2024', value: 20158 },
-        { label: 'Nov 25, 2024', value: 20394 },
-        { label: 'Dec 8, 2024', value: 20290 },
-        { label: 'Dec 17, 2024', value: 20497 },
-        { label: 'Dec 25, 2024', value: 20335 },
-        { label: 'Jan 5, 2025', value: 20415 },
-        { label: 'Jan 26, 2025', value: 20911 },
-        { label: 'Mar 16, 2025', value: 20091 },
-        { label: 'Apr 13, 2025', value: 19499 },
-        { label: 'May 6, 2025', value: 20030 },
-        { label: 'May 19, 2025', value: 20016 },
-        { label: 'Jun 1, 2025', value: 20448 },
-        { label: 'Jul 10, 2025', value: 19759 },
-        { label: 'Jul 25, 2025', value: 19869 },
-        { label: 'Aug 9, 2025', value: 19618 },
-        { label: 'Oct 3, 2025', value: 19608 },
-        { label: 'Oct 8, 2025', value: 20954 },
-        { label: 'Nov 5, 2025', value: 20666 },
-        { label: 'Nov 27, 2025', value: 19944 },
-        { label: 'Dec 10, 2025', value: 19627 },
-        { label: 'Dec 23, 2025', value: 19832 },
-        { label: 'Jan 4, 2026', value: 19891 },
-        { label: 'Jan 19, 2026', value: 20002 },
-        { label: 'Jan 30, 2026', value: 19832 },
-        { label: 'Feb 11, 2026', value: 20024 },
-        { label: 'Feb 24, 2026', value: 20012 },
-        { label: 'Mar 18, 2026', value: 19804 },
-        { label: 'Apr 6, 2026', value: 20082 },
-        { label: 'Apr 27, 2026', value: 20273 },
-        { label: 'May 25, 2026', value: 20456 },
-        { label: 'Jul 12, 2026', value: 20410 },
-        { label: 'Oct 1, 2026', value: 20433 },
-      ],
-    },
+    stats: tetrio.stats,
+    history: tetrio.history,
+    note: liveNote(tetrio.fetchedAt),
     link: { label: 'View TETR.IO profile', href: 'https://ch.tetr.io/u/uselessleaf' },
   },
   {

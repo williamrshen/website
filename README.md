@@ -1,6 +1,6 @@
 # William Shen — the garden portfolio
 
-The personal site of William Shen (uselessleaf), built for [williamrshen.com](https://williamrshen.com). Built with React, TypeScript, Vite, CSS Modules, and the Canvas 2D API. All fonts, artwork, and interactions run locally; the browser makes no third-party API requests. Cubing stats are imported into a build-time snapshot; there are no CDN assets or analytics.
+The personal site of William Shen (uselessleaf), built for [williamrshen.com](https://williamrshen.com). Built with React, TypeScript, Vite, CSS Modules, and the Canvas 2D API. All fonts, artwork, and interactions run locally; the browser makes no third-party API requests. Cubing and TETR.IO stats are imported into build-time snapshots; there are no CDN assets or analytics.
 
 ## Run locally
 
@@ -18,7 +18,7 @@ Open the localhost URL printed by Vite. No sharing service or deployment is need
 - Full-screen voxel garden with circular grid fades and a cursor-local glow.
 - Scrolling shrinks the garden into a leaf-green navigation bar. The centered wordmark moves left, the menu appears on the right, and the daylight/evening toggle moves from beside the name to the far right.
 - Portrait and introduction follow the garden, then work experience, selected projects, and hobbies. Card sections show three items and expand to show the rest.
-- Hobby cards expand into a side panel. Speedcubing has Official/Unofficial results, an event selector, and practice averages; a weekly workflow refreshes its bundled snapshot. Other hobbies use the old site's sample stats.
+- Hobby cards expand into a side panel. Speedcubing has Official/Unofficial results, an event selector, and practice averages; a weekly workflow refreshes its bundled snapshot, and the same workflow refreshes TETR.IO's live stats. Other hobbies use the old site's sample stats.
 - Daylight/evening palettes, pollen/fireflies, native project/info dialogs, and responsive mobile layouts.
 - Reduced-motion support, keyboard navigation, and a skip-to-introduction link. Hidden navigation is inert until revealed.
 - Canvas animation pauses when the garden is collapsed or the browser tab is hidden. Event listeners, animation frames, and resize observers are cleaned up on unmount, including React Strict Mode development remounts.
@@ -79,8 +79,10 @@ tests/
   portfolio.spec.ts                Browser checks for layout and interactions
   cubing.spec.ts                   Cubing controls, mobile/keyboard flows, scoped axe checks
 config/cubing.json                  WCA profile, explicit session-name mappings, practice filters
+config/hobbies.json                 Usernames for the live hobby stat APIs
+scripts/hobbies/                    Live hobby API clients and refresh scripts
 scripts/cubing/                     Source clients, calculations, validation, refresh script
-.github/workflows/refresh-cubing.yml Weekly refresh, checks, snapshot commit, optional deploy hook
+.github/workflows/refresh-stats.yml Weekly refresh, checks, snapshot commit, optional deploy hook
 playwright.config.ts               Local-only browser test server
 index.html                         Page title, description, and favicon
 404.html                           Not-found page shell (noindex)
@@ -93,13 +95,22 @@ vite.config.ts                     Vite + React, 404 build entry, local 404 hand
 - **Portrait image:** replace `src/assets/portrait.jpg` (currently 1000 × 1162, cropped from the old site's photo with metadata removed). Keep a similar portrait aspect ratio or adjust `object-position` in `Portrait.module.css`.
 - **Work experience:** edit `src/data/experience.ts`. Roles are listed newest first; the Geotab entry is a placeholder. Cards currently use company monograms until artwork is chosen.
 - **Projects:** edit `src/data/projects.ts`. The first three appear before expanding. Cards rotate through placeholder icons until project artwork is chosen.
-- **Hobby descriptions and other hobby stats:** edit `src/data/hobbies.ts`. Tetris, Minecraft, and table tennis use the old site's Oct 2, 2026 sample snapshot, with histories downsampled to 36 points. Speedcubing numbers come from the generated snapshot described below.
+- **Hobby descriptions and other hobby stats:** edit `src/data/hobbies.ts`. Minecraft and table tennis use the old site's Oct 2, 2026 sample snapshot, with histories downsampled to 36 points. TETR.IO numbers come from `src/data/generated/tetrio.json` (see Live hobby stats), and speedcubing numbers from the generated snapshot described below.
 - **Résumé:** replace `public/resume.pdf`. It is served at the stable URL `/resume.pdf`, and the introduction's **Résumé** link downloads it as `William Shen - Resume.pdf` (set in `src/data/profile.ts`). The current file is the old site's PDF, unchanged, and includes your phone number.
 - **Contact links:** edit `src/data/contact.ts`. The navbar's **Say hello** and the introduction's **Or just say hello** open the same dialog.
 - **Field notes dialog copy:** edit `src/data/portfolio.ts`. Writing has not been ported yet, so this is still placeholder copy.
 - **Colors and dimensions:** edit the CSS custom properties in `src/index.css`; component-specific layout lives alongside each component.
 - **Garden shapes and placement:** edit `src/garden/scene.ts`. Its seeded random generator keeps the landscape stable across mounts and resizes.
 - **Scroll choreography:** edit `src/hooks/useGardenExperience.ts` and `GardenExperience.module.css`. Frame-by-frame updates go straight to CSS variables and canvas rather than triggering React renders.
+
+## Live hobby stats
+
+TETR.IO stats come from the [TETRA CHANNEL API](https://tetr.io/about/api/). Usernames live in
+`config/hobbies.json`. `npm run stats:refresh` (or `npm run stats:refresh:hobbies` on its own)
+fetches the league summary, 40 LINES and Blitz records, and league history, then rewrites
+`src/data/generated/tetrio.json`. No account or key is needed. If the API fails, the previous
+file is kept and a warning is printed, so one outage never blocks the other refreshes.
+The browser never calls the API; the numbers are bundled at build time.
 
 ## Cubing stats
 
@@ -261,8 +272,8 @@ Missing or invalid averages show `—`; timestamps are displayed as UTC dates.
 
 ### Weekly publishing
 
-`.github/workflows/refresh-cubing.yml` runs Mondays at **04:17 UTC** and supports
-manual runs from **Actions → Refresh cubing stats → Run workflow**. After this
+`.github/workflows/refresh-stats.yml` runs Mondays at **04:17 UTC** and supports
+manual runs from **Actions → Refresh stats → Run workflow**. After this
 code is pushed to the default branch, configure these repository Actions secrets:
 
 | Secret | Purpose |
@@ -272,7 +283,7 @@ code is pushed to the default branch, configure these repository Actions secrets
 
 The workflow installs dependencies, refreshes the snapshot, runs unit tests,
 lint, the production build, and browser tests, then commits only the generated
-snapshot. This preserves the last-good data for normal website deployments.
+snapshots. This preserves the last-good data for normal website deployments.
 It explicitly posts to the deploy hook when configured. Without the hook, the
 snapshot is still committed; deployment depends on your existing Git integration.
 The workflow requires permission to write repository contents; a protected

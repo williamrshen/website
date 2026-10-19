@@ -11,8 +11,9 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "stats:refresh": "node --env-file-if-exists=.env.local scripts/cubing/refresh.mjs",
-    "test": "node --experimental-strip-types --test scripts/cubing/*.test.mjs",
+    "stats:refresh": "node --env-file-if-exists=.env.local scripts/cubing/refresh.mjs && npm run stats:refresh:hobbies",
+    "stats:refresh:hobbies": "node scripts/hobbies/refresh-tetrio.mjs",
+    "test": "node --experimental-strip-types --test scripts/cubing/*.test.mjs scripts/hobbies/*.test.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {

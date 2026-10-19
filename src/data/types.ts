@@ -50,6 +50,8 @@ export type Hobby = {
   stats: Stat[]
   history?: HistorySeries
   link?: DetailLink
+  /** Overrides the default "sample stats" footnote for hobbies with live data. */
+  note?: string
 }
 
 export type CardItem = {

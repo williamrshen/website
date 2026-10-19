@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import cubingSnapshot from '../src/data/generated/cubing.json' with { type: 'json' }
+import tetrioSnapshot from '../src/data/generated/tetrio.json' with { type: 'json' }
 
 test.beforeEach(async ({ page }) => {
   // Theme interactions start from an explicit preference, independent of the clock.
@@ -285,7 +286,7 @@ test('projects show three at a time, expand to all five, and show project detail
   await expect(snowballistic).toBeFocused()
 })
 
-test('hobbies show sample stats and open hobby details in a side panel', async ({ page }) => {
+test('hobbies show live and sample stats and open hobby details in a side panel', async ({ page }) => {
   await page.goto('/')
   await scrollTo(page, await collapseDistance(page))
   await page.getByRole('navigation').getByRole('link', { name: 'for fun', exact: true }).click()
@@ -295,8 +296,8 @@ test('hobbies show sample stats and open hobby details in a side panel', async (
   const tiles = section.getByRole('listitem').getByRole('button')
   await expect(tiles).toHaveCount(4)
   await expect(tiles).toContainText(['TETR.IO', 'MCSR Ranked', 'Table Tennis', 'Speedcubing'])
-  await expect(tiles.first()).toContainText('SS')
-  await expect(section.getByRole('img', { name: /tetra league tr history/ })).toBeVisible()
+  await expect(tiles.first()).toContainText(tetrioSnapshot.stats[0].value)
+  await expect(section.getByRole('img')).toHaveCount(0)
 
   // Selecting a hobby collapses the tiles to header-only rows in a column beside the panel.
   const tetris = tiles.first()
@@ -312,9 +313,12 @@ test('hobbies show sample stats and open hobby details in a side panel', async (
   expect(boxes[0].x + boxes[0].width).toBeLessThan((await panel.boundingBox())!.x)
   await expect(panel).toContainText('Started playing tetris')
   await expect(panel.locator('dt')).toHaveCount(6)
-  await expect(panel.getByRole('img', { name: /tetra league tr history: 14,407 on Aug 17, 2024/ })).toBeVisible()
+  const firstPoint = tetrioSnapshot.history.points[0]
+  await expect(panel.getByRole('img', { name: new RegExp(`tetra league tr history: ${firstPoint.value.toLocaleString('en-US')} on ${firstPoint.label}`) })).toBeVisible()
+  for (const stat of tetrioSnapshot.stats) await expect(panel).toContainText(stat.value)
   await expect(panel.getByRole('link', { name: /View TETR.IO profile/ })).toHaveAttribute('href', 'https://ch.tetr.io/u/uselessleaf')
-  await expect(panel).toContainText('Sample stats from Oct 2, 2026 · not live')
+  await expect(panel).toContainText('Live stats from')
+  await expect(panel).not.toContainText('not live')
 
   // Switching hobbies swaps the panel in place.
   const cubingTile = tiles.nth(3)

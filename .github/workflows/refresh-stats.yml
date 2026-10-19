@@ -1,4 +1,4 @@
-name: Refresh cubing stats
+name: Refresh stats
 
 on:
   schedule:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: refresh-cubing
+  group: refresh-stats
   cancel-in-progress: false
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
-      - name: Refresh official and practice snapshots
+      - name: Refresh cubing and live hobby snapshots
         run: npm run stats:refresh
         env:
           CSTIMER_ID: ${{ secrets.CSTIMER_ID }}
@@ -32,11 +32,11 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
-      - name: Save the last-good snapshot
+      - name: Save the last-good snapshots
         run: |
-          if ! git diff --quiet -- src/data/generated/cubing.json; then
-            git add src/data/generated/cubing.json
-            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Refresh cubing stats'
+          if [ -n "$(git status --porcelain -- src/data/generated)" ]; then
+            git add src/data/generated
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Refresh stats'
             git push
           fi
       - name: Trigger the website deployment
