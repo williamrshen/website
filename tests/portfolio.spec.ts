@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import cubingSnapshot from '../src/data/generated/cubing.json' with { type: 'json' }
+import mcsrSnapshot from '../src/data/generated/mcsr.json' with { type: 'json' }
 import tetrioSnapshot from '../src/data/generated/tetrio.json' with { type: 'json' }
 
 test.beforeEach(async ({ page }) => {
@@ -319,6 +320,16 @@ test('hobbies show live and sample stats and open hobby details in a side panel'
   await expect(panel.getByRole('link', { name: /View TETR.IO profile/ })).toHaveAttribute('href', 'https://ch.tetr.io/u/uselessleaf')
   await expect(panel).toContainText('Live stats from')
   await expect(panel).not.toContainText('not live')
+
+  // MCSR Ranked is live too, while table tennis keeps its sample numbers.
+  await tiles.nth(1).click()
+  const mcsr = section.getByRole('region', { name: 'MCSR Ranked' })
+  await expect(mcsr.locator('dt')).toHaveCount(mcsrSnapshot.stats.length)
+  for (const stat of mcsrSnapshot.stats) await expect(mcsr).toContainText(stat.value)
+  await expect(mcsr.getByRole('img', { name: /ranked elo history/ })).toBeVisible()
+  await expect(mcsr).toContainText('Live stats from')
+  await tiles.nth(2).click()
+  await expect(section.getByRole('region', { name: 'Table Tennis' })).toContainText('Sample stats from Oct 2, 2026 · not live')
 
   // Switching hobbies swaps the panel in place.
   const cubingTile = tiles.nth(3)

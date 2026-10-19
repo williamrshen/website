@@ -1,6 +1,7 @@
 // Static sample copied once from the old site's stats snapshot (2026-10-02T16:00:42.073Z).
-// Table tennis and MCSR Ranked use these sample numbers. TETR.IO and speedcubing come from generated snapshots.
+// Table tennis uses these sample numbers. TETR.IO, MCSR Ranked, and speedcubing come from generated snapshots.
 // Histories are downsampled to at most 36 points.
+import mcsr from './generated/mcsr.json'
 import tetrio from './generated/tetrio.json'
 import type { Hobby } from './types'
 
@@ -26,45 +27,9 @@ export const hobbies: Hobby[] = [
     title: 'MCSR Ranked',
     eyebrow: 'Minecraft Speedrunning',
     blurb: 'Started after seeing couriway\'s 14:36 1.16 RSG world record. Been playing on and off for a while. Now mainly playing ranked.',
-    stats: [
-      { label: 'current elo', value: '1,158', detail: 'rank #4,526' },
-      { label: 'all-time best', value: '13:35.658', detail: 'ranked RSG' },
-      { label: 'ranked record', value: '368–341', detail: '51.9% win rate' },
-    ],
-    history: {
-      label: 'ranked elo history',
-      points: [
-        { label: 'Aug 31, 2026', value: 1102 },
-        { label: 'Aug 31, 2026', value: 1082 },
-        { label: 'Aug 31, 2026', value: 1101 },
-        { label: 'Sep 1, 2026', value: 1121 },
-        { label: 'Sep 1, 2026', value: 1141 },
-        { label: 'Sep 1, 2026', value: 1121 },
-        { label: 'Sep 1, 2026', value: 1141 },
-        { label: 'Sep 1, 2026', value: 1161 },
-        { label: 'Sep 1, 2026', value: 1142 },
-        { label: 'Sep 18, 2026', value: 1121 },
-        { label: 'Sep 18, 2026', value: 1121 },
-        { label: 'Sep 18, 2026', value: 1101 },
-        { label: 'Sep 18, 2026', value: 1120 },
-        { label: 'Sep 21, 2026', value: 1139 },
-        { label: 'Sep 21, 2026', value: 1118 },
-        { label: 'Sep 21, 2026', value: 1099 },
-        { label: 'Sep 21, 2026', value: 1118 },
-        { label: 'Sep 21, 2026', value: 1139 },
-        { label: 'Sep 24, 2026', value: 1160 },
-        { label: 'Sep 24, 2026', value: 1180 },
-        { label: 'Sep 24, 2026', value: 1200 },
-        { label: 'Sep 30, 2026', value: 1179 },
-        { label: 'Sep 30, 2026', value: 1200 },
-        { label: 'Oct 1, 2026', value: 1220 },
-        { label: 'Oct 1, 2026', value: 1198 },
-        { label: 'Oct 1, 2026', value: 1179 },
-        { label: 'Oct 1, 2026', value: 1158 },
-        { label: 'Oct 1, 2026', value: 1138 },
-        { label: 'Oct 1, 2026', value: 1158 },
-      ],
-    },
+    stats: mcsr.stats,
+    history: mcsr.history,
+    note: liveNote(mcsr.fetchedAt),
     link: { label: 'View MCSR Ranked profile', href: 'https://mcsrranked.com/stats/uselessleaf' },
   },
   {

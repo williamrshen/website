@@ -1,6 +1,6 @@
 # William Shen — the garden portfolio
 
-The personal site of William Shen (uselessleaf), built for [williamrshen.com](https://williamrshen.com). Built with React, TypeScript, Vite, CSS Modules, and the Canvas 2D API. All fonts, artwork, and interactions run locally; the browser makes no third-party API requests. Cubing and TETR.IO stats are imported into build-time snapshots; there are no CDN assets or analytics.
+The personal site of William Shen (uselessleaf), built for [williamrshen.com](https://williamrshen.com). Built with React, TypeScript, Vite, CSS Modules, and the Canvas 2D API. All fonts, artwork, and interactions run locally; the browser makes no third-party API requests. Cubing, TETR.IO, and MCSR Ranked stats are imported into build-time snapshots; there are no CDN assets or analytics.
 
 ## Run locally
 
@@ -18,7 +18,7 @@ Open the localhost URL printed by Vite. No sharing service or deployment is need
 - Full-screen voxel garden with circular grid fades and a cursor-local glow.
 - Scrolling shrinks the garden into a leaf-green navigation bar. The centered wordmark moves left, the menu appears on the right, and the daylight/evening toggle moves from beside the name to the far right.
 - Portrait and introduction follow the garden, then work experience, selected projects, and hobbies. Card sections show three items and expand to show the rest.
-- Hobby cards expand into a side panel. Speedcubing has Official/Unofficial results, an event selector, and practice averages; a weekly workflow refreshes its bundled snapshot, and the same workflow refreshes TETR.IO's live stats. Other hobbies use the old site's sample stats.
+- Hobby cards expand into a side panel. Speedcubing has Official/Unofficial results, an event selector, and practice averages; a weekly workflow refreshes its bundled snapshot, and the same workflow refreshes the live TETR.IO and MCSR Ranked stats. Other hobbies use the old site's sample stats.
 - Daylight/evening palettes, pollen/fireflies, native project/info dialogs, and responsive mobile layouts.
 - Reduced-motion support, keyboard navigation, and a skip-to-introduction link. Hidden navigation is inert until revealed.
 - Canvas animation pauses when the garden is collapsed or the browser tab is hidden. Event listeners, animation frames, and resize observers are cleaned up on unmount, including React Strict Mode development remounts.
@@ -95,7 +95,7 @@ vite.config.ts                     Vite + React, 404 build entry, local 404 hand
 - **Portrait image:** replace `src/assets/portrait.jpg` (currently 1000 × 1162, cropped from the old site's photo with metadata removed). Keep a similar portrait aspect ratio or adjust `object-position` in `Portrait.module.css`.
 - **Work experience:** edit `src/data/experience.ts`. Roles are listed newest first; the Geotab entry is a placeholder. Cards currently use company monograms until artwork is chosen.
 - **Projects:** edit `src/data/projects.ts`. The first three appear before expanding. Cards rotate through placeholder icons until project artwork is chosen.
-- **Hobby descriptions and other hobby stats:** edit `src/data/hobbies.ts`. Minecraft and table tennis use the old site's Oct 2, 2026 sample snapshot, with histories downsampled to 36 points. TETR.IO numbers come from `src/data/generated/tetrio.json` (see Live hobby stats), and speedcubing numbers from the generated snapshot described below.
+- **Hobby descriptions and other hobby stats:** edit `src/data/hobbies.ts`. Table tennis uses the old site's Oct 2, 2026 sample snapshot, with its history downsampled to 36 points. TETR.IO and MCSR Ranked numbers come from `src/data/generated/tetrio.json` and `mcsr.json` (see Live hobby stats), and speedcubing numbers from the generated snapshot described below.
 - **Résumé:** replace `public/resume.pdf`. It is served at the stable URL `/resume.pdf`, and the introduction's **Résumé** link downloads it as `William Shen - Resume.pdf` (set in `src/data/profile.ts`). The current file is the old site's PDF, unchanged, and includes your phone number.
 - **Contact links:** edit `src/data/contact.ts`. The navbar's **Say hello** and the introduction's **Or just say hello** open the same dialog.
 - **Field notes dialog copy:** edit `src/data/portfolio.ts`. Writing has not been ported yet, so this is still placeholder copy.
@@ -108,9 +108,13 @@ vite.config.ts                     Vite + React, 404 build entry, local 404 hand
 TETR.IO stats come from the [TETRA CHANNEL API](https://tetr.io/about/api/). Usernames live in
 `config/hobbies.json`. `npm run stats:refresh` (or `npm run stats:refresh:hobbies` on its own)
 fetches the league summary, 40 LINES and Blitz records, and league history, then rewrites
-`src/data/generated/tetrio.json`. No account or key is needed. If the API fails, the previous
+`src/data/generated/tetrio.json`. No account or key is needed.
+
+MCSR Ranked stats come from the [MCSR Ranked API](https://docs.mcsrranked.com/): the user
+profile (Elo, rank, ranked record, best time) plus the last 100 ranked matches of the
+current season for the Elo history, written to `src/data/generated/mcsr.json`. If the API fails, the previous
 file is kept and a warning is printed, so one outage never blocks the other refreshes.
-The browser never calls the API; the numbers are bundled at build time.
+The browser never calls either API; the numbers are bundled at build time.
 
 ## Cubing stats
 
