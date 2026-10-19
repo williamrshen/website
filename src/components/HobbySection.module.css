@@ -68,11 +68,7 @@
 .stat { display: flex; flex-direction: column; gap: 6px; }
 .value { font-size: 30px; letter-spacing: -1px; line-height: 1; font-variant-numeric: tabular-nums; }
 .label { font: 9px monospace; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
-.trend { min-height: 42px; display: flex; align-items: flex-end; margin-top: auto; }
-.trend > * { width: 100%; }
-.secondary { font-size: 11px; color: var(--muted); }
-.secondary b { font-weight: 600; color: var(--ink); }
-.more { display: flex; justify-content: space-between; padding-top: 14px; border-top: 1px solid var(--line); font-size: 11px; color: var(--muted); }
+.more { margin-top: auto; display: flex; justify-content: space-between; padding-top: 14px; border-top: 1px solid var(--line); font-size: 11px; color: var(--muted); }
 
 /*
  * Split view: tiles collapse to just their header in a single column. The split layout
@@ -80,7 +76,7 @@
  */
 .split .grid { grid-template-columns: 1fr; gap: 10px; }
 .split .tile { gap: 0; padding: 16px 18px; transition: background 0.2s, border-color 0.2s; }
-.split .stat, .split .trend, .split .more { display: none; }
+.split .stat, .split .more { display: none; }
 .split .tile:hover { transform: none; }
 .split .tile[aria-current='true'] { border-color: #b9c79f; background: #a7bd8124; }
 :global([data-theme='evening']) .split .tile[aria-current='true'] { border-color: #5d7155; background: #a7bd8114; }

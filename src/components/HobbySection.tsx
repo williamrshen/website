@@ -10,7 +10,6 @@ import { useDetailPanel } from '../hooks/useDetailPanel'
 import { DetailPanel } from './DetailPanel'
 import { CubingControls, CubingExtras } from './CubingStats'
 import { CubingProgression } from './CubingProgression'
-import { Sparkline } from './Sparkline'
 import split from './DetailPanel.module.css'
 import styles from './HobbySection.module.css'
 import cubingStyles from './CubingStats.module.css'
@@ -61,7 +60,7 @@ export function HobbySection() {
         <div className={split.items} ref={itemsRef}>
           <ul className={styles.grid}>
             {items.map((hobby, index) => {
-              const [featured, secondary] = hobby.stats
+              const [featured] = hobby.stats
               return (
                 <li key={hobby.id}>
                   <button {...panel.cardProps(hobby.id)} className={styles.tile}>
@@ -75,11 +74,6 @@ export function HobbySection() {
                     <span className={styles.stat}>
                       <span className={styles.value}>{featured.value}</span>
                       <span className={styles.label}>{featured.label}</span>
-                    </span>
-                    <span className={styles.trend}>
-                      {hobby.history
-                        ? <Sparkline series={hobby.history} compact />
-                        : secondary && <span className={styles.secondary}><b>{secondary.value}</b> {secondary.label}</span>}
                     </span>
                     <span className={styles.more}>View stats <span aria-hidden="true">→</span></span>
                   </button>
