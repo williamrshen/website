@@ -353,6 +353,77 @@ test('hobbies show live and sample stats and open hobby details in a side panel'
   await expect(tetris).toBeFocused()
 })
 
+test('hobby history charts show values on hover and zoom, pan, and reset', async ({ page }) => {
+  await page.goto('/')
+  await scrollTo(page, await collapseDistance(page))
+  await page.getByRole('navigation').getByRole('link', { name: 'for fun', exact: true }).click()
+  const section = page.locator('#hobbies')
+  const tiles = section.getByRole('listitem').getByRole('button')
+
+  for (const [index, name, label] of [[0, 'TETR.IO', 'tetra league tr history'], [1, 'MCSR Ranked', 'ranked elo history'], [2, 'Table Tennis', 'rating history']] as const) {
+    await tiles.nth(index).click()
+    const panel = section.getByRole('region', { name })
+    await expect(panel).toBeVisible()
+    await page.waitForFunction(() => !document.documentElement.matches(':active-view-transition'))
+    const chart = panel.getByRole('figure', { name: label })
+    const inspector = chart.getByRole('button', { name: `Inspect ${label}` })
+    await inspector.scrollIntoViewIfNeeded()
+    const box = (await inspector.boundingBox())!
+    const view = async () => ({
+      start: Number(await chart.locator('[data-view-start]').getAttribute('data-view-start')),
+      end: Number(await chart.locator('[data-view-start]').getAttribute('data-view-end')),
+    })
+    const full = await view()
+
+    // Hovering the left and right edges reads out the first and last values.
+    await page.mouse.move(box.x + 2, box.y + 60)
+    const tooltip = chart.locator('[aria-hidden="true"]').filter({ has: page.locator('b') })
+    await expect(tooltip).toBeVisible()
+    const firstReading = await tooltip.innerText()
+    await page.mouse.move(box.x + box.width - 2, box.y + 60)
+    await expect.poll(() => tooltip.innerText()).not.toBe(firstReading)
+    await page.mouse.move(box.x - 20, box.y - 20)
+    await expect(tooltip).toHaveCount(0)
+
+    // Dragging across the plot zooms into that range; the buttons start disabled.
+    const reset = chart.getByRole('button', { name: 'Reset zoom', exact: true })
+    await expect(reset).toBeDisabled()
+    await page.mouse.move(box.x + box.width * 0.4, box.y + 60)
+    await page.mouse.down()
+    await page.mouse.move(box.x + box.width * 0.8, box.y + 60, { steps: 8 })
+    await page.mouse.up()
+    await expect(reset).toBeEnabled()
+    const zoomed = await view()
+    expect(zoomed.end - zoomed.start).toBeLessThan((full.end - full.start) * 0.6)
+    await expect(chart.getByText(/ – /)).toBeVisible()
+
+    // Shift-drag pans, and Ctrl+scroll zooms further around the cursor.
+    await page.keyboard.down('Shift')
+    await page.mouse.move(box.x + box.width * 0.6, box.y + 60)
+    await page.mouse.down()
+    await page.mouse.move(box.x + box.width * 0.3, box.y + 60, { steps: 8 })
+    await page.mouse.up()
+    await page.keyboard.up('Shift')
+    const panned = await view()
+    expect(panned.start).toBeGreaterThan(zoomed.start)
+    expect(panned.end - panned.start).toBeCloseTo(zoomed.end - zoomed.start, 5)
+    await inspector.dispatchEvent('wheel', { ctrlKey: true, deltaY: -300, clientX: box.x + box.width / 2, clientY: box.y + 60 })
+    const wheeled = await view()
+    expect(wheeled.end - wheeled.start).toBeLessThan(panned.end - panned.start)
+
+    // Keyboard: arrows inspect points, 0 resets, and Escape clears the reading.
+    await inspector.focus()
+    await inspector.press('Home')
+    await expect(tooltip).toBeVisible()
+    await inspector.press('Escape')
+    await expect(tooltip).toHaveCount(0)
+    await inspector.press('0')
+    expect(await view()).toEqual(full)
+    await expect(reset).toBeDisabled()
+    await tiles.nth(index).click()
+  }
+})
+
 test('contact dialog lists email, LinkedIn, and GitHub', async ({ page }) => {
   await page.goto('/')
   await scrollTo(page, await collapseDistance(page))

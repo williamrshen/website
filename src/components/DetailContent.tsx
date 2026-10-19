@@ -45,7 +45,7 @@ export function DetailContent({ detail, titleId, descriptionId, headingLevel = 2
         </dl>
       )}
       {afterStats}
-      {detail.history && <Sparkline series={detail.history} />}
+      {detail.history && <Sparkline key={detail.history.label} series={detail.history} />}
       {detail.contacts && detail.contacts.length > 0 && (
         <ul className={styles.contacts}>
           {detail.contacts.map((contact) => {
