@@ -45,7 +45,7 @@ src/
   components/
     GardenExperience.tsx           Garden, animated header, theme toggle, cursor
     About.tsx                      Portrait-and-introduction section
-    Portrait.tsx                   Introduction portrait
+    Portrait.tsx                   Introduction photo slideshow
     CardSection.tsx                Experience/project cards with show-all control
     HobbySection.tsx               Hobby tiles with headline stats
     CubingStats.tsx                Source/event controls and practice extras
@@ -92,11 +92,11 @@ vite.config.ts                     Vite + React, 404 build entry, local 404 hand
 ### Customize content
 
 - **Name, alias, introduction, Currently list, and portrait:** edit `src/data/profile.ts`. The introduction headline lives in `src/components/About.tsx`.
-- **Portrait image:** replace `src/assets/portrait.jpg` (currently 1000 × 1162, cropped from the old site's photo with metadata removed). Keep a similar portrait aspect ratio or adjust `object-position` in `Portrait.module.css`.
+- **Hero photos:** edit the `portraits` list in `src/data/profile.ts`. Each entry has an image, alt text, caption, and the CSS `object-position` used to crop it into the portrait frame; add an entry to add a slide. The slideshow advances every 6 seconds, pauses on hover/focus and in background tabs, and doesn't autoplay with reduced motion. Images live in `src/assets/` (`portrait.jpg` is 1000 × 1162, `burlington.jpg` 2048 × 1536, both with metadata removed).
 - **Work experience:** edit `src/data/experience.ts`. Roles are listed newest first; the Geotab entry is a placeholder. Cards currently use company monograms until artwork is chosen.
 - **Projects:** edit `src/data/projects.ts`. The first three appear before expanding. Cards rotate through placeholder icons until project artwork is chosen.
 - **Hobby descriptions and other hobby stats:** edit `src/data/hobbies.ts`. Table tennis uses the old site's Oct 2, 2026 sample snapshot, with its history downsampled to 36 points. TETR.IO and MCSR Ranked numbers come from `src/data/generated/tetrio.json` and `mcsr.json` (see Live hobby stats), and speedcubing numbers from the generated snapshot described below.
-- **Résumé:** replace `public/resume.pdf`. It is served at the stable URL `/resume.pdf`, and the introduction's **Résumé** link downloads it as `William Shen - Resume.pdf` (set in `src/data/profile.ts`). The current file is the old site's PDF, unchanged, and includes your phone number.
+- **Résumé:** replace `public/resume.pdf`. It is served at the stable URL `/resume.pdf`, and the introduction's **Résumé** link downloads it as `William Shen - Resume.pdf` (set in `src/data/profile.ts`). The current file is `WT6_RESUME.pdf` (Sep 10, 2026), unchanged, and includes your phone number.
 - **Contact links:** edit `src/data/contact.ts`. The navbar's **Say hello** and the introduction's **Or just say hello** open the same dialog.
 - **Field notes dialog copy:** edit `src/data/portfolio.ts`. Writing has not been ported yet, so this is still placeholder copy.
 - **Colors and dimensions:** edit the CSS custom properties in `src/index.css`; component-specific layout lives alongside each component.

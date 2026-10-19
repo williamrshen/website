@@ -1,10 +1,48 @@
 .portrait { margin: 0; position: relative; min-width: 0; }
 .frame { aspect-ratio: 4 / 4.65; position: relative; overflow: hidden; border-radius: 3px 3px 80px 3px; background: #d8decc; }
-.image { width: 100%; height: 100%; position: absolute; inset: 0; object-fit: cover; object-position: 50% 20%; }
-.caption { margin-top: 17px; font: 9px monospace; letter-spacing: 1.2px; color: var(--muted); }
+.image { width: 100%; height: 100%; position: absolute; inset: 0; object-fit: cover; opacity: 0; transition: opacity 0.8s ease; }
+.image[data-active='true'] { opacity: 1; }
+
+.arrow {
+  position: absolute;
+  top: 50%;
+  width: 36px;
+  height: 36px;
+  margin-top: -18px;
+  padding: 0 0 3px;
+  border: 0;
+  border-radius: 50%;
+  background: #14251c8c;
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.2s;
+}
+.previous { left: 10px; }
+.next { right: 10px; }
+.frame:hover .arrow, .arrow:focus-visible { opacity: 1; }
+.arrow:hover { background: #14251cb8; }
+/* Touch screens have no hover, so keep the controls visible there. */
+@media (hover: none) { .arrow { opacity: 1; } }
+
+.footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 17px; }
+.caption { font: 9px monospace; letter-spacing: 1.2px; color: var(--muted); }
+.dots { display: flex; gap: 2px; }
+/* A 24px hit area around a small dot. */
+.dot { position: relative; width: 24px; height: 24px; padding: 0; border: 0; background: none; cursor: pointer; }
+.dot::before { content: ''; position: absolute; inset: 8px; border-radius: 50%; background: var(--muted); opacity: 0.35; transition: opacity 0.2s, transform 0.2s; }
+.dot[aria-current='true']::before { opacity: 1; background: var(--accent); transform: scale(1.25); }
+.dot:hover::before { opacity: 0.7; }
+.dot:focus-visible { outline-offset: 0; border-radius: 50%; }
 
 @media (max-width: 680px) {
   .portrait { width: 100%; }
   .frame { aspect-ratio: 4 / 4.1; border-bottom-right-radius: 60px; }
   .caption { font-size: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image, .arrow, .dot::before { transition: none; }
 }

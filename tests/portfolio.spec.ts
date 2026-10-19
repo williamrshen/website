@@ -424,12 +424,59 @@ test('hobby history charts show values on hover and zoom, pan, and reset', async
   }
 })
 
+test('hero photo is a captioned slideshow with controls, autoplay, and reduced-motion support', async ({ page }) => {
+  await page.clock.install()
+  await page.goto('/')
+  await scrollTo(page, await collapseDistance(page))
+  const slideshow = page.locator('#about').getByRole('figure', { name: 'Photos of William' })
+  const caption = slideshow.locator('figcaption')
+  const lobster = slideshow.locator('img[alt*="lobster"]')
+  const burlington = slideshow.locator('img[alt*="Burlington"]')
+  await expect(caption).toHaveText('01 / east coast road trip, me with a lobster')
+  await expect(lobster).toHaveCSS('opacity', '1')
+  await expect(burlington).toHaveCSS('opacity', '0')
+
+  // Manual controls wrap around in both directions.
+  await slideshow.getByRole('button', { name: 'Next photo' }).click({ force: true })
+  await expect(caption).toHaveText('02 / went salmon watching')
+  await expect(burlington).toHaveCSS('opacity', '1')
+  await expect(burlington).toHaveJSProperty('complete', true)
+  expect(await burlington.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0)
+  await slideshow.getByRole('button', { name: 'Next photo' }).click({ force: true })
+  await expect(caption).toHaveText('01 / east coast road trip, me with a lobster')
+  await slideshow.getByRole('button', { name: 'Previous photo' }).click({ force: true })
+  await expect(caption).toHaveText('02 / went salmon watching')
+  await slideshow.getByRole('button', { name: 'Photo 1: east coast road trip, me with a lobster' }).click()
+  await expect(caption).toHaveText('01 / east coast road trip, me with a lobster')
+  await expect(slideshow.getByRole('button', { name: /^Photo 1/ })).toHaveAttribute('aria-current', 'true')
+
+  // It advances on its own, but not while the pointer is over it.
+  await page.mouse.move(0, 0)
+  await page.clock.runFor(6100)
+  await expect(caption).toHaveText('02 / went salmon watching')
+  await slideshow.hover()
+  await page.clock.runFor(20000)
+  await expect(caption).toHaveText('02 / went salmon watching')
+  await page.mouse.move(0, 0)
+  await page.clock.runFor(6100)
+  await expect(caption).toHaveText('01 / east coast road trip, me with a lobster')
+})
+
+test('hero slideshow does not autoplay when reduced motion is preferred', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.clock.install()
+  await page.goto('/')
+  const caption = page.locator('#about').getByRole('figure', { name: 'Photos of William' }).locator('figcaption')
+  await page.clock.runFor(30000)
+  await expect(caption).toHaveText('01 / east coast road trip, me with a lobster')
+})
+
 test('contact dialog lists email, LinkedIn, and GitHub', async ({ page }) => {
   await page.goto('/')
   await scrollTo(page, await collapseDistance(page))
   for (const trigger of [
     page.getByRole('navigation').getByRole('button', { name: 'contact', exact: true }),
-    page.locator('#about').getByRole('button', { name: /Say hello/ }),
+    page.locator('#about').getByRole('button', { name: /say hello/ }),
   ]) {
     await trigger.click()
     const dialog = page.getByRole('dialog', { name: 'Let’s chat!' })
@@ -445,10 +492,10 @@ test('contact dialog lists email, LinkedIn, and GitHub', async ({ page }) => {
   }
 })
 
-test('résumé link downloads the ported PDF', async ({ page, request }) => {
+test('résumé link downloads the PDF', async ({ page, request }) => {
   await page.goto('/')
   await scrollTo(page, await collapseDistance(page))
-  const link = page.locator('#about').getByRole('link', { name: /Résumé/ })
+  const link = page.locator('#about').getByRole('link', { name: /résumé/ })
   await expect(link).toHaveAttribute('href', '/resume.pdf')
   await expect(link).toHaveAttribute('download', 'William Shen - Resume.pdf')
   const response = await request.get('/resume.pdf')
@@ -504,11 +551,11 @@ test('introduction shows identity, portrait, and current focus', async ({ page }
   await scrollTo(page, await collapseDistance(page))
   const about = page.locator('#about')
   await expect(about.getByRole('heading', { level: 1 })).toHaveText("I'm William.Curious by nature.")
-  await expect(about.getByText('Third-year math student at Waterloo who likes algorithms, games, and good food.')).toBeVisible()
+  await expect(about.getByText('third-year math student at waterloo who likes algorithms, games, and good food.')).toBeVisible()
   const portrait = about.getByRole('img', { name: /William Shen smiling/ })
   await expect(portrait).toBeVisible()
   expect(await portrait.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth)).toBe(1000)
-  await expect(about.locator('figcaption')).toHaveText('01 / me in halifax with a lobster')
+  await expect(about.locator('figcaption')).toHaveText('01 / east coast road trip, me with a lobster')
   await expect(about).not.toContainText('HELLO, WORLD')
   await expect(about.getByText('now — swe intern @ geotab')).toBeVisible()
   for (const removed of ['aka uselessleaf', 'Explore my work']) {

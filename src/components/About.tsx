@@ -14,11 +14,11 @@ export function About({ onOpenDetail }: { onOpenDetail: OpenDetail }) {
         <p className={styles.bio}>now — {profile.now}</p>
         <div className={styles.links}>
           <a className={styles.link} href={profile.resume.href} download={profile.resume.filename}>
-            Résumé <span aria-hidden="true">↓</span>
+            résumé <span aria-hidden="true">↓</span>
             <span className={styles.visuallyHidden}> (PDF)</span>
           </a>
           <button className={styles.link} onClick={() => onOpenDetail(contact)}>
-            Say hello <span aria-hidden="true">↗</span>
+            say hello <span aria-hidden="true">↗</span>
           </button>
         </div>
       </div>
