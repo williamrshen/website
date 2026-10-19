@@ -1,4 +1,4 @@
-/* Split view: cards collapse into a single scrollable column beside the detail panel. */
+/* Split view: cards collapse into a single column beside the detail panel. */
 .split {
   display: grid;
   grid-template-columns: minmax(250px, 330px) minmax(0, 1fr);
@@ -11,17 +11,7 @@
 .split.mirrored { grid-template-columns: minmax(0, 1fr) minmax(250px, 330px); grid-template-areas: 'panel items'; }
 .split.mirrored .panel { --panel-from: -16px; }
 
-.split .items {
-  grid-area: items;
-  position: sticky;
-  top: calc(var(--nav-height) + 24px);
-  max-height: min(calc(100svh - var(--nav-height) - 48px), 640px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: var(--line) transparent;
-  padding-right: 6px;
-}
+.split .items { grid-area: items; }
 
 .panel {
   grid-area: panel;
@@ -74,7 +64,6 @@
 @media (max-width: 680px) {
   .split,
   .split.mirrored { grid-template-columns: 1fr; grid-template-areas: 'items' 'panel'; gap: 20px; }
-  .split .items { position: static; max-height: 40svh; }
   .panel { padding: 28px 22px 30px; }
 }
 

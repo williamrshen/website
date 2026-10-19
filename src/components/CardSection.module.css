@@ -99,7 +99,7 @@
 .toggle[aria-expanded='true'] .chevron { transform: rotate(180deg); }
 
 /*
- * Card styles inside the split view. The split layout itself (columns, sticky list, panel)
+ * Card styles inside the split view. The split layout itself (columns, list, panel)
  * lives in DetailPanel.module.css; `.split` here is applied alongside it.
  */
 .mirrored .heading { flex-direction: row-reverse; }
