@@ -2,6 +2,8 @@ import { expect, test, type Page } from '@playwright/test'
 import cubingSnapshot from '../src/data/generated/cubing.json' with { type: 'json' }
 import mcsrSnapshot from '../src/data/generated/mcsr.json' with { type: 'json' }
 import tetrioSnapshot from '../src/data/generated/tetrio.json' with { type: 'json' }
+import { contactLinks } from '../src/data/contact'
+import { experience } from '../src/data/experience'
 
 test.beforeEach(async ({ page }) => {
   // Theme interactions start from an explicit preference, independent of the clock.
@@ -543,6 +545,27 @@ test('crawlers and installers find robots.txt, the sitemap, icons, and the manif
     expect(response.ok(), href).toBe(true)
     expect(response.headers()['content-type'], href).toMatch(/^image\/|manifest\+json/)
   }
+})
+
+test('structured data describes the person and stays in sync with the page data', async ({ page }) => {
+  await page.goto('/')
+  const blocks = await page.locator('head script[type="application/ld+json"]').allTextContents()
+  expect(blocks).toHaveLength(1)
+  const data = JSON.parse(blocks[0])
+  expect(data['@context']).toBe('https://schema.org')
+  expect(data['@type']).toBe('ProfilePage')
+  const person = data.mainEntity
+  expect(person['@type']).toBe('Person')
+  expect(person.name).toBe('William Shen')
+  expect(person.alternateName).toBe('uselessleaf')
+  expect(person.url).toBe(await page.locator('head link[rel="canonical"]').getAttribute('href'))
+  expect(person.email).toBe(contactLinks.find((link) => link.kind === 'email')!.href)
+  expect(person.sameAs).toEqual(contactLinks.filter((link) => link.kind !== 'email').map((link) => link.href))
+  // The current role is the first experience card.
+  const current = experience[0].detail
+  expect(person.jobTitle).toBe(current.title)
+  expect(person.worksFor.name).toBe(current.subtitle)
+  expect(person.worksFor.url).toBe(current.link!.href)
 })
 
 test('unknown and retired URLs return the 404 page', async ({ page }) => {
