@@ -74,6 +74,7 @@ src/
     useGardenExperience.ts         Scroll morph, cursor, media queries, lifecycle
 public/
   portfolio-mark.svg               Local cube favicon
+  og-image.png                     1200 × 630 link-preview card (daylight garden)
   resume.pdf                       Résumé, served at /resume.pdf
 tests/
   portfolio.spec.ts                Browser checks for layout and interactions
@@ -84,7 +85,7 @@ scripts/hobbies/                    Live hobby API clients and refresh scripts
 scripts/cubing/                     Source clients, calculations, validation, refresh script
 .github/workflows/refresh-stats.yml Weekly refresh, checks, snapshot commit, optional deploy hook
 playwright.config.ts               Local-only browser test server
-index.html                         Page title, description, and favicon
+index.html                         Page title, description, favicon, and social preview tags
 404.html                           Not-found page shell (noindex)
 vite.config.ts                     Vite + React, 404 build entry, local 404 handling
 ```
@@ -97,6 +98,7 @@ vite.config.ts                     Vite + React, 404 build entry, local 404 hand
 - **Projects:** edit `src/data/projects.ts`. The first three appear before expanding. Cards rotate through placeholder icons until project artwork is chosen.
 - **Hobby descriptions and other hobby stats:** edit `src/data/hobbies.ts`. Table tennis uses the old site's Oct 2, 2026 sample snapshot, with its history downsampled to 36 points. TETR.IO and MCSR Ranked numbers come from `src/data/generated/tetrio.json` and `mcsr.json` (see Live hobby stats), and speedcubing numbers from the generated snapshot described below.
 - **Résumé:** replace `public/resume.pdf`. It is served at the stable URL `/resume.pdf`, and the introduction's **Résumé** link downloads it as `William Shen - Resume.pdf` (set in `src/data/profile.ts`). The current file is `WT6_RESUME.pdf` (Sep 10, 2026), unchanged, and includes your phone number.
+- **Link previews:** the Open Graph and Twitter tags in `index.html` point at `public/og-image.png`, a 1200 × 630 screenshot of the daylight garden with the theme toggle and scroll hint hidden and the wordmark centered. Re-capture it at that viewport when the garden changes, and update `og:image:alt` to match.
 - **Contact links:** edit `src/data/contact.ts`. The navbar's **Say hello** and the introduction's **Or just say hello** open the same dialog.
 - **Field notes dialog copy:** edit `src/data/portfolio.ts`. Writing has not been ported yet, so this is still placeholder copy.
 - **Colors and dimensions:** edit the CSS custom properties in `src/index.css`; component-specific layout lives alongside each component.

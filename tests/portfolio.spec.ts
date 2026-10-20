@@ -506,6 +506,23 @@ test('résumé link downloads the PDF', async ({ page, request }) => {
   expect(download.suggestedFilename()).toBe('William Shen - Resume.pdf')
 })
 
+test('link previews have a 1200×630 social card', async ({ page, request }) => {
+  await page.goto('/')
+  const meta = (selector: string) => page.locator(`head meta[${selector}]`).getAttribute('content')
+  expect(await meta('property="og:site_name"')).toBe('William Shen')
+  expect(await meta('property="og:image"')).toBe('https://williamrshen.com/og-image.png')
+  expect(await meta('property="og:image:width"')).toBe('1200')
+  expect(await meta('property="og:image:height"')).toBe('630')
+  expect(await meta('property="og:image:alt"')).toBeTruthy()
+  expect(await meta('name="twitter:card"')).toBe('summary_large_image')
+  expect(await meta('name="twitter:image"')).toBe(await meta('property="og:image"'))
+  const response = await request.get('/og-image.png')
+  expect(response.ok()).toBe(true)
+  expect(response.headers()['content-type']).toContain('image/png')
+  const png = await response.body()
+  expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1200, 630])
+})
+
 test('unknown and retired URLs return the 404 page', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
