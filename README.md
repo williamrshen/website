@@ -89,6 +89,7 @@ config/cubing.json                  WCA profile, explicit session-name mappings,
 config/hobbies.json                 Usernames for the live hobby stat APIs
 scripts/hobbies/                    Live hobby API clients and refresh scripts
 scripts/cubing/                     Source clients, calculations, validation, refresh script
+.github/workflows/ci.yml           Unit tests, lint, build, and e2e on pushes to main and PRs
 .github/workflows/refresh-stats.yml Weekly refresh, checks, snapshot commit, optional deploy hook
 playwright.config.ts               Local-only browser test server
 index.html                         Page title, description, favicon, and social preview tags
