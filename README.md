@@ -73,7 +73,13 @@ src/
   hooks/
     useGardenExperience.ts         Scroll morph, cursor, media queries, lifecycle
 public/
-  portfolio-mark.svg               Local cube favicon
+  portfolio-mark.svg               Local cube favicon (source for the PNG icons)
+  favicon.ico                      32 × 32 fallback favicon
+  apple-touch-icon.png             180 × 180 home-screen icon
+  icon-192.png, icon-512.png       Manifest icons (cube on cream, maskable-safe padding)
+  site.webmanifest                 Name, colors, and icons for installs/home screens
+  robots.txt                       Allows all crawlers and points at the sitemap
+  sitemap.xml                      Lists the single page
   og-image.png                     1200 × 630 link-preview card (daylight garden)
   resume.pdf                       Résumé, served at /resume.pdf
 tests/

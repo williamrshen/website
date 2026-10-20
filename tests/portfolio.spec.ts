@@ -523,6 +523,28 @@ test('link previews have a 1200×630 social card', async ({ page, request }) => 
   expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1200, 630])
 })
 
+test('crawlers and installers find robots.txt, the sitemap, icons, and the manifest', async ({ page, request }) => {
+  const robots = await request.get('/robots.txt')
+  expect(robots.ok()).toBe(true)
+  expect(await robots.text()).toContain('Sitemap: https://williamrshen.com/sitemap.xml')
+  const sitemap = await request.get('/sitemap.xml')
+  expect(sitemap.ok()).toBe(true)
+  expect(await sitemap.text()).toContain('<loc>https://williamrshen.com/</loc>')
+
+  await page.goto('/')
+  const hrefs = await page.locator('head link[rel="icon"], head link[rel="apple-touch-icon"], head link[rel="manifest"]')
+    .evaluateAll((links) => links.map((link) => link.getAttribute('href')!))
+  expect(hrefs).toEqual(['/favicon.ico', '/portfolio-mark.svg', '/apple-touch-icon.png', '/site.webmanifest'])
+  const manifest = await (await request.get('/site.webmanifest')).json()
+  expect(manifest.start_url).toBe('/')
+  const icons = [...hrefs, ...manifest.icons.map((icon: { src: string }) => icon.src)]
+  for (const href of new Set(icons)) {
+    const response = await request.get(href)
+    expect(response.ok(), href).toBe(true)
+    expect(response.headers()['content-type'], href).toMatch(/^image\/|manifest\+json/)
+  }
+})
+
 test('unknown and retired URLs return the 404 page', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
