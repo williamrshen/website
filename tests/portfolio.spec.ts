@@ -512,6 +512,11 @@ test('link previews have a 1200×630 social card', async ({ page, request }) => 
   await page.goto('/')
   const meta = (selector: string) => page.locator(`head meta[${selector}]`).getAttribute('content')
   expect(await meta('property="og:site_name"')).toBe('William Shen')
+  // The description is the search-result snippet; Google shows roughly 155 characters.
+  const description = (await meta('name="description"'))!
+  expect(description.length).toBeLessThanOrEqual(155)
+  expect(await meta('property="og:description"')).toBe(description)
+  expect(await meta('name="twitter:description"')).toBe(description)
   expect(await meta('property="og:image"')).toBe('https://williamrshen.com/og-image.png')
   expect(await meta('property="og:image:width"')).toBe('1200')
   expect(await meta('property="og:image:height"')).toBe('630')
@@ -538,7 +543,10 @@ test('crawlers and installers find robots.txt, the sitemap, icons, and the manif
   await page.goto('/')
   const hrefs = await page.locator('head link[rel="icon"], head link[rel="apple-touch-icon"], head link[rel="manifest"]')
     .evaluateAll((links) => links.map((link) => link.getAttribute('href')!))
-  expect(hrefs).toEqual(['/favicon.ico', '/portfolio-mark.svg', '/apple-touch-icon.png', '/site.webmanifest'])
+  expect(hrefs).toEqual(['/favicon.ico', '/favicon-48.png', '/icon-192.png', '/portfolio-mark.svg', '/apple-touch-icon.png', '/site.webmanifest'])
+  // Google Search needs a square favicon whose size is a multiple of 48px.
+  const favicon = await (await request.get('/favicon-48.png')).body()
+  expect([favicon.readUInt32BE(16), favicon.readUInt32BE(20)]).toEqual([48, 48])
   const manifest = await (await request.get('/site.webmanifest')).json()
   expect(manifest.start_url).toBe('/')
   const icons = [...hrefs, ...manifest.icons.map((icon: { src: string }) => icon.src)]
@@ -555,9 +563,14 @@ test('structured data describes the person and stays in sync with the page data'
   expect(blocks).toHaveLength(1)
   const data = JSON.parse(blocks[0])
   expect(data['@context']).toBe('https://schema.org')
-  expect(data['@type']).toBe('ProfilePage')
-  const person = data.mainEntity
-  expect(person['@type']).toBe('Person')
+  const node = (type: string) => data['@graph'].find((entry: { '@type': string }) => entry['@type'] === type)
+  // WebSite.name is what Google shows as the site name above the URL.
+  const website = node('WebSite')
+  expect(website.name).toBe(await page.locator('head meta[property="og:site_name"]').getAttribute('content'))
+  expect(website.url).toBe('https://williamrshen.com/')
+  const person = node('Person')
+  expect(node('ProfilePage').mainEntity['@id']).toBe(person['@id'])
+  expect(website.publisher['@id']).toBe(person['@id'])
   expect(person.name).toBe('William Shen')
   expect(person.alternateName).toBe('uselessleaf')
   expect(person.url).toBe(await page.locator('head link[rel="canonical"]').getAttribute('href'))

@@ -74,7 +74,8 @@ src/
     useGardenExperience.ts         Scroll morph, cursor, media queries, lifecycle
 public/
   portfolio-mark.svg               Local cube favicon (source for the PNG icons)
-  favicon.ico                      32 × 32 fallback favicon
+  favicon.ico                      32 + 48 px fallback favicon (cube on cream)
+  favicon-48.png                   48 × 48 favicon for Google Search results
   apple-touch-icon.png             180 × 180 home-screen icon
   icon-192.png, icon-512.png       Manifest icons (cube on cream, maskable-safe padding)
   site.webmanifest                 Name, colors, and icons for installs/home screens
@@ -106,7 +107,8 @@ vite.config.ts                     Vite + React, 404 build entry, local 404 hand
 - **Hobby descriptions and other hobby stats:** edit `src/data/hobbies.ts`. Table tennis uses the old site's Oct 2, 2026 sample snapshot, with its history downsampled to 36 points. TETR.IO and MCSR Ranked numbers come from `src/data/generated/tetrio.json` and `mcsr.json` (see Live hobby stats), and speedcubing numbers from the generated snapshot described below.
 - **Résumé:** replace `public/resume.pdf`. It is served at the stable URL `/resume.pdf`, and the introduction's **Résumé** link downloads it as `William Shen - Resume.pdf` (set in `src/data/profile.ts`). The current file is `WT6_RESUME.pdf` (Sep 10, 2026), unchanged, and includes your phone number.
 - **Link previews:** the Open Graph and Twitter tags in `index.html` point at `public/og-image.png`, a 1200 × 630 screenshot of the daylight garden with the theme toggle and scroll hint hidden and the wordmark centered. Re-capture it at that viewport when the garden changes, and update `og:image:alt` to match.
-- **Structured data:** `index.html` has a schema.org `ProfilePage`/`Person` JSON-LD block (name, alias, email, current role, school, LinkedIn/GitHub). It is static HTML so crawlers see it without running JavaScript; `tests/portfolio.spec.ts` checks the email, `sameAs` links, and current role against `src/data/contact.ts` and the first entry in `src/data/experience.ts`, so update it when those change.
+- **Search results:** Google's snippet comes from the meta `description` (kept at most 155 characters and mirrored in `og:description`/`twitter:description`), the site name from the `WebSite` JSON-LD entry, and the icon from `favicon-48.png` (Google requires a multiple of 48px). Google may take days to weeks to pick up changes; request reindexing in Search Console to speed it up.
+- **Structured data:** `index.html` has a schema.org JSON-LD `@graph` with `WebSite` (site name), `ProfilePage`, and `Person` (name, alias, email, current role, school, LinkedIn/GitHub). It is static HTML so crawlers see it without running JavaScript; `tests/portfolio.spec.ts` checks the email, `sameAs` links, and current role against `src/data/contact.ts` and the first entry in `src/data/experience.ts`, so update it when those change.
 - **Contact links:** edit `src/data/contact.ts`. The navbar's **Say hello** and the introduction's **Or just say hello** open the same dialog.
 - **Field notes dialog copy:** edit `src/data/portfolio.ts`. Writing has not been ported yet, so this is still placeholder copy.
 - **Colors and dimensions:** edit the CSS custom properties in `src/index.css`; component-specific layout lives alongside each component.
