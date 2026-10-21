@@ -528,7 +528,9 @@ test('link previews have a 1200×630 social card', async ({ page, request }) => 
 test('crawlers and installers find robots.txt, the sitemap, icons, and the manifest', async ({ page, request }) => {
   const robots = await request.get('/robots.txt')
   expect(robots.ok()).toBe(true)
-  expect(await robots.text()).toContain('Sitemap: https://williamrshen.com/sitemap.xml')
+  const rules = await robots.text()
+  expect(rules).toContain('Sitemap: https://williamrshen.com/sitemap.xml')
+  expect(rules).toMatch(/^Disallow: \/resume\.pdf$/m)
   const sitemap = await request.get('/sitemap.xml')
   expect(sitemap.ok()).toBe(true)
   expect(await sitemap.text()).toContain('<loc>https://williamrshen.com/</loc>')
