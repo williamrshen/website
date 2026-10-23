@@ -26,12 +26,17 @@ export type Palette = {
   ground: { fill: string; fillGrid: number; fillLight: number; stroke: string; strokeAlpha: number }
   /** Soft shadow under each island, from center to edge. */
   shadow: { center: string; edge: string }
+  /** Fireflies, and the color of snowflakes when `live` is `snow`. */
   firefly: { color: string; size: number; glow?: { blur: number; color: string } }
   /** Glow that follows the pointer, from center to edge. */
   pointerGlow: { center: string; edge: string }
   /** Blends the tops of boxes (and the upper faces of pines) toward `color`; `cover` is 0–1. */
   snow?: { color: string; cover: number }
+  /** What moves over the garden: drifting fireflies (default), falling leaves, snow, or blooming flowers. */
+  live?: LiveEffect
 }
+
+export type LiveEffect = 'fireflies' | 'leaves' | 'snow' | 'blooms'
 
 export type Point = { x: number; y: number }
 /** Which of a box's three camera-facing sides to draw: +z (top), +y (left), +x (right). */
@@ -65,6 +70,13 @@ export type Geometry = Box | PineLayer
 
 export type Tile = Point & { fade: number; gridFade: number; variation: number; grass: boolean }
 export type Firefly = Point & { z: number; phase: number }
+/** A leaf falling from a canopy; it respawns somewhere else under the same tree each cycle. */
+export type Leaf = { source: Point & { radius: number; height: number }; seed: number; period: number; phase: number; spin: number; shade: number }
+export type Flake = Point & { z: number; seed: number; period: number; phase: number; size: number }
+/** A flower that sprouts, blooms, and fades on a grass tile, then springs up on another one. */
+export type Bloom = { seed: number; period: number; phase: number; scale: number }
+
+type Area = { x: number; y: number; z: number; width: number; depth: number; height: number }
 
 /** A patch of grass. Islands shape the ground, cast a soft shadow, and anchor objects. */
 export type Island = Point & { id: string; radius: number }
@@ -119,11 +131,22 @@ export type GardenConfig = {
   /** Drawn in depth order; ties keep list order. */
   objects: GardenObject[]
   /** Drifting pollen/fireflies within a world-space box. */
-  fireflies: { count: number; seed: number; area: { x: number; y: number; z: number; width: number; depth: number; height: number } }
+  fireflies: { count: number; seed: number; area: Area }
+  /** Leaves falling from every oak (palettes with `live: 'leaves'`). */
+  leaves?: { count: number; seed: number }
+  /** Snowfall within a world-space box (palettes with `live: 'snow'`). */
+  snow?: { count: number; seed: number; area: Area }
+  /** Flowers springing up on open grass (palettes with `live: 'blooms'`). */
+  blooms?: { count: number; seed: number }
 }
 
 /** Where an object ended up in world space, for tooling. */
 export type PlacedObject = Point & { id: string; type: ObjectType; island?: string; rotate: number; mirror: boolean }
 
 /** Everything the renderer needs, built once from a config. */
-export type World = { tiles: Tile[]; geometry: Geometry[]; fireflies: Firefly[]; islands: Island[]; objects: PlacedObject[] }
+export type World = {
+  tiles: Tile[]; geometry: Geometry[]; fireflies: Firefly[]; islands: Island[]; objects: PlacedObject[]
+  leaves: Leaf[]; flakes: Flake[]; blooms: Bloom[]
+  /** Grass tiles a bloom can grow on: well inside an island and not hidden behind an object. */
+  bloomSpots: Point[]
+}

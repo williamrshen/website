@@ -1,3 +1,4 @@
+import { buildLive } from './live.ts'
 import { createRandom, seedFromId, type Random } from './random.ts'
 import type {
   Faces, GardenConfig, GardenObject, Geometry, Island, ObjectParams, ObjectType, Orientation, Paint, PlacedObject, Point, Tile, World,
@@ -223,5 +224,6 @@ export function buildWorld(config: GardenConfig): World {
     x: area.x + random() * area.width, y: area.y + random() * area.depth,
     z: area.z + random() * area.height, phase: random() * Math.PI * 2,
   }))
-  return { tiles: buildGround(config), geometry, fireflies, islands: config.islands, objects: placed }
+  const tiles = buildGround(config)
+  return { tiles, geometry, fireflies, islands: config.islands, objects: placed, ...buildLive(config, tiles, geometry, placed) }
 }

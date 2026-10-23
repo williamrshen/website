@@ -26,6 +26,7 @@ export function serializeGarden(config: GardenConfig) {
     `  islands: ${list(config.islands, '  ')},`,
     `  objects: ${list(config.objects, '  ')},`,
     `  fireflies: ${literal(config.fireflies)},`,
+    ...(['leaves', 'snow', 'blooms'] as const).filter((key) => config[key]).map((key) => `  ${key}: ${literal(config[key])},`),
     '}',
   ].join('\n')
 }

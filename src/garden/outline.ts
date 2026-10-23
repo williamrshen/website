@@ -1,6 +1,7 @@
-import type { Geometry, Point, World } from '../types.ts'
+/** Screen-space outlines of garden shapes: picking in the editor, occlusion for live effects. */
+import type { Geometry, Point, World } from './types.ts'
 
-type Project = (x: number, y: number, z?: number) => Point
+export type Project = (x: number, y: number, z?: number) => Point
 
 /** Convex hull (monotone chain), counter-clockwise in screen space. */
 export function convexHull(points: Point[]): Point[] {

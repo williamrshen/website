@@ -33,6 +33,10 @@ export const garden: GardenConfig = {
     { id: 'bench', type: 'bench', island: 'main', x: -2, y: 1.95 },
   ],
   fireflies: { count: 18, seed: 664517015, area: { x: -6.5, y: -4, z: 0.4, width: 13, depth: 10, height: 4 } },
+  // Seasonal effects; a palette's `live` picks which one runs.
+  leaves: { count: 34, seed: 9071 },
+  snow: { count: 150, seed: 4412, area: { x: -9, y: -8, z: 1, width: 18, depth: 17, height: 11 } },
+  blooms: { count: 14, seed: 3108 },
 }
 
 const daylight: Palette = {
@@ -58,8 +62,9 @@ const daylight: Palette = {
 }
 
 /**
- * An evening version of a daylight palette: the same colors under dimmer light, a darker shadow,
- * and glowing fireflies. `overrides` replaces anything else, e.g. a season's grid tint.
+ * An evening version of a daylight palette: the same colors and seasonal effect under dimmer light,
+ * a darker shadow, and glowing fireflies (in summer). `overrides` replaces anything else, e.g. a
+ * season's grid tint.
  */
 const atEvening = (palette: Palette, overrides: Partial<Palette> = {}): Palette => ({
   ...palette,
@@ -74,7 +79,7 @@ const atEvening = (palette: Palette, overrides: Partial<Palette> = {}): Palette 
 /** Summer is the original garden. */
 const evening = atEvening(daylight)
 
-/** Autumn: amber canopy, drier grass, warmer grid. */
+/** Autumn: amber canopy, drier grass, warmer grid, and leaves falling from the oaks. */
 const autumn: Palette = {
   ...daylight,
   colors: {
@@ -91,10 +96,11 @@ const autumn: Palette = {
   ground: { ...daylight.ground, fill: '170,155,100', stroke: '150,132,82' },
   shadow: { center: '#5a4a3030', edge: '#5a4a3000' },
   firefly: { color: '#c9a35e', size: 1.7 },
+  live: 'leaves',
 }
 const autumnEvening = atEvening(autumn, { ground: { fill: '204,180,114', fillGrid: 0.055, fillLight: 0.1, stroke: '224,196,145', strokeAlpha: 0.45 } })
 
-/** Winter: frosted canopy and grass with snow on every top face, cool grid. */
+/** Winter: frosted canopy and grass with snow on every top face, cool grid, and snowfall. */
 const winter: Palette = {
   ...daylight,
   colors: {
@@ -111,15 +117,18 @@ const winter: Palette = {
   },
   ground: { ...daylight.ground, fill: '150,165,175', stroke: '118,134,150' },
   shadow: { center: '#46566430', edge: '#46566400' },
-  firefly: { color: '#ffffff', size: 1.7 },
+  // Snowflakes: blue-grey so they show against the pale page.
+  firefly: { color: '#b4c3d3', size: 1.7 },
   snow: { color: '#f4f7fa', cover: 0.82 },
+  live: 'snow',
 }
 const winterEvening = atEvening(winter, {
   ground: { fill: '160,185,210', fillGrid: 0.055, fillLight: 0.1, stroke: '190,210,232', strokeAlpha: 0.45 },
   shadow: { center: '#06142459', edge: '#06142400' },
+  firefly: { color: '#e4ecf5', size: 1.7 },
 })
 
-/** Spring: fresh greens with blossom in the canopy and pale flowers. */
+/** Spring: fresh greens with blossom in the canopy, and flowers springing up on the grass. */
 const spring: Palette = {
   ...daylight,
   colors: {
@@ -134,6 +143,7 @@ const spring: Palette = {
     path: daylight.swatches.path,
   },
   firefly: { color: '#f2c6d2', size: 1.7 },
+  live: 'blooms',
 }
 const springEvening = atEvening(spring)
 

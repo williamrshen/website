@@ -1,3 +1,4 @@
+import { bloomAt, flakeAt, leafAt } from './live.ts'
 import { buildWorld } from './objects.ts'
 import type { Faces, GardenConfig, Paint, Palette, PineLayer, Point, Tile, World } from './types.ts'
 
@@ -265,6 +266,63 @@ export class GardenScene {
     ctx.restore()
   }
 
+  /** Pollen in daylight; palettes with a glow turn it into fireflies. */
+  private drawFireflies(palette: Palette, seconds: number) {
+    const ctx = this.context, firefly = palette.firefly, t = seconds * 0.25
+    for (const fly of this.world.fireflies) {
+      const point = this.project(fly.x + Math.sin(t + fly.phase) * 0.3, fly.y + Math.cos(t + fly.phase) * 0.25, fly.z + Math.sin(t * 1.8 + fly.phase) * 0.25)
+      ctx.globalAlpha = 0.2 + (Math.sin(t * 3 + fly.phase) + 1) * 0.22
+      ctx.fillStyle = firefly.color
+      if (firefly.glow) { ctx.shadowBlur = firefly.glow.blur; ctx.shadowColor = firefly.glow.color }
+      ctx.fillRect(point.x, point.y, firefly.size, firefly.size)
+      ctx.shadowBlur = 0
+    }
+  }
+
+  /** Leaves tumble down from the oaks, settle on the grass, and fade. */
+  private drawLeaves(palette: Palette, seconds: number) {
+    const ctx = this.context, leaves = palette.swatches.leaves, size = Math.max(2.2, this.unit * 0.13)
+    for (const leaf of this.world.leaves) {
+      const at = leafAt(leaf, seconds), point = this.project(at.x, at.y, at.z)
+      // Tumbling: the leaf narrows as it turns edge-on, and darkens on its underside.
+      const turn = Math.cos(at.tumble), width = size * Math.max(0.25, Math.abs(turn)), height = size * 0.62
+      const tilt = Math.sin(at.tumble * 0.5) * 0.6, cos = Math.cos(tilt), sin = Math.sin(tilt)
+      const corner = (dx: number, dy: number) => ({ x: point.x + dx * cos - dy * sin, y: point.y + dx * sin + dy * cos })
+      ctx.globalAlpha = Math.max(0, at.alpha)
+      this.polygon([corner(-width, 0), corner(0, -height), corner(width, 0), corner(0, height)],
+        shade(leaves[leaf.shade % leaves.length], palette.light.box * (turn > 0 ? 1.05 : 0.8)))
+    }
+  }
+
+  /** Snow drifts down and melts away at the ground. */
+  private drawSnow(palette: Palette, seconds: number) {
+    // Flakes use the particle color: white vanishes against a pale daylight background.
+    const ctx = this.context
+    ctx.fillStyle = palette.firefly.color
+    for (const flake of this.world.flakes) {
+      const at = flakeAt(flake, seconds), point = this.project(at.x, at.y, at.z)
+      ctx.globalAlpha = 0.85 * at.alpha
+      ctx.fillRect(point.x - flake.size / 2, point.y - flake.size / 2, flake.size, flake.size)
+    }
+  }
+
+  /** Flowers spring up on open grass, bloom, and fade before sprouting somewhere else. */
+  private drawBlooms(palette: Palette, seconds: number) {
+    const ctx = this.context
+    for (const bloom of this.world.blooms) {
+      const at = bloomAt(bloom, seconds, this.world.bloomSpots)
+      if (!at || at.alpha <= 0) continue
+      const s = at.scale, stem = 0.5 * s * at.stem
+      ctx.globalAlpha = at.alpha
+      if (stem > 0.01) this.box(at.x, at.y, 0.02, 0.07, 0.07, stem, 'stem', palette)
+      if (at.stem > 0.6) this.box(at.x - 0.15 * s, at.y, 0.16 * s, 0.18 * s * at.stem, 0.1 * s, 0.1 * s, 'plantLeaf', palette)
+      if (at.head > 0) {
+        const head = 0.24 * s * at.head
+        this.box(at.x + 0.035 - head / 2, at.y + 0.035 - head / 2, stem, head, head, head * 0.7, { swatch: 'flowers', index: at.flower }, palette)
+      }
+    }
+  }
+
   render(time: number, palette: Palette, reducedMotion: boolean) {
     const ctx = this.context, unit = this.unit, layers = this.layers
     ctx.clearRect(0, 0, this.width, this.height)
@@ -274,17 +332,13 @@ export class GardenScene {
     if (this.pointer) this.relight(palette, this.pointer)
     this.blit(layers.objects)
 
-    // Pollen in daylight; palettes with a glow turn it into fireflies.
-    const firefly = palette.firefly
-    for (const fly of this.world.fireflies) {
-      const t = reducedMotion ? 0 : time * 0.00025
-      const point = this.project(fly.x + Math.sin(t + fly.phase) * 0.3, fly.y + Math.cos(t + fly.phase) * 0.25, fly.z + Math.sin(t * 1.8 + fly.phase) * 0.25)
-      ctx.globalAlpha = 0.2 + (Math.sin(t * 3 + fly.phase) + 1) * 0.22
-      ctx.fillStyle = firefly.color
-      if (firefly.glow) { ctx.shadowBlur = firefly.glow.blur; ctx.shadowColor = firefly.glow.color }
-      ctx.fillRect(point.x, point.y, firefly.size, firefly.size)
-      ctx.shadowBlur = 0
-    }
+    // Seasonal effect over everything; reduced motion freezes it at t = 0.
+    const seconds = reducedMotion ? 0 : time / 1000
+    const live = palette.live ?? 'fireflies'
+    if (live === 'fireflies') this.drawFireflies(palette, seconds)
+    else if (live === 'leaves') this.drawLeaves(palette, seconds)
+    else if (live === 'snow') this.drawSnow(palette, seconds)
+    else this.drawBlooms(palette, seconds)
     ctx.globalAlpha = 1
     if (this.pointer) {
       const { x, y } = this.pointer

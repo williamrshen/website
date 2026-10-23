@@ -113,4 +113,35 @@ test.describe('with motion', () => {
     expect(perFrame).toBeGreaterThan(0)
     expect(perFrame).toBeLessThan(200)
   })
+
+  for (const season of ['autumn', 'winter', 'spring'] as const) {
+    test(`${season}'s live effect stays cheap per frame`, async ({ page }) => {
+      await page.addInitScript(() => {
+        const counts = { fill: 0, stroke: 0, drawImage: 0 }
+        Object.assign(window, { gardenDrawCounts: counts })
+        for (const method of ['fill', 'stroke', 'drawImage'] as const) {
+          const original = CanvasRenderingContext2D.prototype[method] as (...args: unknown[]) => void
+          Object.defineProperty(CanvasRenderingContext2D.prototype, method, {
+            value(this: CanvasRenderingContext2D, ...args: unknown[]) {
+              if ((this.canvas as HTMLCanvasElement).id === 'world') counts[method]++
+              return original.apply(this, args)
+            },
+          })
+        }
+      })
+      await page.goto(`/?season=${season}`)
+      await page.waitForTimeout(300)
+      const counts = await page.evaluate(async () => {
+        const counts = (window as unknown as { gardenDrawCounts: Record<string, number> }).gardenDrawCounts
+        for (const key of Object.keys(counts)) counts[key] = 0
+        await new Promise((resolve) => setTimeout(resolve, 500))
+        return { ...counts }
+      })
+      const frames = counts.drawImage / 2
+      expect(frames).toBeGreaterThan(5)
+      // Leaves are one polygon each, blooms a few small boxes, snow only rectangles; the scene itself is cached.
+      expect(counts.fill / frames).toBeLessThan(140)
+      expect(counts.stroke).toBe(0)
+    })
+  }
 })

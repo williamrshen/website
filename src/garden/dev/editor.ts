@@ -1,7 +1,7 @@
 import type { GardenConfig, GardenObject, Island, ObjectParams, ObjectType, Palette } from '../types.ts'
 import type { GardenHost, Palettes } from './index.ts'
 import { addOverlay, labeller } from './overlay.ts'
-import { objectOutline, pickObject } from './pick.ts'
+import { objectOutline, pickObject } from '../outline.ts'
 import { openSeedExplorer } from './seeds.ts'
 import { round, serializeGarden, serializePalette } from './serialize.ts'
 

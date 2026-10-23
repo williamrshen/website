@@ -3,7 +3,7 @@ import { test } from 'node:test'
 import { garden, gardenPalettes } from '../../data/garden.ts'
 import { buildWorld } from '../objects.ts'
 import type { GardenConfig, Point } from '../types.ts'
-import { convexHull, insidePolygon, objectOutline, pickObject } from './pick.ts'
+import { convexHull, insidePolygon, objectOutline, pickObject } from '../outline.ts'
 import { literal, serializeGarden, serializePalette } from './serialize.ts'
 
 /** Evaluates exported TypeScript from the serializers (type annotations stripped). */
