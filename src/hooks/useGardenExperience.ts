@@ -2,6 +2,12 @@ import { useLayoutEffect, useRef } from 'react'
 import { garden as gardenConfig, gardenPalettes } from '../data/garden'
 import { GardenScene } from '../garden/scene'
 
+if (import.meta.env.DEV) {
+  // This module re-runs whenever src/data/garden.ts is saved; hand the new config to the
+  // running garden. Dead code in production builds.
+  void import('../garden/dev/hot.ts').then(({ applyGardenModule }) => applyGardenModule(gardenConfig, gardenPalettes))
+}
+
 const clamp = (value: number) => Math.max(0, Math.min(1, value))
 const smooth = (value: number) => { const t = clamp(value); return t * t * (3 - 2 * t) }
 type Controller = { setEvening: (value: boolean) => void; setDialogOpen: (value: boolean) => void }
@@ -30,7 +36,7 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
     let night = false, modalOpen = false, progress = 0, visibleHeight = 0
     let width = 0, height = 0, frame = 0
 
-    let palettes = gardenPalettes
+    let palettes = gardenPalettes, config = gardenConfig
     const palette = () => night ? palettes.evening : palettes.daylight
     const render = (time = 0) => scene?.render(time, palette(), motionQuery.matches)
     const animate = (time: number) => {
@@ -113,9 +119,15 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
       void import('../garden/dev/index.ts').then(({ attachDevTools }) => {
         if (disposed) return
         detachDevTools = attachDevTools({
-          scene, canvas: canvasElement, palette,
+          scene, canvas: canvasElement, palette, config: () => config,
           requestRender: () => render(performance.now()),
-          setGarden(config, nextPalettes) { scene.setConfig(config); palettes = nextPalettes; scene.invalidate(); render(performance.now()) },
+          setGarden(nextConfig, nextPalettes) {
+            scene.setConfig(nextConfig)
+            config = nextConfig
+            palettes = nextPalettes
+            scene.invalidate()
+            render(performance.now())
+          },
         })
       })
     }

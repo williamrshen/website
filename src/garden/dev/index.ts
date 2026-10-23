@@ -19,6 +19,8 @@ export type GardenHost = {
   palette(): Palette
   /** Draws a frame now (the animation loop may be paused). */
   requestRender(): void
+  /** The config on screen. */
+  config(): GardenConfig
   /** Replaces the garden on screen (throws, keeping the old garden, if the config is invalid). */
   setGarden(config: GardenConfig, palettes: Palettes): void
 }
