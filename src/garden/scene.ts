@@ -9,11 +9,25 @@ function shade(hex: string, factor = 1) {
   return `rgb(${channel(color >> 16)},${channel((color >> 8) & 255)},${channel(color & 255)})`
 }
 
-/** Canvas renderer for a garden built from config; no event listeners or React state. */
+type Layer = { canvas: HTMLCanvasElement; palette: Palette }
+
+/**
+ * Canvas renderer for a garden built from config; no event listeners or React state.
+ *
+ * Only the fireflies and the pointer light change between frames, so the rest is drawn once into
+ * two cached layers, `ground` (grass and grid) and `objects` (island shadows and everything on
+ * them), and copied each frame. While the pointer lights the grid, just the ground around it is
+ * redrawn, clipped to whole device pixels, between the two layers. Layers are rebuilt lazily
+ * after a resize or palette change.
+ */
 export class GardenScene {
   private context: CanvasRenderingContext2D
+  /** Where drawing helpers paint: the visible canvas, or a layer being cached. */
+  private target: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
   private world: World
+  private layers: { ground?: Layer; objects?: Layer } = {}
+  private dpr = 1
   private visibleTiles: Tile[] = []
   private width = 0
   private height = 0
@@ -24,6 +38,7 @@ export class GardenScene {
   constructor(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D, config: GardenConfig) {
     this.canvas = canvas
     this.context = context
+    this.target = context
     this.world = buildWorld(config)
   }
 
@@ -35,7 +50,7 @@ export class GardenScene {
   }
 
   private polygon(points: Point[], fill?: string, stroke?: string) {
-    const ctx = this.context
+    const ctx = this.target
     ctx.beginPath()
     points.forEach((point, index) => {
       if (index) ctx.lineTo(point.x, point.y)
@@ -89,6 +104,8 @@ export class GardenScene {
     this.width = this.canvas.clientWidth
     this.height = this.canvas.clientHeight
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    this.dpr = dpr
+    this.layers = {}
     this.canvas.width = this.width * dpr
     this.canvas.height = this.height * dpr
     this.context.setTransform(dpr, 0, 0, dpr, 0, 0)
@@ -102,12 +119,33 @@ export class GardenScene {
 
   setPointer(point: Point | null) { this.pointer = point }
 
-  render(time: number, palette: Palette, reducedMotion: boolean) {
-    const ctx = this.context, unit = this.unit, ground = palette.ground
-    ctx.clearRect(0, 0, this.width, this.height)
-    for (const tile of this.visibleTiles) {
+  /** Draws into a cached layer the same size as the visible canvas, with the same transform. */
+  private layer(palette: Palette, draw: () => void): Layer {
+    const canvas = this.canvas.ownerDocument.createElement('canvas')
+    canvas.width = this.canvas.width
+    canvas.height = this.canvas.height
+    const context = canvas.getContext('2d')!
+    context.setTransform(this.dpr, 0, 0, this.dpr, 0, 0)
+    this.target = context
+    try { draw() } finally { this.target = this.context }
+    return { canvas, palette }
+  }
+
+  /** Copies a cached layer onto the visible canvas pixel for pixel. */
+  private blit(layer: Layer) {
+    const ctx = this.context
+    ctx.save()
+    ctx.setTransform(1, 0, 0, 1, 0, 0)
+    ctx.drawImage(layer.canvas, 0, 0)
+    ctx.restore()
+  }
+
+  /** Grass and grid lines; `pointer` brightens the tiles around it. */
+  private drawGround(palette: Palette, pointer: Point | null, tiles = this.visibleTiles) {
+    const ctx = this.target, unit = this.unit, ground = palette.ground
+    for (const tile of tiles) {
       const point = this.project(tile.x + 0.5, tile.y + 0.5)
-      const light = this.pointer ? Math.max(0, 1 - Math.hypot(point.x - this.pointer.x, point.y - this.pointer.y) / (unit * 3.9)) : 0
+      const light = pointer ? Math.max(0, 1 - Math.hypot(point.x - pointer.x, point.y - pointer.y) / (unit * 3.9)) : 0
       const alpha = Math.max(tile.gridFade * 0.85, light * 0.9)
       if (alpha < 0.008) continue
       if (tile.grass) {
@@ -126,7 +164,11 @@ export class GardenScene {
         this.project(tile.x + 1, tile.y + 1), this.project(tile.x, tile.y + 1),
       ], fill, stroke)
     }
+  }
 
+  /** Island shadows, then every object back to front. */
+  private drawObjects(palette: Palette) {
+    const ctx = this.target, unit = this.unit
     for (const island of this.world.islands) {
       const point = this.project(island.x, island.y), radius = island.radius * unit * 0.72
       ctx.save()
@@ -145,6 +187,40 @@ export class GardenScene {
       if (item.kind === 'pine') this.drawPine(item, palette)
       else this.box(item.x, item.y, item.z, item.width, item.depth, item.height, item.paint, palette, item.faces)
     }
+  }
+
+  /**
+   * Redraws the ground within reach of the pointer light. Tiles farther away are unlit, so they
+   * match the cached ground; inside the clip every tile touching it is repainted in order.
+   */
+  private relight(palette: Palette, pointer: Point) {
+    const ctx = this.context, unit = this.unit, dpr = this.dpr
+    // Lit tiles have centers within 3.9 units of the pointer and extend about one unit beyond.
+    const reach = unit * 5
+    const left = Math.floor((pointer.x - reach) * dpr) / dpr, top = Math.floor((pointer.y - reach) * dpr) / dpr
+    const right = Math.ceil((pointer.x + reach) * dpr) / dpr, bottom = Math.ceil((pointer.y + reach) * dpr) / dpr
+    const margin = unit * 1.25
+    const tiles = this.visibleTiles.filter((tile) => {
+      const center = this.project(tile.x + 0.5, tile.y + 0.5)
+      return center.x > left - margin && center.x < right + margin && center.y > top - margin && center.y < bottom + margin
+    })
+    ctx.save()
+    ctx.beginPath()
+    ctx.rect(left, top, right - left, bottom - top)
+    ctx.clip()
+    ctx.clearRect(left, top, right - left, bottom - top)
+    this.drawGround(palette, pointer, tiles)
+    ctx.restore()
+  }
+
+  render(time: number, palette: Palette, reducedMotion: boolean) {
+    const ctx = this.context, unit = this.unit, layers = this.layers
+    ctx.clearRect(0, 0, this.width, this.height)
+    if (layers.ground?.palette !== palette) layers.ground = this.layer(palette, () => this.drawGround(palette, null))
+    if (layers.objects?.palette !== palette) layers.objects = this.layer(palette, () => this.drawObjects(palette))
+    this.blit(layers.ground)
+    if (this.pointer) this.relight(palette, this.pointer)
+    this.blit(layers.objects)
 
     // Pollen in daylight; palettes with a glow turn it into fireflies.
     const firefly = palette.firefly

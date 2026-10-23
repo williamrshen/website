@@ -50,3 +50,46 @@ test('pointer lights the grid around the cursor', async ({ page }) => {
   // Leaving the garden removes the light again.
   expect(await canvasPixels(page)).toMatchSnapshot('garden-daylight.png')
 })
+
+test.describe('with motion', () => {
+  test.use({ reducedMotion: 'no-preference' })
+
+  test('animation frames copy the cached layers instead of redrawing the scene', async ({ page }) => {
+    await page.addInitScript(() => {
+      const counts = { fill: 0, stroke: 0, drawImage: 0, frames: 0 }
+      Object.assign(window, { gardenDrawCounts: counts })
+      for (const method of ['fill', 'stroke', 'drawImage'] as const) {
+        const original = CanvasRenderingContext2D.prototype[method] as (...args: unknown[]) => void
+        Object.defineProperty(CanvasRenderingContext2D.prototype, method, {
+          value(this: CanvasRenderingContext2D, ...args: unknown[]) {
+            if ((this.canvas as HTMLCanvasElement).id === 'world') counts[method]++
+            return original.apply(this, args)
+          },
+        })
+      }
+      const tick = () => { counts.frames++; requestAnimationFrame(tick) }
+      requestAnimationFrame(tick)
+    })
+    await page.goto('/')
+    const measure = () => page.evaluate(async () => {
+      const counts = (window as unknown as { gardenDrawCounts: Record<string, number> }).gardenDrawCounts
+      for (const key of Object.keys(counts)) counts[key] = 0
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      return { ...counts }
+    })
+    await page.waitForTimeout(300)
+    const idle = await measure()
+    expect(idle.frames).toBeGreaterThan(5)
+    // Two layer copies per frame; no polygons (fireflies are rectangles).
+    expect(idle.fill).toBe(0)
+    expect(idle.stroke).toBe(0)
+    expect(idle.drawImage).toBeGreaterThanOrEqual(idle.frames)
+
+    await page.mouse.move(980, 640)
+    const lit = await measure()
+    // Only the ground near the pointer is repainted: far fewer polygons than the whole scene.
+    const perFrame = lit.stroke / Math.max(1, lit.drawImage / 2)
+    expect(perFrame).toBeGreaterThan(0)
+    expect(perFrame).toBeLessThan(200)
+  })
+})

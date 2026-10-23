@@ -21,6 +21,7 @@ Open the localhost URL printed by Vite. No sharing service or deployment is need
 - Hobby cards expand into a side panel. Speedcubing has Official/Unofficial results, an event selector, and practice averages; a weekly workflow refreshes its bundled snapshot, and the same workflow refreshes the live TETR.IO and MCSR Ranked stats. Other hobbies use the old site's sample stats.
 - Daylight/evening palettes, pollen/fireflies, native project/info dialogs, and responsive mobile layouts.
 - Reduced-motion support, keyboard navigation, and a skip-to-introduction link. Hidden navigation is inert until revealed.
+- The garden is drawn once into two cached layers (ground, and the objects on it) that are copied each frame, so animation frames only draw the fireflies; while the cursor lights the grid, just the ground around it is redrawn. Layers rebuild after a resize or theme change.
 - Canvas animation pauses when the garden is collapsed or the browser tab is hidden. Event listeners, animation frames, and resize observers are cleaned up on unmount, including React Strict Mode development remounts.
 
 ## Routing
@@ -90,7 +91,7 @@ public/
 tests/
   portfolio.spec.ts                Browser checks for layout and interactions
   cubing.spec.ts                   Cubing controls, mobile/keyboard flows, scoped axe checks
-  garden.spec.ts                   Visual regression baselines for the garden canvas
+  garden.spec.ts                   Garden visual regression baselines and layer-cache check
   garden.spec.ts-snapshots/        Baseline canvas PNGs (daylight, evening, phone, pointer)
 config/cubing.json                  WCA profile, explicit session-name mappings, practice filters
 config/hobbies.json                 Usernames for the live hobby stat APIs
@@ -120,7 +121,7 @@ vite.config.ts                     Vite + React, 404 build entry, local 404 hand
 - **Colors and dimensions:** edit the CSS custom properties in `src/index.css`; component-specific layout lives alongside each component.
 - **Garden layout:** edit `garden` in `src/data/garden.ts`. It lists the islands (grass patches that shape the ground and cast shadows), the objects, the ground size, and the fireflies. Units are ground tiles; +x runs toward the lower right of the screen and +y toward the lower left. An object with `island` is positioned relative to that island's center, so moving an island moves everything on it. Any object can be turned with `rotate: 90 | 180 | 270` (quarter turns clockwise on screen, so boxes stay axis-aligned) and flipped left↔right with `mirror: true`; mirroring applies before rotating. Each object has its own seeded random generator: change its `seed` to reroll just that object, or leave `seed` out to derive one from its `id`. The current seeds reproduce the original garden.
 - **Garden colors:** edit `gardenPalettes` in `src/data/garden.ts`. Objects refer to named colors (`trunk`, `benchSeat`…) and swatches (`leaves`, `flowers`, `pine`, `path`), resolved against the active palette when drawing; `light` scales the brightness of everything. The site uses `daylight` and `evening`; `evening` reuses the daylight colors under dimmer light, but any color can be overridden per palette.
-- **New object types:** add the parameters to `ObjectParams` in `src/garden/types.ts` and a builder to `objectTypes` in `src/garden/objects.ts`. Builders draw boxes and pine tiers in local coordinates with `b.box(...)` / `b.pineLayer(...)`, use `b.random()` for variation, and can place other types with `b.place(...)`. When hiding faces covered by a neighbor, look neighbors up through `b.facing.right` / `b.facing.left` (the local directions that face the camera) so culling stays correct after rotating or mirroring. `buildWorld` (pure, unit-tested in `src/garden/objects.test.ts`) turns the config into sorted geometry; `src/garden/scene.ts` only renders it.
+- **New object types:** add the parameters to `ObjectParams` in `src/garden/types.ts` and a builder to `objectTypes` in `src/garden/objects.ts`. Builders draw boxes and pine tiers in local coordinates with `b.box(...)` / `b.pineLayer(...)`, use `b.random()` for variation, and can place other types with `b.place(...)`. When hiding faces covered by a neighbor, look neighbors up through `b.facing.right` / `b.facing.left` (the local directions that face the camera) so culling stays correct after rotating or mirroring. `buildWorld` (pure, unit-tested in `src/garden/objects.test.ts`) turns the config into sorted geometry; `src/garden/scene.ts` only renders it, caching everything but the fireflies and pointer light.
 - **Scroll choreography:** edit `src/hooks/useGardenExperience.ts` and `GardenExperience.module.css`. Frame-by-frame updates go straight to CSS variables and canvas rather than triggering React renders.
 
 ## Live hobby stats
