@@ -1,3 +1,4 @@
+import { createRandom, type Random } from './random.ts'
 import type { ColorName, Paint, Palette } from './types.ts'
 
 type Point = { x: number; y: number }
@@ -42,7 +43,6 @@ export class GardenScene {
   private visibleTiles: Tile[] = []
   private geometry: (Box | PineLayer)[] = []
   private fireflies: Firefly[] = []
-  private seed = 51
   private width = 0
   private height = 0
   private unit = 1
@@ -53,11 +53,6 @@ export class GardenScene {
     this.canvas = canvas
     this.context = context
     this.build()
-  }
-
-  private random() {
-    this.seed = (this.seed * 1664525 + 1013904223) >>> 0
-    return this.seed / 4294967296
   }
 
   private project(x: number, y: number, z = 0): Point {
@@ -110,7 +105,7 @@ export class GardenScene {
     this.geometry.push({ kind: 'box', x, y, z, width, depth, height, paint, faces, order: x + y + z * 0.8 })
   }
 
-  private oak(x: number, y: number, scale = 1) {
+  private oak(x: number, y: number, scale: number, random: Random) {
     const trunk: ColorName = 'trunk'
     this.addBox(x - 0.33 * scale, y - 0.3 * scale, 0.04, 0.66 * scale, 0.6 * scale, 4.45 * scale, trunk)
     this.addBox(x - 0.62 * scale, y - 0.49 * scale, 0.02, 1.1 * scale, 0.9 * scale, 0.35 * scale, 'trunkBase')
@@ -129,7 +124,7 @@ export class GardenScene {
           const main = xx ** 2 / 9 + yy ** 2 / 7.9 + (zz - 1.65) ** 2 / 4.3 < 1
           const left = (xx + 2.05) ** 2 / 3.2 + (yy - 0.2) ** 2 / 4 + (zz - 1.05) ** 2 / 2.1 < 1
           const right = (xx - 1.9) ** 2 / 2.8 + (yy + 0.5) ** 2 / 3.3 + (zz - 1.25) ** 2 / 2.6 < 1
-          if ((main || left || right) && this.random() > 0.045) voxels.set(`${ix},${iy},${iz}`, { x: ix, y: iy, z: iz })
+          if ((main || left || right) && random() > 0.045) voxels.set(`${ix},${iy},${iz}`, { x: ix, y: iy, z: iz })
         }
       }
     }
@@ -141,7 +136,7 @@ export class GardenScene {
       }
       if (!faces.top && !faces.left && !faces.right) continue
       this.addBox(x + ix * voxelSize, y + iy * voxelSize, (4.1 + iz * 0.66) * scale,
-        voxelSize, voxelSize, voxelSize, { swatch: 'leaves', index: Math.floor(this.random() * leafShades) }, faces)
+        voxelSize, voxelSize, voxelSize, { swatch: 'leaves', index: Math.floor(random() * leafShades) }, faces)
     }
   }
 
@@ -167,11 +162,11 @@ export class GardenScene {
     this.polygon([d, a, tip], shade(frontLeft, dim))
   }
 
-  private plant(x: number, y: number, scale: number, flower: boolean) {
+  private plant(x: number, y: number, scale: number, flower: boolean, random: Random) {
     this.addBox(x, y, 0.04, 0.075, 0.075, 0.55 * scale, 'stem')
     this.addBox(x - 0.18 * scale, y, 0.17 * scale, 0.22 * scale, 0.12 * scale, 0.12 * scale, 'plantLeaf')
     this.addBox(x + 0.03, y - 0.14 * scale, 0.28 * scale, 0.15 * scale, 0.23 * scale, 0.13 * scale, 'plantLeafDark')
-    if (flower) this.addBox(x - 0.08, y - 0.07, 0.52 * scale, 0.23 * scale, 0.23 * scale, 0.17 * scale, { swatch: 'flowers', index: this.random() > 0.5 ? 0 : 1 })
+    if (flower) this.addBox(x - 0.08, y - 0.07, 0.52 * scale, 0.23 * scale, 0.23 * scale, 0.17 * scale, { swatch: 'flowers', index: random() > 0.5 ? 0 : 1 })
   }
 
   private rock(x: number, y: number, scale: number) {
@@ -180,6 +175,8 @@ export class GardenScene {
   }
 
   private build() {
+    // Seeds reproduce the original hand-tuned garden; any 32-bit number gives a new variation.
+    const groundRandom = createRandom(51)
     for (let x = -45; x <= 45; x++) {
       for (let y = -45; y <= 45; y++) {
         let influence = 0, gridInfluence = 0
@@ -189,20 +186,21 @@ export class GardenScene {
           // Measure in screen space so each grid fade is circular, not an isometric ellipse.
           gridInfluence = Math.max(gridInfluence, Math.max(0, 1 - Math.hypot(dx - dy, (dx + dy) * 0.5) / (anchor.radius * 1.4)))
         }
-        const variation = this.random()
+        const variation = groundRandom()
         this.tiles.push({ x, y, fade: influence ** 1.45, gridFade: gridInfluence ** 1.8, variation, grass: influence > 0.38 && variation > 0.13 })
       }
     }
-    this.oak(0, 0)
+    this.oak(0, 0, 1, createRandom(2198020462))
     this.pine(5.9, -2.1, 0.86)
     this.pine(7, -1.4, 0.49)
     this.pine(-4.9, 2.9, 0.66)
-    this.oak(3.6, 5.4, 0.24)
+    this.oak(3.6, 5.4, 0.24, createRandom(1581092675))
+    const scatter = createRandom(3263619596)
     for (let i = 0; i < 44; i++) {
-      const anchor = anchors[Math.floor(this.random() * anchors.length)]
-      const angle = this.random() * Math.PI * 2, radius = 0.8 + this.random() * anchor.radius * 0.48
+      const anchor = anchors[Math.floor(scatter() * anchors.length)]
+      const angle = scatter() * Math.PI * 2, radius = 0.8 + scatter() * anchor.radius * 0.48
       const x = anchor.x + Math.cos(angle) * radius, y = anchor.y + Math.sin(angle) * radius
-      if (Math.hypot(x, y) >= 1.1) this.plant(x, y, 0.5 + this.random() * 0.5, i % 3 === 0)
+      if (Math.hypot(x, y) >= 1.1) this.plant(x, y, 0.5 + scatter() * 0.5, i % 3 === 0, scatter)
     }
     this.rock(-2, 1.7, 0.46)
     this.rock(-2.3, 1.95, 0.27)
@@ -216,7 +214,8 @@ export class GardenScene {
     this.addBox(-2, 1.95, 0.48, 1.32, 0.46, 0.14, 'benchSeat')
     this.addBox(-2, 2.33, 0.65, 1.32, 0.1, 0.35, 'benchBack')
     this.geometry.sort((a, b) => a.order - b.order)
-    for (let i = 0; i < 18; i++) this.fireflies.push({ x: this.random() * 13 - 6.5, y: this.random() * 10 - 4, z: 0.4 + this.random() * 4, phase: this.random() * Math.PI * 2 })
+    const fireflies = createRandom(664517015)
+    for (let i = 0; i < 18; i++) this.fireflies.push({ x: fireflies() * 13 - 6.5, y: fireflies() * 10 - 4, z: 0.4 + fireflies() * 4, phase: fireflies() * Math.PI * 2 })
   }
 
   resize() {
