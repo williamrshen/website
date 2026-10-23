@@ -86,6 +86,8 @@ public/
 tests/
   portfolio.spec.ts                Browser checks for layout and interactions
   cubing.spec.ts                   Cubing controls, mobile/keyboard flows, scoped axe checks
+  garden.spec.ts                   Visual regression baselines for the garden canvas
+  garden.spec.ts-snapshots/        Baseline canvas PNGs (daylight, evening, phone, pointer)
 config/cubing.json                  WCA profile, explicit session-name mappings, practice filters
 config/hobbies.json                 Usernames for the live hobby stat APIs
 scripts/hobbies/                    Live hobby API clients and refresh scripts
@@ -333,3 +335,9 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/google-chrome npm run test:e2e
 ```
 
 The tests cover the reversible scroll transition, header positioning at desktop and mobile widths, theme toggle, localized cursor glow, live reduced-motion preference changes, dialog focus return, section content, contact links, the résumé download, and 404 responses. Cubing checks include source/event selection, empty/custom results, formatting, compact-card persistence, chart placement/metrics/ranges/hover/tap/keyboard inspection, mobile layouts, no external browser requests, and scoped axe scans of the cubing panel in both themes/sources. Practice test data is injected into the development module and is never written into the published snapshot. Screenshots and failure traces are written to the ignored `test-results/` directory.
+
+The garden has visual regression tests in `tests/garden.spec.ts`. With reduced motion the fireflies hold still, so each render is deterministic; the tests compare the canvas pixels (not a page screenshot, so fonts don't matter) against the PNGs in `tests/garden.spec.ts-snapshots/`. After an intentional garden change, check the diff in `test-results/`, then refresh the baselines:
+
+```sh
+npx playwright test tests/garden.spec.ts --update-snapshots
+```
