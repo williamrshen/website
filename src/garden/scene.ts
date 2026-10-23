@@ -1,3 +1,5 @@
+import type { ColorName, Paint, Palette } from './types.ts'
+
 type Point = { x: number; y: number }
 type Anchor = Point & { radius: number }
 type Faces = { top: boolean; left: boolean; right: boolean }
@@ -8,7 +10,7 @@ type Box = Point & {
   width: number
   depth: number
   height: number
-  color: string
+  paint: Paint
   faces: Faces
   order: number
 }
@@ -16,7 +18,8 @@ type PineLayer = Point & { kind: 'pine'; z: number; radius: number; scale: numbe
 type Firefly = Point & { z: number; phase: number }
 
 const allFaces: Faces = { top: true, left: true, right: true }
-const leafColors = ['#819b4d', '#8ba352', '#91a957', '#789648', '#9ab15c', '#88a04c']
+/** Number of leaf shades the oak picks between; palettes with fewer entries wrap. */
+const leafShades = 6
 const anchors: Anchor[] = [
   { x: 0, y: 0, radius: 5.1 },
   { x: 5.9, y: -2.1, radius: 2.5 },
@@ -76,10 +79,16 @@ export class GardenScene {
     if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 0.65; ctx.stroke() }
   }
 
+  private paint(paint: Paint, palette: Palette) {
+    if (typeof paint === 'string') return palette.colors[paint]
+    const swatch = palette.swatches[paint.swatch]
+    return swatch[paint.index % swatch.length]
+  }
+
   private box(
     x: number, y: number, z: number,
     width: number, depth: number, height: number,
-    color: string, evening: boolean, faces = allFaces,
+    paint: Paint, palette: Palette, faces = allFaces,
   ) {
     const a = this.project(x, y, z + height)
     const b = this.project(x + width, y, z + height)
@@ -88,7 +97,7 @@ export class GardenScene {
     const b0 = this.project(x + width, y, z)
     const c0 = this.project(x + width, y + depth, z)
     const d0 = this.project(x, y + depth, z)
-    const dim = evening ? 0.61 : 1
+    const color = this.paint(paint, palette), dim = palette.light.box
     if (faces.left) this.polygon([d, c, c0, d0], shade(color, 0.73 * dim))
     if (faces.right) this.polygon([b, c, c0, b0], shade(color, 0.88 * dim))
     if (faces.top) this.polygon([a, b, c, d], shade(color, 1.09 * dim))
@@ -96,18 +105,18 @@ export class GardenScene {
 
   private addBox(
     x: number, y: number, z: number,
-    width: number, depth: number, height: number, color: string, faces = allFaces,
+    width: number, depth: number, height: number, paint: Paint, faces = allFaces,
   ) {
-    this.geometry.push({ kind: 'box', x, y, z, width, depth, height, color, faces, order: x + y + z * 0.8 })
+    this.geometry.push({ kind: 'box', x, y, z, width, depth, height, paint, faces, order: x + y + z * 0.8 })
   }
 
   private oak(x: number, y: number, scale = 1) {
-    const trunk = '#96704b'
+    const trunk: ColorName = 'trunk'
     this.addBox(x - 0.33 * scale, y - 0.3 * scale, 0.04, 0.66 * scale, 0.6 * scale, 4.45 * scale, trunk)
-    this.addBox(x - 0.62 * scale, y - 0.49 * scale, 0.02, 1.1 * scale, 0.9 * scale, 0.35 * scale, '#896844')
+    this.addBox(x - 0.62 * scale, y - 0.49 * scale, 0.02, 1.1 * scale, 0.9 * scale, 0.35 * scale, 'trunkBase')
     for (let i = 0; i < 3; i++) {
       this.addBox(x - (0.58 + i * 0.43) * scale, y - 0.1 * scale, (2.2 + i * 0.55) * scale, 0.6 * scale, 0.46 * scale, 0.7 * scale, trunk)
-      this.addBox(x + 0.2 * scale, y - (0.5 + i * 0.4) * scale, (2.65 + i * 0.5) * scale, 0.5 * scale, 0.62 * scale, 0.7 * scale, '#9e7951')
+      this.addBox(x + 0.2 * scale, y - (0.5 + i * 0.4) * scale, (2.65 + i * 0.5) * scale, 0.5 * scale, 0.62 * scale, 0.7 * scale, 'branch')
     }
 
     // Overlapping ellipsoids form a broad oak canopy. Only exposed voxel faces are drawn.
@@ -132,42 +141,42 @@ export class GardenScene {
       }
       if (!faces.top && !faces.left && !faces.right) continue
       this.addBox(x + ix * voxelSize, y + iy * voxelSize, (4.1 + iz * 0.66) * scale,
-        voxelSize, voxelSize, voxelSize, leafColors[Math.floor(this.random() * leafColors.length)], faces)
+        voxelSize, voxelSize, voxelSize, { swatch: 'leaves', index: Math.floor(this.random() * leafShades) }, faces)
     }
   }
 
   private pine(x: number, y: number, scale: number) {
-    this.addBox(x - 0.12, y - 0.12, 0, 0.24, 0.24, scale, '#967652')
+    this.addBox(x - 0.12, y - 0.12, 0, 0.24, 0.24, scale, 'pineTrunk')
     for (let i = 0; i < 4; i++) {
       const z = (0.65 + i * 0.6) * scale
       this.geometry.push({ kind: 'pine', x, y, z, scale, radius: (1.2 - i * 0.23) * scale, order: x + y + z * 0.8 })
     }
   }
 
-  private drawPine(layer: PineLayer, evening: boolean) {
+  private drawPine(layer: PineLayer, palette: Palette) {
     const { x, y, z, radius, scale } = layer
     const a = this.project(x - radius, y - radius, z)
     const b = this.project(x + radius, y - radius, z)
     const c = this.project(x + radius, y + radius, z)
     const d = this.project(x - radius, y + radius, z)
     const tip = this.project(x - 0.07, y - 0.07, z + 1.6 * scale)
-    const dim = evening ? 0.64 : 1
-    this.polygon([a, b, tip], shade('#819d6a', dim))
-    this.polygon([b, c, tip], shade('#668650', dim))
-    this.polygon([c, d, tip], shade('#527446', dim))
-    this.polygon([d, a, tip], shade('#72975d', dim))
+    const dim = palette.light.pine, [backLeft, backRight, frontRight, frontLeft] = palette.swatches.pine
+    this.polygon([a, b, tip], shade(backLeft, dim))
+    this.polygon([b, c, tip], shade(backRight, dim))
+    this.polygon([c, d, tip], shade(frontRight, dim))
+    this.polygon([d, a, tip], shade(frontLeft, dim))
   }
 
   private plant(x: number, y: number, scale: number, flower: boolean) {
-    this.addBox(x, y, 0.04, 0.075, 0.075, 0.55 * scale, '#698250')
-    this.addBox(x - 0.18 * scale, y, 0.17 * scale, 0.22 * scale, 0.12 * scale, 0.12 * scale, '#8eaa66')
-    this.addBox(x + 0.03, y - 0.14 * scale, 0.28 * scale, 0.15 * scale, 0.23 * scale, 0.13 * scale, '#779858')
-    if (flower) this.addBox(x - 0.08, y - 0.07, 0.52 * scale, 0.23 * scale, 0.23 * scale, 0.17 * scale, this.random() > 0.5 ? '#dfc17a' : '#ece2b7')
+    this.addBox(x, y, 0.04, 0.075, 0.075, 0.55 * scale, 'stem')
+    this.addBox(x - 0.18 * scale, y, 0.17 * scale, 0.22 * scale, 0.12 * scale, 0.12 * scale, 'plantLeaf')
+    this.addBox(x + 0.03, y - 0.14 * scale, 0.28 * scale, 0.15 * scale, 0.23 * scale, 0.13 * scale, 'plantLeafDark')
+    if (flower) this.addBox(x - 0.08, y - 0.07, 0.52 * scale, 0.23 * scale, 0.23 * scale, 0.17 * scale, { swatch: 'flowers', index: this.random() > 0.5 ? 0 : 1 })
   }
 
   private rock(x: number, y: number, scale: number) {
-    this.addBox(x, y, 0.01, scale, scale * 0.72, scale * 0.51, '#b2b5a1')
-    this.addBox(x + scale * 0.18, y + scale * 0.08, scale * 0.51, scale * 0.64, scale * 0.55, scale * 0.12, '#c0c2af')
+    this.addBox(x, y, 0.01, scale, scale * 0.72, scale * 0.51, 'rock')
+    this.addBox(x + scale * 0.18, y + scale * 0.08, scale * 0.51, scale * 0.64, scale * 0.55, scale * 0.12, 'rockTop')
   }
 
   private build() {
@@ -201,11 +210,11 @@ export class GardenScene {
     this.rock(-5, -3.5, 0.6)
     this.rock(-4.45, -3.4, 0.32)
     // Stepping stones and a bench beneath the oak.
-    for (let i = 0; i < 5; i++) this.addBox(1.3 + i * 0.35, 1.5 + i * 0.48, 0.035, 0.57, 0.48, 0.055, i % 2 ? '#c5bf9e' : '#d1c8a7')
-    this.addBox(-1.9, 2.1, 0.03, 0.14, 0.18, 0.45, '#8b7050')
-    this.addBox(-0.9, 2.1, 0.03, 0.14, 0.18, 0.45, '#8b7050')
-    this.addBox(-2, 1.95, 0.48, 1.32, 0.46, 0.14, '#b69869')
-    this.addBox(-2, 2.33, 0.65, 1.32, 0.1, 0.35, '#a78c61')
+    for (let i = 0; i < 5; i++) this.addBox(1.3 + i * 0.35, 1.5 + i * 0.48, 0.035, 0.57, 0.48, 0.055, { swatch: 'path', index: i % 2 })
+    this.addBox(-1.9, 2.1, 0.03, 0.14, 0.18, 0.45, 'benchLeg')
+    this.addBox(-0.9, 2.1, 0.03, 0.14, 0.18, 0.45, 'benchLeg')
+    this.addBox(-2, 1.95, 0.48, 1.32, 0.46, 0.14, 'benchSeat')
+    this.addBox(-2, 2.33, 0.65, 1.32, 0.1, 0.35, 'benchBack')
     this.geometry.sort((a, b) => a.order - b.order)
     for (let i = 0; i < 18; i++) this.fireflies.push({ x: this.random() * 13 - 6.5, y: this.random() * 10 - 4, z: 0.4 + this.random() * 4, phase: this.random() * Math.PI * 2 })
   }
@@ -228,8 +237,8 @@ export class GardenScene {
 
   setPointer(point: Point | null) { this.pointer = point }
 
-  render(time: number, evening: boolean, reducedMotion: boolean) {
-    const ctx = this.context, unit = this.unit
+  render(time: number, palette: Palette, reducedMotion: boolean) {
+    const ctx = this.context, unit = this.unit, ground = palette.ground
     ctx.clearRect(0, 0, this.width, this.height)
     for (const tile of this.visibleTiles) {
       const point = this.project(tile.x + 0.5, tile.y + 0.5)
@@ -238,15 +247,15 @@ export class GardenScene {
       if (alpha < 0.008) continue
       if (tile.grass) {
         ctx.globalAlpha = Math.min(1, tile.fade * 2.5)
-        this.box(tile.x + 0.045, tile.y + 0.045, -0.15, 0.91, 0.91, 0.145, tile.variation > 0.65 ? '#b3c391' : '#a6ba83', evening)
+        this.box(tile.x + 0.045, tile.y + 0.045, -0.15, 0.91, 0.91, 0.145, tile.variation > 0.65 ? 'grassLight' : 'grass', palette)
         if (tile.variation > 0.8) {
           ctx.globalAlpha = tile.fade * 0.55
-          this.box(tile.x + 0.14, tile.y + 0.14, 0.001, 0.15, 0.18, 0.04, '#c8d3a4', evening)
+          this.box(tile.x + 0.14, tile.y + 0.14, 0.001, 0.15, 0.18, 0.04, 'grassTuft', palette)
         }
       }
       ctx.globalAlpha = 1
-      const fill = evening ? `rgba(167,204,114,${tile.gridFade * 0.055 + light * 0.1})` : `rgba(148,175,109,${tile.gridFade * 0.06 + light * 0.11})`
-      const stroke = evening ? `rgba(195,224,145,${alpha * 0.45})` : `rgba(123,151,87,${alpha * 0.43})`
+      const fill = `rgba(${ground.fill},${tile.gridFade * ground.fillGrid + light * ground.fillLight})`
+      const stroke = `rgba(${ground.stroke},${alpha * ground.strokeAlpha})`
       this.polygon([
         this.project(tile.x, tile.y), this.project(tile.x + 1, tile.y),
         this.project(tile.x + 1, tile.y + 1), this.project(tile.x, tile.y + 1),
@@ -259,8 +268,8 @@ export class GardenScene {
       ctx.translate(point.x + unit * 0.5, point.y + unit * 0.15)
       ctx.scale(1, 0.48)
       const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, radius)
-      gradient.addColorStop(0, evening ? '#071b2459' : '#4a643630')
-      gradient.addColorStop(1, '#4a643600')
+      gradient.addColorStop(0, palette.shadow.center)
+      gradient.addColorStop(1, palette.shadow.edge)
       ctx.fillStyle = gradient
       ctx.beginPath()
       ctx.arc(0, 0, radius, 0, Math.PI * 2)
@@ -268,18 +277,19 @@ export class GardenScene {
       ctx.restore()
     }
     for (const item of this.geometry) {
-      if (item.kind === 'pine') this.drawPine(item, evening)
-      else this.box(item.x, item.y, item.z, item.width, item.depth, item.height, item.color, evening, item.faces)
+      if (item.kind === 'pine') this.drawPine(item, palette)
+      else this.box(item.x, item.y, item.z, item.width, item.depth, item.height, item.paint, palette, item.faces)
     }
 
-    // Pollen becomes softly glowing fireflies in evening mode.
+    // Pollen in daylight; palettes with a glow turn it into fireflies.
+    const firefly = palette.firefly
     for (const fly of this.fireflies) {
       const t = reducedMotion ? 0 : time * 0.00025
       const point = this.project(fly.x + Math.sin(t + fly.phase) * 0.3, fly.y + Math.cos(t + fly.phase) * 0.25, fly.z + Math.sin(t * 1.8 + fly.phase) * 0.25)
       ctx.globalAlpha = 0.2 + (Math.sin(t * 3 + fly.phase) + 1) * 0.22
-      ctx.fillStyle = evening ? '#e7efb0' : '#a4b576'
-      if (evening) { ctx.shadowBlur = 9; ctx.shadowColor = '#e4f7a6' }
-      ctx.fillRect(point.x, point.y, evening ? 2.3 : 1.7, evening ? 2.3 : 1.7)
+      ctx.fillStyle = firefly.color
+      if (firefly.glow) { ctx.shadowBlur = firefly.glow.blur; ctx.shadowColor = firefly.glow.color }
+      ctx.fillRect(point.x, point.y, firefly.size, firefly.size)
       ctx.shadowBlur = 0
     }
     ctx.globalAlpha = 1
@@ -287,8 +297,8 @@ export class GardenScene {
       const { x, y } = this.pointer
       const radius = unit * 2.2
       const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius)
-      gradient.addColorStop(0, evening ? '#dff9a816' : '#dce9aa14')
-      gradient.addColorStop(1, '#dce9aa00')
+      gradient.addColorStop(0, palette.pointerGlow.center)
+      gradient.addColorStop(1, palette.pointerGlow.edge)
       ctx.fillStyle = gradient
       ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2)
     }

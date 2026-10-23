@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef } from 'react'
+import { gardenPalettes } from '../data/garden'
 import { GardenScene } from '../garden/scene'
 
 const clamp = (value: number) => Math.max(0, Math.min(1, value))
@@ -29,7 +30,7 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
     let night = false, modalOpen = false, progress = 0, visibleHeight = 0
     let width = 0, height = 0, frame = 0
 
-    const render = (time = 0) => scene?.render(time, night, motionQuery.matches)
+    const render = (time = 0) => scene?.render(time, night ? gardenPalettes.evening : gardenPalettes.daylight, motionQuery.matches)
     const animate = (time: number) => {
       frame = 0
       if (document.hidden || progress >= 1 || motionQuery.matches) return
