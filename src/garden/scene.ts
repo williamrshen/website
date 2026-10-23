@@ -49,6 +49,12 @@ export class GardenScene {
   /** Screen size of one ground tile step, in CSS pixels. */
   get tileSize() { return this.unit }
 
+  /** Canvas CSS pixels to the ground-plane (z = 0) point under them. */
+  unproject(point: Point): Point {
+    const across = (point.x - this.origin.x) / this.unit, down = 2 * (point.y - this.origin.y) / this.unit
+    return { x: (across + down) / 2, y: (down - across) / 2 }
+  }
+
   /** World coordinates (z = height) to canvas CSS pixels. */
   project(x: number, y: number, z = 0): Point {
     return {

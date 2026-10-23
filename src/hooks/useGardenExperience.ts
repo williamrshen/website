@@ -119,7 +119,7 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
       void import('../garden/dev/index.ts').then(({ attachDevTools }) => {
         if (disposed) return
         detachDevTools = attachDevTools({
-          scene, canvas: canvasElement, palette, config: () => config,
+          scene, canvas: canvasElement, palette, palettes: () => palettes, config: () => config,
           requestRender: () => render(performance.now()),
           setGarden(nextConfig, nextPalettes) {
             scene.setConfig(nextConfig)

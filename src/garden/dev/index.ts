@@ -8,6 +8,7 @@ import type { gardenPalettes } from '../../data/garden.ts'
 import type { GardenScene } from '../scene.ts'
 import type { GardenConfig, Palette } from '../types.ts'
 import { debugOverlay } from './debug.ts'
+import { editor } from './editor.ts'
 import { hotReload } from './hot.ts'
 import { configWarnings } from './warnings.ts'
 
@@ -16,8 +17,9 @@ export type Palettes = typeof gardenPalettes
 export type GardenHost = {
   scene: GardenScene
   canvas: HTMLCanvasElement
-  /** The palette currently on screen. */
+  /** The palette currently on screen, and the set it comes from. */
   palette(): Palette
+  palettes(): Palettes
   /** Draws a frame now (the animation loop may be paused). */
   requestRender(): void
   /** The config on screen. */
@@ -31,7 +33,7 @@ type Tool = (host: GardenHost) => () => void
 
 /** Always on in development. */
 const always: Tool[] = [hotReload, configWarnings]
-const optional: Record<string, Tool> = { debug: debugOverlay }
+const optional: Record<string, Tool> = { debug: debugOverlay, edit: editor }
 
 export function attachDevTools(host: GardenHost) {
   const requested = new URLSearchParams(location.search).get('garden')?.split(',').map((name) => name.trim()) ?? []

@@ -54,3 +54,82 @@ test('garden edits swap into the running scene, and invalid ones keep the last g
   })
   expect(await pixels(page)).toBe(original)
 })
+
+test.describe('?garden=edit', () => {
+  type Config = { objects: { id: string; x?: number; y?: number; rotate?: number; mirror?: boolean; seed?: number }[]; islands: { id: string; x: number; radius: number }[] }
+  const config = (page: Page) => page.evaluate(() => (window as unknown as { gardenDev: { config(): unknown } }).gardenDev.config()) as Promise<Config>
+  const object = async (page: Page, id: string) => (await config(page)).objects.find((item) => item.id === id)!
+  /** Page coordinates of a world point. */
+  const at = (page: Page, x: number, y: number, z = 0) => page.evaluate(([x, y, z]) => {
+    const point = (window as unknown as { gardenDev: { scene: { project(x: number, y: number, z: number): { x: number; y: number } } } }).gardenDev.scene.project(x, y, z)
+    const rect = document.querySelector('#world')!.getBoundingClientRect()
+    return { x: point.x + rect.left, y: point.y + rect.top }
+  }, [x, y, z])
+
+  test.beforeEach(async ({ page }) => {
+    const messages = await open(page, '?garden=edit')
+    await page.waitForFunction(() => 'gardenDev' in window)
+    expect(messages).toEqual([])
+  })
+
+  test('select, rotate, mirror, nudge, and undo', async ({ page }) => {
+    const panel = page.getByRole('complementary', { name: 'Garden editor' })
+    const trunk = await at(page, 0, 0, 2)
+    await page.mouse.click(trunk.x, trunk.y)
+    await expect(panel).toContainText('oak oak')
+    await page.keyboard.press('r')
+    await page.keyboard.press('m')
+    await page.keyboard.press('Shift+ArrowRight')
+    expect(await object(page, 'oak')).toMatchObject({ rotate: 90, mirror: true, x: 0.25 })
+    await expect(panel).toContainText('unsaved changes')
+    for (let i = 0; i < 3; i++) await page.keyboard.press('Control+z')
+    expect(await object(page, 'oak')).toEqual({ id: 'oak', type: 'oak', island: 'main', seed: 2198020462 })
+    await expect(panel).toContainText('matches file')
+  })
+
+  test('drag an object along the ground', async ({ page }) => {
+    const from = await at(page, -1.4, 2.2, 0.55), to = await at(page, -0.4, 2.2, 0.55)
+    await page.mouse.move(from.x, from.y)
+    await page.mouse.down()
+    await page.mouse.move(to.x, to.y, { steps: 6 })
+    await page.mouse.up()
+    await expect.poll(async () => (await object(page, 'bench')).x).toBeCloseTo(-1, 1)
+    expect((await object(page, 'bench')).y).toBeCloseTo(1.95, 1)
+  })
+
+  test('islands can be selected and resized; edits that break the config are refused', async ({ page }) => {
+    // Open grass on the right island, clear of its pines and rock.
+    const island = await at(page, 7.8, -2.1)
+    await page.mouse.click(island.x, island.y)
+    await page.keyboard.press(']')
+    expect((await config(page)).islands.find((item) => item.id === 'right')!.radius).toBe(2.6)
+    // An island with objects on it can't be deleted.
+    await page.keyboard.press('Delete')
+    await expect(page.getByRole('status')).toContainText('still has objects on it')
+    expect((await config(page)).islands).toHaveLength(5)
+  })
+
+  test('add, duplicate, and copy the config as TypeScript', async ({ page }) => {
+    const panel = page.getByRole('complementary', { name: 'Garden editor' })
+    await panel.getByRole('combobox').last().selectOption('rock')
+    await panel.getByRole('button', { name: 'add object' }).click()
+    await expect(panel).toContainText('rock rock-2')
+    await page.keyboard.press('d')
+    await expect(panel).toContainText('rock rock-2-2')
+    await panel.getByRole('button', { name: 'copy config' }).click()
+    const text = await panel.getByRole('textbox', { name: 'Copied text' }).inputValue()
+    expect(text).toMatch(/^export const garden: GardenConfig = \{/)
+    expect(text).toContain("{ id: 'rock-2', type: 'rock', island: 'main', scale: 0.4 },")
+    expect(text).toContain("{ id: 'rock-2-2', type: 'rock', island: 'main', scale: 0.4, x: 0.5 },")
+  })
+
+  test('palette colors edit live', async ({ page }) => {
+    const before = await pixels(page)
+    const panel = page.getByRole('complementary', { name: 'Garden editor' })
+    await panel.getByText('daylight palette colors').click()
+    await panel.locator('input[name="color:trunk"]').fill('#ff0000')
+    await expect.poll(() => pixels(page)).not.toBe(before)
+    await panel.getByRole('button', { name: 'copy palette' }).click()
+    expect(await panel.getByRole('textbox', { name: 'Copied text' }).inputValue()).toContain("trunk: '#ff0000'")
+  })
+})
