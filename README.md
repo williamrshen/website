@@ -92,6 +92,7 @@ tests/
   portfolio.spec.ts                Browser checks for layout and interactions
   cubing.spec.ts                   Cubing controls, mobile/keyboard flows, scoped axe checks
   garden.spec.ts                   Garden visual regression baselines and layer-cache check
+  garden-dev.spec.ts               Development-only garden tools
   garden.spec.ts-snapshots/        Baseline canvas PNGs (daylight, evening, phone, pointer)
 config/cubing.json                  WCA profile, explicit session-name mappings, practice filters
 config/hobbies.json                 Usernames for the live hobby stat APIs
@@ -123,6 +124,12 @@ vite.config.ts                     Vite + React, 404 build entry, local 404 hand
 - **Garden colors:** edit `gardenPalettes` in `src/data/garden.ts`. Objects refer to named colors (`trunk`, `benchSeat`…) and swatches (`leaves`, `flowers`, `pine`, `path`), resolved against the active palette when drawing; `light` scales the brightness of everything. The site uses `daylight` and `evening`; `evening` reuses the daylight colors under dimmer light, but any color can be overridden per palette.
 - **New object types:** add the parameters to `ObjectParams` in `src/garden/types.ts` and a builder to `objectTypes` in `src/garden/objects.ts`. Builders draw boxes and pine tiers in local coordinates with `b.box(...)` / `b.pineLayer(...)`, use `b.random()` for variation, and can place other types with `b.place(...)`. When hiding faces covered by a neighbor, look neighbors up through `b.facing.right` / `b.facing.left` (the local directions that face the camera) so culling stays correct after rotating or mirroring. `buildWorld` (pure, unit-tested in `src/garden/objects.test.ts`) turns the config into sorted geometry; `src/garden/scene.ts` only renders it, caching everything but the fireflies and pointer light.
 - **Scroll choreography:** edit `src/hooks/useGardenExperience.ts` and `GardenExperience.module.css`. Frame-by-frame updates go straight to CSS variables and canvas rather than triggering React renders.
+
+### Garden dev tools
+
+Development builds (`npm run dev`) include tools for working on the garden; production builds leave them out. Turn them on with `?garden=` (comma-separated, e.g. `/?garden=debug,edit`). They live in `src/garden/dev/`.
+
+- **`debug`:** outlines each island's radius, marks every object's anchor with its id and the direction its local +x points after `rotate`/`mirror`, and draws the world +x/+y axes from the origin.
 
 ## Live hobby stats
 

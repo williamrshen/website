@@ -30,7 +30,8 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
     let night = false, modalOpen = false, progress = 0, visibleHeight = 0
     let width = 0, height = 0, frame = 0
 
-    const render = (time = 0) => scene?.render(time, night ? gardenPalettes.evening : gardenPalettes.daylight, motionQuery.matches)
+    const palette = () => night ? gardenPalettes.evening : gardenPalettes.daylight
+    const render = (time = 0) => scene?.render(time, palette(), motionQuery.matches)
     const animate = (time: number) => {
       frame = 0
       if (document.hidden || progress >= 1 || motionQuery.matches) return
@@ -105,6 +106,14 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
     const onVisibility = () => { hideCursor(); syncAnimation() }
     const onMotionChange = () => { syncAnimation(); render() }
 
+    // Development-only tools (debug overlay, editor…). Dead code in production builds.
+    let disposed = false, detachDevTools: (() => void) | undefined
+    if (import.meta.env.DEV && scene) {
+      void import('../garden/dev/index.ts').then(({ attachDevTools }) => {
+        if (!disposed) detachDevTools = attachDevTools({ scene, canvas: canvasElement, palette, requestRender: () => render(performance.now()) })
+      })
+    }
+
     controller.current = {
       // The wordmark changes width with the theme, so re-measure the header.
       setEvening(value) { night = value; updateScroll(); render() },
@@ -124,6 +133,8 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
     pointerQuery.addEventListener('change', hideCursor)
 
     return () => {
+      disposed = true
+      detachDevTools?.()
       cancelAnimationFrame(frame)
       resizeObserver.disconnect()
       window.removeEventListener('resize', resize)

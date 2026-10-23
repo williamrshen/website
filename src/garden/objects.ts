@@ -1,6 +1,6 @@
 import { createRandom, seedFromId, type Random } from './random.ts'
 import type {
-  Faces, GardenConfig, GardenObject, Geometry, Island, ObjectParams, ObjectType, Orientation, Paint, Point, Tile, World,
+  Faces, GardenConfig, GardenObject, Geometry, Island, ObjectParams, ObjectType, Orientation, Paint, PlacedObject, Point, Tile, World,
 } from './types.ts'
 
 const allFaces: Faces = { top: true, left: true, right: true }
@@ -204,12 +204,14 @@ export function buildWorld(config: GardenConfig): World {
     islands.set(island.id, island)
   }
   const ids = new Set<string>()
-  const geometry: Geometry[] = []
+  const geometry: Geometry[] = [], placed: PlacedObject[] = []
   for (const object of config.objects) {
     if (ids.has(object.id)) throw new Error(`Duplicate garden object id "${object.id}"`)
     ids.add(object.id)
     const { type, id, island: _island, x: _x, y: _y, seed, rotate, mirror, ...params } = object
-    const builder = createBuilder(id, position(object, islands), orientation(id, { rotate, mirror }),
+    const at = position(object, islands)
+    placed.push({ ...at, id, type, island: object.island, rotate: rotate ?? 0, mirror: mirror ?? false })
+    const builder = createBuilder(id, at, orientation(id, { rotate, mirror }),
       createRandom(seed ?? seedFromId(id)), config.islands, geometry)
     ;(objectTypes[type] as ObjectBuilder<typeof type>)(builder, params as ObjectParams[typeof type])
   }
@@ -221,5 +223,5 @@ export function buildWorld(config: GardenConfig): World {
     x: area.x + random() * area.width, y: area.y + random() * area.depth,
     z: area.z + random() * area.height, phase: random() * Math.PI * 2,
   }))
-  return { tiles: buildGround(config), geometry, fireflies, islands: config.islands }
+  return { tiles: buildGround(config), geometry, fireflies, islands: config.islands, objects: placed }
 }

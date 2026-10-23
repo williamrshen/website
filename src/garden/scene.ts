@@ -28,6 +28,8 @@ export class GardenScene {
   private world: World
   private layers: { ground?: Layer; objects?: Layer } = {}
   private dpr = 1
+  /** Development tools draw on top of each frame here, in CSS pixels. */
+  afterRender?: (context: CanvasRenderingContext2D) => void
   private visibleTiles: Tile[] = []
   private width = 0
   private height = 0
@@ -42,7 +44,13 @@ export class GardenScene {
     this.world = buildWorld(config)
   }
 
-  private project(x: number, y: number, z = 0): Point {
+  /** The built world, for tooling. */
+  get built(): World { return this.world }
+  /** Screen size of one ground tile step, in CSS pixels. */
+  get tileSize() { return this.unit }
+
+  /** World coordinates (z = height) to canvas CSS pixels. */
+  project(x: number, y: number, z = 0): Point {
     return {
       x: this.origin.x + (x - y) * this.unit,
       y: this.origin.y + (x + y) * this.unit * 0.5 - z * this.unit * 1.05,
@@ -243,5 +251,6 @@ export class GardenScene {
       ctx.fillStyle = gradient
       ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2)
     }
+    this.afterRender?.(ctx)
   }
 }

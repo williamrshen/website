@@ -116,5 +116,8 @@ export type GardenConfig = {
   fireflies: { count: number; seed: number; area: { x: number; y: number; z: number; width: number; depth: number; height: number } }
 }
 
+/** Where an object ended up in world space, for tooling. */
+export type PlacedObject = Point & { id: string; type: ObjectType; island?: string; rotate: number; mirror: boolean }
+
 /** Everything the renderer needs, built once from a config. */
-export type World = { tiles: Tile[]; geometry: Geometry[]; fireflies: Firefly[]; islands: Island[] }
+export type World = { tiles: Tile[]; geometry: Geometry[]; fireflies: Firefly[]; islands: Island[]; objects: PlacedObject[] }
