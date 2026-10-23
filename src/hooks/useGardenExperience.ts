@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react'
-import { gardenPalettes } from '../data/garden'
+import { garden as gardenConfig, gardenPalettes } from '../data/garden'
 import { GardenScene } from '../garden/scene'
 
 const clamp = (value: number) => Math.max(0, Math.min(1, value))
@@ -24,7 +24,7 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
     const hintElement = hint.current, cursorElement = cursor.current
     if (!root || !gardenElement || !canvasElement || !brandElement || !modeElement || !navElement || !hintElement || !cursorElement) return
     const context = canvasElement.getContext('2d')
-    const scene = context ? new GardenScene(canvasElement, context) : null
+    const scene = context ? new GardenScene(canvasElement, context, gardenConfig) : null
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
     const pointerQuery = window.matchMedia('(pointer: fine)')
     let night = false, modalOpen = false, progress = 0, visibleHeight = 0

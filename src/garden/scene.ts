@@ -1,33 +1,7 @@
-import { createRandom, type Random } from './random.ts'
-import type { ColorName, Paint, Palette } from './types.ts'
-
-type Point = { x: number; y: number }
-type Anchor = Point & { radius: number }
-type Faces = { top: boolean; left: boolean; right: boolean }
-type Tile = Point & { fade: number; gridFade: number; variation: number; grass: boolean }
-type Box = Point & {
-  kind: 'box'
-  z: number
-  width: number
-  depth: number
-  height: number
-  paint: Paint
-  faces: Faces
-  order: number
-}
-type PineLayer = Point & { kind: 'pine'; z: number; radius: number; scale: number; order: number }
-type Firefly = Point & { z: number; phase: number }
+import { buildWorld } from './objects.ts'
+import type { Faces, GardenConfig, Paint, Palette, PineLayer, Point, Tile, World } from './types.ts'
 
 const allFaces: Faces = { top: true, left: true, right: true }
-/** Number of leaf shades the oak picks between; palettes with fewer entries wrap. */
-const leafShades = 6
-const anchors: Anchor[] = [
-  { x: 0, y: 0, radius: 5.1 },
-  { x: 5.9, y: -2.1, radius: 2.5 },
-  { x: -4.9, y: 2.9, radius: 2.2 },
-  { x: 3.3, y: 5.4, radius: 2.1 },
-  { x: -5.2, y: -3.5, radius: 1.6 },
-]
 
 function shade(hex: string, factor = 1) {
   const color = parseInt(hex.slice(1), 16)
@@ -35,24 +9,22 @@ function shade(hex: string, factor = 1) {
   return `rgb(${channel(color >> 16)},${channel((color >> 8) & 255)},${channel(color & 255)})`
 }
 
-/** Pure canvas drawing and deterministic world generation; no event listeners or React state. */
+/** Canvas renderer for a garden built from config; no event listeners or React state. */
 export class GardenScene {
   private context: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
-  private tiles: Tile[] = []
+  private world: World
   private visibleTiles: Tile[] = []
-  private geometry: (Box | PineLayer)[] = []
-  private fireflies: Firefly[] = []
   private width = 0
   private height = 0
   private unit = 1
   private origin: Point = { x: 0, y: 0 }
   private pointer: Point | null = null
 
-  constructor(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
+  constructor(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D, config: GardenConfig) {
     this.canvas = canvas
     this.context = context
-    this.build()
+    this.world = buildWorld(config)
   }
 
   private project(x: number, y: number, z = 0): Point {
@@ -98,124 +70,18 @@ export class GardenScene {
     if (faces.top) this.polygon([a, b, c, d], shade(color, 1.09 * dim))
   }
 
-  private addBox(
-    x: number, y: number, z: number,
-    width: number, depth: number, height: number, paint: Paint, faces = allFaces,
-  ) {
-    this.geometry.push({ kind: 'box', x, y, z, width, depth, height, paint, faces, order: x + y + z * 0.8 })
-  }
-
-  private oak(x: number, y: number, scale: number, random: Random) {
-    const trunk: ColorName = 'trunk'
-    this.addBox(x - 0.33 * scale, y - 0.3 * scale, 0.04, 0.66 * scale, 0.6 * scale, 4.45 * scale, trunk)
-    this.addBox(x - 0.62 * scale, y - 0.49 * scale, 0.02, 1.1 * scale, 0.9 * scale, 0.35 * scale, 'trunkBase')
-    for (let i = 0; i < 3; i++) {
-      this.addBox(x - (0.58 + i * 0.43) * scale, y - 0.1 * scale, (2.2 + i * 0.55) * scale, 0.6 * scale, 0.46 * scale, 0.7 * scale, trunk)
-      this.addBox(x + 0.2 * scale, y - (0.5 + i * 0.4) * scale, (2.65 + i * 0.5) * scale, 0.5 * scale, 0.62 * scale, 0.7 * scale, 'branch')
-    }
-
-    // Overlapping ellipsoids form a broad oak canopy. Only exposed voxel faces are drawn.
-    const voxels = new Map<string, { x: number; y: number; z: number }>()
-    const voxelSize = 0.66 * scale
-    for (let ix = -5; ix <= 5; ix++) {
-      for (let iy = -5; iy <= 5; iy++) {
-        for (let iz = 0; iz < 6; iz++) {
-          const xx = ix * 0.66, yy = iy * 0.66, zz = iz * 0.66
-          const main = xx ** 2 / 9 + yy ** 2 / 7.9 + (zz - 1.65) ** 2 / 4.3 < 1
-          const left = (xx + 2.05) ** 2 / 3.2 + (yy - 0.2) ** 2 / 4 + (zz - 1.05) ** 2 / 2.1 < 1
-          const right = (xx - 1.9) ** 2 / 2.8 + (yy + 0.5) ** 2 / 3.3 + (zz - 1.25) ** 2 / 2.6 < 1
-          if ((main || left || right) && random() > 0.045) voxels.set(`${ix},${iy},${iz}`, { x: ix, y: iy, z: iz })
-        }
-      }
-    }
-    for (const { x: ix, y: iy, z: iz } of voxels.values()) {
-      const faces = {
-        top: !voxels.has(`${ix},${iy},${iz + 1}`),
-        left: !voxels.has(`${ix},${iy + 1},${iz}`),
-        right: !voxels.has(`${ix + 1},${iy},${iz}`),
-      }
-      if (!faces.top && !faces.left && !faces.right) continue
-      this.addBox(x + ix * voxelSize, y + iy * voxelSize, (4.1 + iz * 0.66) * scale,
-        voxelSize, voxelSize, voxelSize, { swatch: 'leaves', index: Math.floor(random() * leafShades) }, faces)
-    }
-  }
-
-  private pine(x: number, y: number, scale: number) {
-    this.addBox(x - 0.12, y - 0.12, 0, 0.24, 0.24, scale, 'pineTrunk')
-    for (let i = 0; i < 4; i++) {
-      const z = (0.65 + i * 0.6) * scale
-      this.geometry.push({ kind: 'pine', x, y, z, scale, radius: (1.2 - i * 0.23) * scale, order: x + y + z * 0.8 })
-    }
-  }
-
   private drawPine(layer: PineLayer, palette: Palette) {
-    const { x, y, z, radius, scale } = layer
+    const { x, y, z, radius, height, tip: lean } = layer
     const a = this.project(x - radius, y - radius, z)
     const b = this.project(x + radius, y - radius, z)
     const c = this.project(x + radius, y + radius, z)
     const d = this.project(x - radius, y + radius, z)
-    const tip = this.project(x - 0.07, y - 0.07, z + 1.6 * scale)
+    const tip = this.project(x + lean.x, y + lean.y, z + height)
     const dim = palette.light.pine, [backLeft, backRight, frontRight, frontLeft] = palette.swatches.pine
     this.polygon([a, b, tip], shade(backLeft, dim))
     this.polygon([b, c, tip], shade(backRight, dim))
     this.polygon([c, d, tip], shade(frontRight, dim))
     this.polygon([d, a, tip], shade(frontLeft, dim))
-  }
-
-  private plant(x: number, y: number, scale: number, flower: boolean, random: Random) {
-    this.addBox(x, y, 0.04, 0.075, 0.075, 0.55 * scale, 'stem')
-    this.addBox(x - 0.18 * scale, y, 0.17 * scale, 0.22 * scale, 0.12 * scale, 0.12 * scale, 'plantLeaf')
-    this.addBox(x + 0.03, y - 0.14 * scale, 0.28 * scale, 0.15 * scale, 0.23 * scale, 0.13 * scale, 'plantLeafDark')
-    if (flower) this.addBox(x - 0.08, y - 0.07, 0.52 * scale, 0.23 * scale, 0.23 * scale, 0.17 * scale, { swatch: 'flowers', index: random() > 0.5 ? 0 : 1 })
-  }
-
-  private rock(x: number, y: number, scale: number) {
-    this.addBox(x, y, 0.01, scale, scale * 0.72, scale * 0.51, 'rock')
-    this.addBox(x + scale * 0.18, y + scale * 0.08, scale * 0.51, scale * 0.64, scale * 0.55, scale * 0.12, 'rockTop')
-  }
-
-  private build() {
-    // Seeds reproduce the original hand-tuned garden; any 32-bit number gives a new variation.
-    const groundRandom = createRandom(51)
-    for (let x = -45; x <= 45; x++) {
-      for (let y = -45; y <= 45; y++) {
-        let influence = 0, gridInfluence = 0
-        for (const anchor of anchors) {
-          const dx = x + 0.5 - anchor.x, dy = y + 0.5 - anchor.y
-          influence = Math.max(influence, Math.max(0, 1 - Math.hypot(dx, dy) / anchor.radius))
-          // Measure in screen space so each grid fade is circular, not an isometric ellipse.
-          gridInfluence = Math.max(gridInfluence, Math.max(0, 1 - Math.hypot(dx - dy, (dx + dy) * 0.5) / (anchor.radius * 1.4)))
-        }
-        const variation = groundRandom()
-        this.tiles.push({ x, y, fade: influence ** 1.45, gridFade: gridInfluence ** 1.8, variation, grass: influence > 0.38 && variation > 0.13 })
-      }
-    }
-    this.oak(0, 0, 1, createRandom(2198020462))
-    this.pine(5.9, -2.1, 0.86)
-    this.pine(7, -1.4, 0.49)
-    this.pine(-4.9, 2.9, 0.66)
-    this.oak(3.6, 5.4, 0.24, createRandom(1581092675))
-    const scatter = createRandom(3263619596)
-    for (let i = 0; i < 44; i++) {
-      const anchor = anchors[Math.floor(scatter() * anchors.length)]
-      const angle = scatter() * Math.PI * 2, radius = 0.8 + scatter() * anchor.radius * 0.48
-      const x = anchor.x + Math.cos(angle) * radius, y = anchor.y + Math.sin(angle) * radius
-      if (Math.hypot(x, y) >= 1.1) this.plant(x, y, 0.5 + scatter() * 0.5, i % 3 === 0, scatter)
-    }
-    this.rock(-2, 1.7, 0.46)
-    this.rock(-2.3, 1.95, 0.27)
-    this.rock(4.4, -2.2, 0.4)
-    this.rock(-5, -3.5, 0.6)
-    this.rock(-4.45, -3.4, 0.32)
-    // Stepping stones and a bench beneath the oak.
-    for (let i = 0; i < 5; i++) this.addBox(1.3 + i * 0.35, 1.5 + i * 0.48, 0.035, 0.57, 0.48, 0.055, { swatch: 'path', index: i % 2 })
-    this.addBox(-1.9, 2.1, 0.03, 0.14, 0.18, 0.45, 'benchLeg')
-    this.addBox(-0.9, 2.1, 0.03, 0.14, 0.18, 0.45, 'benchLeg')
-    this.addBox(-2, 1.95, 0.48, 1.32, 0.46, 0.14, 'benchSeat')
-    this.addBox(-2, 2.33, 0.65, 1.32, 0.1, 0.35, 'benchBack')
-    this.geometry.sort((a, b) => a.order - b.order)
-    const fireflies = createRandom(664517015)
-    for (let i = 0; i < 18; i++) this.fireflies.push({ x: fireflies() * 13 - 6.5, y: fireflies() * 10 - 4, z: 0.4 + fireflies() * 4, phase: fireflies() * Math.PI * 2 })
   }
 
   resize() {
@@ -228,7 +94,7 @@ export class GardenScene {
     this.context.setTransform(dpr, 0, 0, dpr, 0, 0)
     this.unit = Math.min(this.width / (this.width <= 680 ? 22.5 : 26), this.height / 20, 56)
     this.origin = { x: this.width * 0.48, y: this.height * 0.59 + this.unit * 0.3 }
-    this.visibleTiles = this.tiles.filter((tile) => {
+    this.visibleTiles = this.world.tiles.filter((tile) => {
       const point = this.project(tile.x + 0.5, tile.y + 0.5)
       return point.x >= -this.unit && point.x <= this.width + this.unit && point.y >= -this.unit && point.y <= this.height + this.unit
     })
@@ -261,8 +127,8 @@ export class GardenScene {
       ], fill, stroke)
     }
 
-    for (const anchor of anchors) {
-      const point = this.project(anchor.x, anchor.y), radius = anchor.radius * unit * 0.72
+    for (const island of this.world.islands) {
+      const point = this.project(island.x, island.y), radius = island.radius * unit * 0.72
       ctx.save()
       ctx.translate(point.x + unit * 0.5, point.y + unit * 0.15)
       ctx.scale(1, 0.48)
@@ -275,14 +141,14 @@ export class GardenScene {
       ctx.fill()
       ctx.restore()
     }
-    for (const item of this.geometry) {
+    for (const item of this.world.geometry) {
       if (item.kind === 'pine') this.drawPine(item, palette)
       else this.box(item.x, item.y, item.z, item.width, item.depth, item.height, item.paint, palette, item.faces)
     }
 
     // Pollen in daylight; palettes with a glow turn it into fireflies.
     const firefly = palette.firefly
-    for (const fly of this.fireflies) {
+    for (const fly of this.world.fireflies) {
       const t = reducedMotion ? 0 : time * 0.00025
       const point = this.project(fly.x + Math.sin(t + fly.phase) * 0.3, fly.y + Math.cos(t + fly.phase) * 0.25, fly.z + Math.sin(t * 1.8 + fly.phase) * 0.25)
       ctx.globalAlpha = 0.2 + (Math.sin(t * 3 + fly.phase) + 1) * 0.22

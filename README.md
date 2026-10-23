@@ -58,6 +58,7 @@ src/
     NotFound.tsx                   “Nothing's grown here yet” 404 page
     *.module.css                   Styles scoped to each component
   data/
+    garden.ts                      Garden islands, objects, fireflies, and color palettes
     profile.ts                     Name, alias, portrait, introduction, Currently list
     experience.ts                  Roles shown in “where i've worked”
     projects.ts                    Projects shown in “a few things i've grown”
@@ -69,7 +70,10 @@ src/
     portfolio.ts                   Field notes dialog copy
     types.ts                       Shared card and dialog types
   garden/
-    scene.ts                       Seeded world generation and canvas renderer
+    types.ts                       Garden config, palette, and geometry types
+    objects.ts                     Object type registry and buildWorld (config → geometry)
+    random.ts                      Seeded per-object random generators
+    scene.ts                       Canvas renderer
   hooks/
     useGardenExperience.ts         Scroll morph, cursor, media queries, lifecycle
 public/
@@ -114,7 +118,9 @@ vite.config.ts                     Vite + React, 404 build entry, local 404 hand
 - **Contact links:** edit `src/data/contact.ts`. The navbar's **Say hello** and the introduction's **Or just say hello** open the same dialog.
 - **Field notes dialog copy:** edit `src/data/portfolio.ts`. Writing has not been ported yet, so this is still placeholder copy.
 - **Colors and dimensions:** edit the CSS custom properties in `src/index.css`; component-specific layout lives alongside each component.
-- **Garden shapes and placement:** edit `src/garden/scene.ts`. Its seeded random generator keeps the landscape stable across mounts and resizes.
+- **Garden layout:** edit `garden` in `src/data/garden.ts`. It lists the islands (grass patches that shape the ground and cast shadows), the objects, the ground size, and the fireflies. Units are ground tiles; +x runs toward the lower right of the screen and +y toward the lower left. An object with `island` is positioned relative to that island's center, so moving an island moves everything on it. Each object has its own seeded random generator: change its `seed` to reroll just that object, or leave `seed` out to derive one from its `id`. The current seeds reproduce the original garden.
+- **Garden colors:** edit `gardenPalettes` in `src/data/garden.ts`. Objects refer to named colors (`trunk`, `benchSeat`…) and swatches (`leaves`, `flowers`, `pine`, `path`), resolved against the active palette when drawing; `light` scales the brightness of everything. The site uses `daylight` and `evening`; `evening` reuses the daylight colors under dimmer light, but any color can be overridden per palette.
+- **New object types:** add the parameters to `ObjectParams` in `src/garden/types.ts` and a builder to `objectTypes` in `src/garden/objects.ts`. Builders draw boxes and pine tiers in local coordinates with `b.box(...)` / `b.pineLayer(...)`, use `b.random()` for variation, and can place other types with `b.place(...)`. `buildWorld` (pure, unit-tested in `src/garden/objects.test.ts`) turns the config into sorted geometry; `src/garden/scene.ts` only renders it.
 - **Scroll choreography:** edit `src/hooks/useGardenExperience.ts` and `GardenExperience.module.css`. Frame-by-frame updates go straight to CSS variables and canvas rather than triggering React renders.
 
 ## Live hobby stats
