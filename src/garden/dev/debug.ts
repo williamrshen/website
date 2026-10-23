@@ -1,5 +1,6 @@
 import type { GardenHost } from './index.ts'
 import { addOverlay, labeller } from './overlay.ts'
+import { currentWarnings } from './warnings.ts'
 
 /**
  * `?garden=debug`: island outlines, object anchors and orientation, and the world axes, so
@@ -39,7 +40,8 @@ export function debugOverlay({ scene }: GardenHost) {
       label(`+${axis}`, tip.x + 4, tip.y + 4, color)
     }
 
-    // Objects: anchor, id, and which way local +x points after rotate/mirror.
+    // Objects: anchor, id, and which way local +x points after rotate/mirror. Warned ones in red.
+    const warned = new Set(currentWarnings().map((warning) => warning.object))
     for (const object of world.objects) {
       const at = scene.project(object.x, object.y)
       const turn = (object.rotate / 90) % 4
@@ -55,10 +57,12 @@ export function debugOverlay({ scene }: GardenHost) {
       ctx.arc(at.x, at.y, 3, 0, Math.PI * 2)
       ctx.fill()
       const flags = [object.rotate ? `↻${object.rotate}` : '', object.mirror ? 'mirrored' : ''].filter(Boolean).join(' ')
-      label(`${object.id}${flags ? ` ${flags}` : ''}`, at.x + 6, at.y - 6, '#7c2d12')
+      const warning = warned.has(object.id)
+      label(`${warning ? '⚠ ' : ''}${object.id}${flags ? ` ${flags}` : ''}`, at.x + 6, at.y - 6, warning ? '#dc2626' : '#7c2d12')
     }
 
     const boxes = world.geometry.length
-    label(`garden debug · ${world.objects.length} objects · ${boxes} shapes · ${world.islands.length} islands`, 12, ctx.canvas.clientHeight - 14)
+    const warnings = currentWarnings().length
+    label(`garden debug · ${world.objects.length} objects · ${boxes} shapes · ${world.islands.length} islands · ${warnings ? `⚠ ${warnings} warnings (see console)` : 'no warnings'}`, 12, ctx.canvas.clientHeight - 14, warnings ? '#dc2626' : undefined)
   })
 }

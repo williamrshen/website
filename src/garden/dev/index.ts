@@ -9,6 +9,7 @@ import type { GardenScene } from '../scene.ts'
 import type { GardenConfig, Palette } from '../types.ts'
 import { debugOverlay } from './debug.ts'
 import { hotReload } from './hot.ts'
+import { configWarnings } from './warnings.ts'
 
 export type Palettes = typeof gardenPalettes
 
@@ -29,7 +30,7 @@ export type GardenHost = {
 type Tool = (host: GardenHost) => () => void
 
 /** Always on in development. */
-const always: Tool[] = [hotReload]
+const always: Tool[] = [hotReload, configWarnings]
 const optional: Record<string, Tool> = { debug: debugOverlay }
 
 export function attachDevTools(host: GardenHost) {

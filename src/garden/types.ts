@@ -38,6 +38,8 @@ export type Faces = { top: boolean; left: boolean; right: boolean }
 /** World-space geometry produced by object builders, drawn back to front by `order`. */
 export type Box = {
   kind: 'box'
+  /** Id of the object that produced it. */
+  owner: string
   x: number; y: number; z: number
   width: number; depth: number; height: number
   paint: Paint
@@ -47,6 +49,8 @@ export type Box = {
 /** One tier of a pine: a square-based pyramid centered at (x, y). */
 export type PineLayer = {
   kind: 'pine'
+  /** Id of the object that produced it. */
+  owner: string
   x: number; y: number; z: number
   radius: number
   /** Height of the tip above the base. */

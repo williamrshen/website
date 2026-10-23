@@ -155,11 +155,11 @@ function createBuilder(
     box(x, y, z, width, depth, height, paint, faces = allFaces) {
       const sx = span(m[0], m[1], x, width, y, depth), sy = span(m[2], m[3], x, width, y, depth)
       const wx = origin.x + sx.min, wy = origin.y + sy.min
-      geometry.push({ kind: 'box', x: wx, y: wy, z, width: sx.size, depth: sy.size, height, paint, faces, order: wx + wy + z * 0.8 })
+      geometry.push({ kind: 'box', owner, x: wx, y: wy, z, width: sx.size, depth: sy.size, height, paint, faces, order: wx + wy + z * 0.8 })
     },
     pineLayer(x, y, z, radius, height) {
       const center = apply(m, { x, y }), wx = origin.x + center.x, wy = origin.y + center.y
-      geometry.push({ kind: 'pine', x: wx, y: wy, z, radius, height, tip: apply(m, pineLean), order: wx + wy + z * 0.8 })
+      geometry.push({ kind: 'pine', owner, x: wx, y: wy, z, radius, height, tip: apply(m, pineLean), order: wx + wy + z * 0.8 })
     },
     place(type, { x = 0, y = 0, rotate, mirror, ...params }) {
       const offset = apply(m, { x, y })

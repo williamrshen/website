@@ -1,5 +1,6 @@
 import type { GardenConfig } from '../types.ts'
 import type { GardenHost, Palettes } from './index.ts'
+import { reportWarnings } from './warnings.ts'
 
 let current: GardenHost | null = null
 
@@ -20,6 +21,7 @@ export function applyGardenModule(config: GardenConfig, palettes: Palettes) {
   try {
     current.setGarden(config, palettes)
     console.info('[garden] Reloaded src/data/garden.ts')
+    reportWarnings(config)
   } catch (error) {
     console.error('[garden] Kept the previous garden; src/data/garden.ts is invalid:', error)
   }
