@@ -1,9 +1,43 @@
 import { createRandom, seedFromId, type Random } from './random.ts'
 import type {
-  Faces, GardenConfig, GardenObject, Geometry, Island, ObjectParams, ObjectType, Paint, Point, Tile, World,
+  Faces, GardenConfig, GardenObject, Geometry, Island, ObjectParams, ObjectType, Orientation, Paint, Point, Tile, World,
 } from './types.ts'
 
 const allFaces: Faces = { top: true, left: true, right: true }
+
+/** Row-major 2×2 signed permutation matrix mapping local (x, y) to world (x, y). */
+type Matrix = readonly [number, number, number, number]
+const identity: Matrix = [1, 0, 0, 1]
+const quarterTurns: Record<number, Matrix> = {
+  0: identity,
+  // Clockwise on screen: local +x (lower right) turns toward +y (lower left).
+  90: [0, -1, 1, 0],
+  180: [-1, 0, 0, -1],
+  270: [0, 1, -1, 0],
+}
+/** Swapping x and y flips the scene left↔right on screen. */
+const mirrored: Matrix = [0, 1, 1, 0]
+
+const multiply = (a: Matrix, b: Matrix): Matrix => [
+  a[0] * b[0] + a[1] * b[2], a[0] * b[1] + a[1] * b[3],
+  a[2] * b[0] + a[3] * b[2], a[2] * b[1] + a[3] * b[3],
+]
+const apply = (m: Matrix, p: Point): Point => ({ x: m[0] * p.x + m[1] * p.y, y: m[2] * p.x + m[3] * p.y })
+
+function orientation(owner: string, { rotate = 0, mirror = false }: Orientation): Matrix {
+  const turn = quarterTurns[rotate]
+  if (!turn) throw new Error(`Garden object "${owner}" has rotate ${rotate}; use 0, 90, 180, or 270`)
+  return mirror ? multiply(turn, mirrored) : turn
+}
+
+/**
+ * One world axis of a transformed box. Exactly one of `along`/`across` is ±1, selecting which
+ * local axis maps onto this world axis and whether it is reversed.
+ */
+function span(along: number, across: number, x: number, width: number, y: number, depth: number) {
+  if (along) return along > 0 ? { min: x, size: width } : { min: -(x + width), size: width }
+  return across > 0 ? { min: y, size: depth } : { min: -(y + depth), size: depth }
+}
 
 /**
  * What an object builder draws with. Coordinates are local to the object's position, in world
@@ -12,12 +46,18 @@ const allFaces: Faces = { top: true, left: true, right: true }
 export type Builder = {
   /** This object's own random generator. */
   random: Random
+  /** Island centers in this object's local coordinates. */
   islands: readonly Island[]
+  /**
+   * Local directions that end up facing the camera's right (+x) and left (+y) sides. Use them
+   * when hiding covered faces, so culling stays correct after rotating or mirroring.
+   */
+  facing: { right: Point; left: Point }
   box(x: number, y: number, z: number, width: number, depth: number, height: number, paint: Paint, faces?: Faces): void
   /** A pine tier centered at (x, y), `height` tall from base to tip. */
   pineLayer(x: number, y: number, z: number, radius: number, height: number): void
   /** Places another object type at a local position, sharing this object's random generator. */
-  place<K extends ObjectType>(type: K, params: ObjectParams[K] & Partial<Point>): void
+  place<K extends ObjectType>(type: K, params: ObjectParams[K] & Partial<Point> & Orientation): void
 }
 
 type ObjectBuilder<K extends ObjectType> = (builder: Builder, params: ObjectParams[K]) => void
@@ -49,11 +89,12 @@ export const objectTypes: { [K in ObjectType]: ObjectBuilder<K> } = {
         }
       }
     }
+    const { left, right } = b.facing
     for (const { x: ix, y: iy, z: iz } of voxels.values()) {
       const faces = {
         top: !voxels.has(`${ix},${iy},${iz + 1}`),
-        left: !voxels.has(`${ix},${iy + 1},${iz}`),
-        right: !voxels.has(`${ix + 1},${iy},${iz}`),
+        left: !voxels.has(`${ix + left.x},${iy + left.y},${iz}`),
+        right: !voxels.has(`${ix + right.x},${iy + right.y},${iz}`),
       }
       if (!faces.top && !faces.left && !faces.right) continue
       b.box(ix * voxelSize, iy * voxelSize, (4.1 + iz * 0.66) * scale,
@@ -99,25 +140,34 @@ export const objectTypes: { [K in ObjectType]: ObjectBuilder<K> } = {
   },
 }
 
-function createBuilder(origin: Point, random: Random, islands: Island[], geometry: Geometry[]): Builder {
-  const builder: Builder = {
+/** Pine tiers lean slightly toward the back of an unrotated object. */
+const pineLean: Point = { x: -0.07, y: -0.07 }
+
+function createBuilder(
+  owner: string, origin: Point, m: Matrix, random: Random, islands: Island[], geometry: Geometry[],
+): Builder {
+  // The inverse of a signed permutation is its transpose.
+  const inverse: Matrix = [m[0], m[2], m[1], m[3]]
+  return {
     random,
-    // Islands in this object's local coordinates.
-    islands: islands.map((island) => ({ ...island, x: island.x - origin.x, y: island.y - origin.y })),
+    islands: islands.map((island) => ({ ...island, ...apply(inverse, { x: island.x - origin.x, y: island.y - origin.y }) })),
+    facing: { right: { x: m[0], y: m[1] }, left: { x: m[2], y: m[3] } },
     box(x, y, z, width, depth, height, paint, faces = allFaces) {
-      const wx = origin.x + x, wy = origin.y + y
-      geometry.push({ kind: 'box', x: wx, y: wy, z, width, depth, height, paint, faces, order: wx + wy + z * 0.8 })
+      const sx = span(m[0], m[1], x, width, y, depth), sy = span(m[2], m[3], x, width, y, depth)
+      const wx = origin.x + sx.min, wy = origin.y + sy.min
+      geometry.push({ kind: 'box', x: wx, y: wy, z, width: sx.size, depth: sy.size, height, paint, faces, order: wx + wy + z * 0.8 })
     },
     pineLayer(x, y, z, radius, height) {
-      const wx = origin.x + x, wy = origin.y + y
-      geometry.push({ kind: 'pine', x: wx, y: wy, z, radius, height, tip: { x: -0.07, y: -0.07 }, order: wx + wy + z * 0.8 })
+      const center = apply(m, { x, y }), wx = origin.x + center.x, wy = origin.y + center.y
+      geometry.push({ kind: 'pine', x: wx, y: wy, z, radius, height, tip: apply(m, pineLean), order: wx + wy + z * 0.8 })
     },
-    place(type, { x = 0, y = 0, ...params }) {
-      const child = createBuilder({ x: origin.x + x, y: origin.y + y }, random, islands, geometry)
+    place(type, { x = 0, y = 0, rotate, mirror, ...params }) {
+      const offset = apply(m, { x, y })
+      const child = createBuilder(owner, { x: origin.x + offset.x, y: origin.y + offset.y },
+        multiply(m, orientation(owner, { rotate, mirror })), random, islands, geometry)
       ;(objectTypes[type] as ObjectBuilder<typeof type>)(child, params as ObjectParams[typeof type])
     },
   }
-  return builder
 }
 
 function position(object: GardenObject, islands: Map<string, Island>): Point {
@@ -158,8 +208,9 @@ export function buildWorld(config: GardenConfig): World {
   for (const object of config.objects) {
     if (ids.has(object.id)) throw new Error(`Duplicate garden object id "${object.id}"`)
     ids.add(object.id)
-    const builder = createBuilder(position(object, islands), createRandom(object.seed ?? seedFromId(object.id)), config.islands, geometry)
-    const { type, id: _id, island: _island, x: _x, y: _y, seed: _seed, ...params } = object
+    const { type, id, island: _island, x: _x, y: _y, seed, rotate, mirror, ...params } = object
+    const builder = createBuilder(id, position(object, islands), orientation(id, { rotate, mirror }),
+      createRandom(seed ?? seedFromId(id)), config.islands, geometry)
     ;(objectTypes[type] as ObjectBuilder<typeof type>)(builder, params as ObjectParams[typeof type])
   }
   // Painter's algorithm: back to front. Array.sort is stable, so ties keep config order.

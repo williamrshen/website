@@ -67,3 +67,62 @@ test('invalid configs fail loudly', () => {
   assert.throws(() => buildWorld(minimal([{ id: 'x', type: 'rock', scale: 1 }, { id: 'x', type: 'rock', scale: 1 }])), /Duplicate garden object id "x"/)
   assert.throws(() => buildWorld(minimal([], [{ id: 'a', x: 0, y: 0, radius: 1 }, { id: 'a', x: 1, y: 1, radius: 1 }])), /Duplicate garden island id "a"/)
 })
+
+const orientations = [0, 90, 180, 270].flatMap((rotate) => [false, true].map((mirror) => ({ rotate: rotate as 0 | 90 | 180 | 270, mirror })))
+const boxes = (geometry: Geometry[]) => geometry.filter((item) => item.kind === 'box')
+
+test('rotating 180° turns boxes around the object position', () => {
+  const at = (rotate: 0 | 180) => boxes(buildWorld(minimal([{ id: 'bench', type: 'bench', x: 2, y: 1, rotate }])).geometry)
+  const turned = at(0).map((box) => ({ ...box, x: 4 - box.x - box.width, y: 2 - box.y - box.depth }))
+  assert.deepEqual(canonical(at(180)), canonical(turned.map((box) => ({ ...box, order: box.x + box.y + box.z * 0.8 }))))
+})
+
+test('mirroring swaps the axes, flipping the object left-right on screen', () => {
+  const at = (mirror: boolean) => boxes(buildWorld(minimal([{ id: 'bench', type: 'bench', mirror }])).geometry)
+  const flipped = at(false).map((box) => ({ ...box, x: box.y, y: box.x, width: box.depth, depth: box.width }))
+  assert.deepEqual(canonical(at(true)), canonical(flipped))
+})
+
+test('quarter turns clockwise on screen: local +x ends up facing +y', () => {
+  const [first, second] = boxes(buildWorld(minimal([{ id: 'p', type: 'path', stones: 2, step: { x: 1, y: 0 }, rotate: 90 }])).geometry)
+    .sort((a, b) => a.y - b.y)
+  assert.equal(second.y - first.y, 1)
+  assert.equal(second.x, first.x)
+})
+
+test('pine tiers lean with the object', () => {
+  const tips = (rotate: 0 | 180) => buildWorld(minimal([{ id: 'p', type: 'pine', scale: 1, rotate }])).geometry
+    .flatMap((item) => item.kind === 'pine' ? [item.tip] : [])
+  assert.deepEqual(tips(0)[0], { x: -0.07, y: -0.07 })
+  assert.deepEqual(tips(180)[0], { x: 0.07, y: 0.07 })
+})
+
+test('canopy faces stay culled correctly in every orientation', () => {
+  for (const orientation of orientations) {
+    const scale = 1, size = 0.66 * scale
+    const leaves = boxes(buildWorld(minimal([{ id: 'oak', type: 'oak', scale, ...orientation }])).geometry)
+      .filter((box) => typeof box.paint === 'object' && box.paint.swatch === 'leaves')
+    const cell = (box: (typeof leaves)[number]) => [Math.round(box.x / size), Math.round(box.y / size), Math.round((box.z / scale - 4.1) / 0.66)]
+    const occupied = new Set(leaves.map((box) => cell(box).join()))
+    assert.ok(leaves.length > 100)
+    for (const box of leaves) {
+      const [x, y, z] = cell(box)
+      // A drawn face must never be pressed against another drawn voxel.
+      if (box.faces.right) assert.ok(!occupied.has([x + 1, y, z].join()), `${JSON.stringify(orientation)} right face of ${[x, y, z]}`)
+      if (box.faces.left) assert.ok(!occupied.has([x, y + 1, z].join()), `${JSON.stringify(orientation)} left face of ${[x, y, z]}`)
+      if (box.faces.top) assert.ok(!occupied.has([x, y, z + 1].join()), `${JSON.stringify(orientation)} top face of ${[x, y, z]}`)
+    }
+  }
+})
+
+test('scattered plants stay around their islands however the scatter is turned', () => {
+  for (const orientation of orientations) {
+    const islands = [{ id: 'a', x: 3, y: -2, radius: 2 }]
+    const plants = boxes(buildWorld(minimal([{ id: 's', type: 'scatter', x: 1, y: 1, count: 30, flowerEvery: 2, clearRadius: 0, ...orientation }], islands)).geometry)
+    for (const box of plants) assert.ok(Math.hypot(box.x - 3, box.y + 2) < 0.8 + 2 * 0.48 + 0.5, JSON.stringify(orientation))
+  }
+})
+
+test('invalid rotations are rejected', () => {
+  assert.throws(() => buildWorld(minimal([{ id: 'r', type: 'rock', scale: 1, rotate: 45 as 90 }])), /Garden object "r" has rotate 45/)
+})

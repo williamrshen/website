@@ -97,7 +97,13 @@ type Placement = {
   y?: number
   /** Seed for this object's random generator (any 32-bit number). */
   seed?: number
-}
+} & Orientation
+
+/**
+ * Turns and flips an object around its position. `mirror` flips it left↔right on screen, then
+ * `rotate` turns it clockwise (as seen on screen) in quarter turns, since boxes stay axis-aligned.
+ */
+export type Orientation = { rotate?: 0 | 90 | 180 | 270; mirror?: boolean }
 export type GardenObject = { [K in ObjectType]: Placement & { type: K } & ObjectParams[K] }[ObjectType]
 
 export type GardenConfig = {
