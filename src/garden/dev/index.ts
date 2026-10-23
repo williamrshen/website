@@ -10,6 +10,7 @@ import type { GardenConfig, Palette } from '../types.ts'
 import { debugOverlay } from './debug.ts'
 import { editor } from './editor.ts'
 import { hotReload } from './hot.ts'
+import { seedExplorer } from './seeds.ts'
 import { configWarnings } from './warnings.ts'
 
 export type Palettes = typeof gardenPalettes
@@ -33,7 +34,7 @@ type Tool = (host: GardenHost) => () => void
 
 /** Always on in development. */
 const always: Tool[] = [hotReload, configWarnings]
-const optional: Record<string, Tool> = { debug: debugOverlay, edit: editor }
+const optional: Record<string, Tool> = { debug: debugOverlay, edit: editor, seeds: seedExplorer }
 
 export function attachDevTools(host: GardenHost) {
   const requested = new URLSearchParams(location.search).get('garden')?.split(',').map((name) => name.trim()) ?? []

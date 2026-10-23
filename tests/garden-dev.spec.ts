@@ -133,3 +133,42 @@ test.describe('?garden=edit', () => {
     expect(await panel.getByRole('textbox', { name: 'Copied text' }).inputValue()).toContain("trunk: '#ff0000'")
   })
 })
+
+test.describe('seed explorer', () => {
+  test('from the editor: compare variations and pick one as an undoable edit', async ({ page }) => {
+    await open(page, '?garden=edit')
+    await page.waitForFunction(() => 'gardenDev' in window)
+    const trunk = await page.evaluate(() => {
+      const point = (window as unknown as { gardenDev: { scene: { project(x: number, y: number, z: number): { x: number; y: number } } } }).gardenDev.scene.project(0, 0, 2)
+      const rect = document.querySelector('#world')!.getBoundingClientRect()
+      return { x: point.x + rect.left, y: point.y + rect.top }
+    })
+    await page.mouse.click(trunk.x, trunk.y)
+    await page.keyboard.press('e')
+    const dialog = page.getByRole('dialog', { name: 'Seeds for oak' })
+    await expect(dialog.locator('canvas')).toHaveCount(12)
+    await expect(dialog.getByRole('button').filter({ hasText: 'current: 2198020462' })).toBeVisible()
+    // Thumbnails render something (not blank).
+    const blank = await dialog.locator('canvas').nth(3).evaluate((canvas: HTMLCanvasElement) =>
+      canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data.every((value) => value === 0))
+    expect(blank).toBe(false)
+    const choice = dialog.locator('button.seed').nth(5)
+    const seed = Number(await choice.getAttribute('data-seed'))
+    await choice.click()
+    await expect(dialog).toHaveCount(0)
+    const oak = () => page.evaluate(() => (window as unknown as { gardenDev: { config(): { objects: { id: string; seed?: number }[] } } }).gardenDev.config().objects.find((item) => item.id === 'oak')!.seed)
+    expect(await oak()).toBe(seed)
+    await page.keyboard.press('Control+z')
+    expect(await oak()).toBe(2198020462)
+  })
+
+  test('on its own: ?garden=seeds&object=sapling, closed with Escape', async ({ page }) => {
+    await open(page, '?garden=seeds&object=sapling')
+    const dialog = page.getByRole('dialog', { name: 'Seeds for sapling' })
+    await expect(dialog.locator('canvas')).toHaveCount(12)
+    await dialog.getByRole('button', { name: 'more seeds' }).click()
+    await expect(dialog.locator('canvas')).toHaveCount(12)
+    await page.keyboard.press('Escape')
+    await expect(dialog).toHaveCount(0)
+  })
+})

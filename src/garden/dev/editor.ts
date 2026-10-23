@@ -2,6 +2,7 @@ import type { GardenConfig, GardenObject, Island, ObjectParams, ObjectType, Pale
 import type { GardenHost, Palettes } from './index.ts'
 import { addOverlay, labeller } from './overlay.ts'
 import { objectOutline, pickObject } from './pick.ts'
+import { openSeedExplorer } from './seeds.ts'
 import { round, serializeGarden, serializePalette } from './serialize.ts'
 
 type Selection = { kind: 'object' | 'island'; id: string } | null
@@ -17,7 +18,7 @@ const randomSeed = () => Math.floor(Math.random() * 2 ** 32)
 
 const help = `click: select object or island · drag: move
 ←/→: x · ↑/↓: y (shift: ×5) · [ ]: scale or radius
-r / shift+r: rotate · m: mirror · s: new seed
+r / shift+r: rotate · m: mirror · s: new seed · e: explore seeds
 d: duplicate · delete: remove · esc: deselect · ctrl+z: undo`
 
 const css = `
@@ -173,11 +174,22 @@ export function editor(host: GardenHost) {
       edit(() => { object.rotate = turns[(index + (event.shiftKey ? 3 : 1)) % 4] || undefined })
     } else if (object && event.key === 'm') edit(() => { object.mirror = object.mirror ? undefined : true })
     else if (object && event.key === 's') edit(() => { object.seed = randomSeed() })
+    else if (object && event.key === 'e') explore()
     else if (event.key === 'd') duplicate()
     else if (event.key === 'Delete' || event.key === 'Backspace') remove()
     else if (event.key === 'Escape') { selection = null; render(); host.requestRender() }
     else handled = false
     if (handled) event.preventDefault()
+  }
+
+  /** Opens the seed explorer for the selected object; the pick becomes an undoable edit. */
+  function explore() {
+    if (selection?.kind !== 'object') return
+    const id = selection.id
+    openSeedExplorer(host, draft.config, id, (seed) => {
+      const object = objectById(id)
+      if (object) edit(() => { object.seed = seed })
+    })
   }
 
   function undo() {
@@ -283,7 +295,7 @@ export function editor(host: GardenHost) {
       <label>rotate<select name="rotate">${turns.map((turn) => `<option ${turn === (object.rotate ?? 0) ? 'selected' : ''}>${turn}</option>`).join('')}</select></label>
       <label>mirror<input type="checkbox" name="mirror" ${object.mirror ? 'checked' : ''}></label>
       ${extras}
-      <label>seed<span class="row" style="margin:0;flex-wrap:nowrap"><input name="seed" type="number" value="${object.seed ?? ''}" placeholder="from id"><button data-action="reseed" title="random seed (s)">new</button></span></label>`
+      <label>seed<span class="row" style="margin:0;flex-wrap:nowrap"><input name="seed" type="number" value="${object.seed ?? ''}" placeholder="from id"><button data-action="reseed" title="random seed (s)">new</button><button data-action="explore" title="compare seeds (e)">explore</button></span></label>`
   }
 
   function paletteFields() {
@@ -326,6 +338,7 @@ export function editor(host: GardenHost) {
     else if (action === 'copy-config') copy(serializeGarden(draft.config), 'Config')
     else if (action === 'copy-palette') copy(serializePalette(activePaletteName(), draft.palettes[activePaletteName()]), 'Palette')
     else if (action === 'reseed' && selection?.kind === 'object') { const object = objectById(selection.id); if (object) edit(() => { object.seed = randomSeed() }) }
+    else if (action === 'explore') explore()
   })
 
   // Colors update live while dragging the picker; one undo step per pick.

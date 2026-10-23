@@ -28,6 +28,7 @@ export class GardenScene {
   private world: World
   private layers: { ground?: Layer; objects?: Layer } = {}
   private dpr = 1
+  private view: { center: Point; span: number } | null = null
   /** Development tools draw on top of each frame here, in CSS pixels. */
   afterRender?: (context: CanvasRenderingContext2D) => void
   private visibleTiles: Tile[] = []
@@ -123,9 +124,22 @@ export class GardenScene {
     this.canvas.width = this.width * dpr
     this.canvas.height = this.height * dpr
     this.context.setTransform(dpr, 0, 0, dpr, 0, 0)
-    this.unit = Math.min(this.width / (this.width <= 680 ? 22.5 : 26), this.height / 20, 56)
-    this.origin = { x: this.width * 0.48, y: this.height * 0.59 + this.unit * 0.3 }
+    if (this.view) {
+      // Fit `span` tiles across the smaller side, with the ground point `center` in the middle.
+      const { center, span } = this.view
+      this.unit = Math.min(this.width, this.height) / span
+      this.origin = { x: this.width / 2 - (center.x - center.y) * this.unit, y: this.height / 2 - (center.x + center.y) * this.unit * 0.5 }
+    } else {
+      this.unit = Math.min(this.width / (this.width <= 680 ? 22.5 : 26), this.height / 20, 56)
+      this.origin = { x: this.width * 0.48, y: this.height * 0.59 + this.unit * 0.3 }
+    }
     this.cullTiles()
+  }
+
+  /** Frames a part of the world instead of the default hero framing (used by dev thumbnails). */
+  setView(view: { center: Point; span: number } | null) {
+    this.view = view
+    this.resize()
   }
 
   private cullTiles() {
