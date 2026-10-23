@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from 'react'
-import { garden as gardenConfig, gardenPalettes } from '../data/garden'
+import { garden as gardenConfig, gardenPalettes, gardenSeasons } from '../data/garden'
+import { currentSeason } from '../garden/seasons'
 import { GardenScene } from '../garden/scene'
 
 if (import.meta.env.DEV) {
@@ -37,7 +38,8 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
     let width = 0, height = 0, frame = 0
 
     let palettes = gardenPalettes, config = gardenConfig
-    const palette = () => night ? palettes.evening : palettes.daylight
+    const season = gardenSeasons[currentSeason(location.search, new Date())]
+    const palette = () => palettes[night ? season.evening : season.daylight]
     const render = (time = 0) => scene?.render(time, palette(), motionQuery.matches)
     const animate = (time: number) => {
       frame = 0

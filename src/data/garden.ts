@@ -1,3 +1,4 @@
+import type { Season } from '../garden/seasons.ts'
 import type { GardenConfig, Palette } from '../garden/types.ts'
 
 /**
@@ -56,15 +57,97 @@ const daylight: Palette = {
   pointerGlow: { center: '#dce9aa14', edge: '#dce9aa00' },
 }
 
-/** Evening reuses the daylight colors under dimmer light, with glowing fireflies. */
-const evening: Palette = {
-  ...daylight,
+/**
+ * An evening version of a daylight palette: the same colors under dimmer light, a darker shadow,
+ * and glowing fireflies. `overrides` replaces anything else, e.g. a season's grid tint.
+ */
+const atEvening = (palette: Palette, overrides: Partial<Palette> = {}): Palette => ({
+  ...palette,
   light: { box: 0.61, pine: 0.64 },
   ground: { fill: '167,204,114', fillGrid: 0.055, fillLight: 0.1, stroke: '195,224,145', strokeAlpha: 0.45 },
   shadow: { center: '#071b2459', edge: '#4a643600' },
   firefly: { color: '#e7efb0', size: 2.3, glow: { blur: 9, color: '#e4f7a6' } },
   pointerGlow: { center: '#dff9a816', edge: '#dce9aa00' },
-}
+  ...overrides,
+})
 
-/** Named palettes. The site theme picks `daylight` or `evening`; add more (autumn, snow…) here. */
-export const gardenPalettes = { daylight, evening } satisfies Record<string, Palette>
+/** Summer is the original garden. */
+const evening = atEvening(daylight)
+
+/** Autumn: amber canopy, drier grass, warmer grid. */
+const autumn: Palette = {
+  ...daylight,
+  colors: {
+    ...daylight.colors,
+    stem: '#7a7448', plantLeaf: '#a9a04f', plantLeafDark: '#8f8a45',
+    grass: '#b2b07a', grassLight: '#c0bd87', grassTuft: '#d0c796',
+  },
+  swatches: {
+    leaves: ['#c8742f', '#d18a3a', '#b85c2c', '#d9a441', '#a8502a', '#c98b2e'],
+    flowers: ['#c96a3a', '#e0b45a'],
+    pine: ['#7f9466', '#63804f', '#4f6e45', '#6f8d5a'],
+    path: daylight.swatches.path,
+  },
+  ground: { ...daylight.ground, fill: '170,155,100', stroke: '150,132,82' },
+  shadow: { center: '#5a4a3030', edge: '#5a4a3000' },
+  firefly: { color: '#c9a35e', size: 1.7 },
+}
+const autumnEvening = atEvening(autumn, { ground: { fill: '204,180,114', fillGrid: 0.055, fillLight: 0.1, stroke: '224,196,145', strokeAlpha: 0.45 } })
+
+/** Winter: frosted canopy and grass with snow on every top face, cool grid. */
+const winter: Palette = {
+  ...daylight,
+  colors: {
+    ...daylight.colors,
+    stem: '#7c7f6c', plantLeaf: '#9aa48f', plantLeafDark: '#868f7b',
+    rock: '#b9bcb3', rockTop: '#c9ccc4',
+    grass: '#c3cbc0', grassLight: '#d0d6cd', grassTuft: '#e3e7e1',
+  },
+  swatches: {
+    leaves: ['#8f9a80', '#98a389', '#a3ad94', '#879377', '#b3bba6', '#929d84'],
+    flowers: ['#e9eef2', '#d7dee6'],
+    pine: ['#6f8a6a', '#55704f', '#435d40', '#61795a'],
+    path: ['#e0dccd', '#d6d1bf'],
+  },
+  ground: { ...daylight.ground, fill: '150,165,175', stroke: '118,134,150' },
+  shadow: { center: '#46566430', edge: '#46566400' },
+  firefly: { color: '#ffffff', size: 1.7 },
+  snow: { color: '#f4f7fa', cover: 0.82 },
+}
+const winterEvening = atEvening(winter, {
+  ground: { fill: '160,185,210', fillGrid: 0.055, fillLight: 0.1, stroke: '190,210,232', strokeAlpha: 0.45 },
+  shadow: { center: '#06142459', edge: '#06142400' },
+})
+
+/** Spring: fresh greens with blossom in the canopy and pale flowers. */
+const spring: Palette = {
+  ...daylight,
+  colors: {
+    ...daylight.colors,
+    plantLeaf: '#9cc06a', plantLeafDark: '#7fa652',
+    grass: '#a9c47f', grassLight: '#b8d08e', grassTuft: '#d4e2a8',
+  },
+  swatches: {
+    leaves: ['#9cbf5a', '#a8c862', '#f2b8c6', '#94b753', '#e8a5b8', '#a3c45e'],
+    flowers: ['#f2b8c6', '#fff3b0'],
+    pine: ['#86a86c', '#6a8d52', '#567a48', '#79a05f'],
+    path: daylight.swatches.path,
+  },
+  firefly: { color: '#f2c6d2', size: 1.7 },
+}
+const springEvening = atEvening(spring)
+
+/** Named palettes. Edit colors here; `gardenSeasons` decides which ones the site uses when. */
+export const gardenPalettes = {
+  daylight, evening, autumn, autumnEvening, winter, winterEvening, spring, springEvening,
+} satisfies Record<string, Palette>
+
+export type GardenPaletteName = keyof typeof gardenPalettes
+
+/** Which palettes each season uses by day and in the evening theme. */
+export const gardenSeasons: Record<Season, { daylight: GardenPaletteName; evening: GardenPaletteName }> = {
+  spring: { daylight: 'spring', evening: 'springEvening' },
+  summer: { daylight: 'daylight', evening: 'evening' },
+  autumn: { daylight: 'autumn', evening: 'autumnEvening' },
+  winter: { daylight: 'winter', evening: 'winterEvening' },
+}

@@ -8,7 +8,8 @@ async function open(page: Page, query = '') {
   page.on('console', (message) => { if (message.type() === 'warning' || message.type() === 'error') messages.push(message.text()) })
   page.on('pageerror', (error) => messages.push(error.message))
   await page.addInitScript(() => localStorage.setItem('theme', 'daylight'))
-  await page.goto(`/${query}`)
+  // Pin the season so palette names and pixels don't depend on the date.
+  await page.goto(`/${query}${query ? '&' : '?'}season=summer`)
   await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 300)))
   return messages
 }

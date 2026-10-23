@@ -20,7 +20,7 @@ export type Palette = {
    */
   light: { box: number; pine: number }
   colors: Record<ColorName, string>
-  /** `pine` lists the four faces of each pine layer: back-left, back-right, front-right, front-left. */
+  /** `pine` lists the four faces of each pine tier on screen: upper right, front right, front left, upper left. */
   swatches: Record<SwatchName, string[]>
   /** Grid lines and tile tint. RGB values are `"r,g,b"`; alphas scale with the fade and pointer light. */
   ground: { fill: string; fillGrid: number; fillLight: number; stroke: string; strokeAlpha: number }
@@ -29,6 +29,8 @@ export type Palette = {
   firefly: { color: string; size: number; glow?: { blur: number; color: string } }
   /** Glow that follows the pointer, from center to edge. */
   pointerGlow: { center: string; edge: string }
+  /** Blends the tops of boxes (and the upper faces of pines) toward `color`; `cover` is 0–1. */
+  snow?: { color: string; cover: number }
 }
 
 export type Point = { x: number; y: number }

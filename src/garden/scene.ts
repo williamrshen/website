@@ -3,6 +3,13 @@ import type { Faces, GardenConfig, Paint, Palette, PineLayer, Point, Tile, World
 
 const allFaces: Faces = { top: true, left: true, right: true }
 
+/** Mixes two #rrggbb colors; `amount` 0 keeps `from`, 1 gives `to`. */
+function mix(from: string, to: string, amount: number) {
+  const a = parseInt(from.slice(1, 7), 16), b = parseInt(to.slice(1, 7), 16)
+  const channel = (shift: number) => Math.round(((a >> shift) & 255) * (1 - amount) + ((b >> shift) & 255) * amount)
+  return `#${((channel(16) << 16) | (channel(8) << 8) | channel(0)).toString(16).padStart(6, '0')}`
+}
+
 function shade(hex: string, factor = 1) {
   const color = parseInt(hex.slice(1), 16)
   const channel = (value: number) => Math.min(255, value * factor) | 0
@@ -97,7 +104,7 @@ export class GardenScene {
     const color = this.paint(paint, palette), dim = palette.light.box
     if (faces.left) this.polygon([d, c, c0, d0], shade(color, 0.73 * dim))
     if (faces.right) this.polygon([b, c, c0, b0], shade(color, 0.88 * dim))
-    if (faces.top) this.polygon([a, b, c, d], shade(color, 1.09 * dim))
+    if (faces.top) this.polygon([a, b, c, d], shade(palette.snow ? mix(color, palette.snow.color, palette.snow.cover) : color, 1.09 * dim))
   }
 
   private drawPine(layer: PineLayer, palette: Palette) {
@@ -107,11 +114,14 @@ export class GardenScene {
     const c = this.project(x + radius, y + radius, z)
     const d = this.project(x - radius, y + radius, z)
     const tip = this.project(x + lean.x, y + lean.y, z + height)
-    const dim = palette.light.pine, [backLeft, backRight, frontRight, frontLeft] = palette.swatches.pine
-    this.polygon([a, b, tip], shade(backLeft, dim))
-    this.polygon([b, c, tip], shade(backRight, dim))
-    this.polygon([c, d, tip], shade(frontRight, dim))
-    this.polygon([d, a, tip], shade(frontLeft, dim))
+    const dim = palette.light.pine, snow = palette.snow
+    // Sloped faces hold less snow than flat tops, so pines are frosted evenly rather than capped.
+    const [upperRight, frontRight, frontLeft, upperLeft] = palette.swatches.pine
+      .map((color) => snow ? mix(color, snow.color, snow.cover * 0.35) : color)
+    this.polygon([a, b, tip], shade(upperRight, dim))
+    this.polygon([b, c, tip], shade(frontRight, dim))
+    this.polygon([c, d, tip], shade(frontLeft, dim))
+    this.polygon([d, a, tip], shade(upperLeft, dim))
   }
 
   resize() {

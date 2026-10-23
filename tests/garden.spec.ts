@@ -10,9 +10,10 @@ import { expect, test, type Page } from '@playwright/test'
  */
 test.use({ reducedMotion: 'reduce' })
 
-async function openGarden(page: Page, theme: 'daylight' | 'evening') {
+/** Seasons follow the date, so every check pins one (`?season=`). */
+async function openGarden(page: Page, theme: 'daylight' | 'evening', season = 'summer') {
   await page.addInitScript((value) => localStorage.setItem('theme', value), theme)
-  await page.goto('/')
+  await page.goto(`/?season=${season}`)
   await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
   await settle(page)
 }
@@ -33,6 +34,26 @@ for (const theme of ['daylight', 'evening'] as const) {
     expect(await canvasPixels(page)).toMatchSnapshot(`garden-${theme}.png`)
   })
 }
+
+for (const [season, theme] of [['autumn', 'daylight'], ['winter', 'daylight'], ['spring', 'daylight'], ['winter', 'evening']] as const) {
+  test(`garden renders unchanged in ${season} (${theme})`, async ({ page }) => {
+    await openGarden(page, theme, season)
+    expect(await canvasPixels(page)).toMatchSnapshot(`garden-${season}-${theme}.png`)
+  })
+}
+
+test('the season follows the date unless ?season= picks one', async ({ page }) => {
+  await page.clock.setFixedTime(new Date('2027-01-15T12:00:00'))
+  await page.addInitScript(() => localStorage.setItem('theme', 'daylight'))
+  await page.goto('/')
+  await settle(page)
+  const january = await canvasPixels(page)
+  await openGarden(page, 'daylight', 'winter')
+  expect(await canvasPixels(page)).toEqual(january)
+  await page.goto('/?season=nonsense')
+  await settle(page)
+  expect(await canvasPixels(page)).toEqual(january)
+})
 
 test('garden renders unchanged on a phone', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
@@ -70,7 +91,7 @@ test.describe('with motion', () => {
       const tick = () => { counts.frames++; requestAnimationFrame(tick) }
       requestAnimationFrame(tick)
     })
-    await page.goto('/')
+    await page.goto('/?season=summer')
     const measure = () => page.evaluate(async () => {
       const counts = (window as unknown as { gardenDrawCounts: Record<string, number> }).gardenDrawCounts
       for (const key of Object.keys(counts)) counts[key] = 0
