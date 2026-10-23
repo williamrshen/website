@@ -129,6 +129,7 @@ vite.config.ts                     Vite + React, 404 build entry, local 404 hand
 
 Development builds (`npm run dev`) include tools for working on the garden; production builds leave them out. Turn them on with `?garden=` (comma-separated, e.g. `/?garden=debug,edit`). They live in `src/garden/dev/`.
 
+- **Instant reload (always on):** saving `src/data/garden.ts` swaps the new layout and palettes into the running garden without reloading the page, so scroll position and tool state are kept. If the edit is invalid (an unknown island, a duplicate id), the console says why and the last good garden stays up. The dev host is also on `window.gardenDev` for poking at from the console (`gardenDev.scene.built.objects`).
 - **`debug`:** outlines each island's radius, marks every object's anchor with its id and the direction its local +x points after `rotate`/`mirror`, and draws the world +x/+y axes from the origin.
 
 ## Live hobby stats

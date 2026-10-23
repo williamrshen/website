@@ -30,3 +30,27 @@ test('unknown dev tools are reported, not silently ignored', async ({ page }) =>
   const messages = await open(page, '?garden=nope')
   expect(messages.some((text) => text.includes('Unknown dev tool "nope"'))).toBe(true)
 })
+
+test('garden edits swap into the running scene, and invalid ones keep the last good garden', async ({ page }) => {
+  await open(page)
+  await page.waitForFunction(() => 'gardenDev' in window)
+  const original = await pixels(page)
+  const result = await page.evaluate(async () => {
+    type Host = { setGarden(config: unknown, palettes: unknown): void }
+    const host = (window as unknown as { gardenDev: Host }).gardenDev
+    const { garden, gardenPalettes } = await import('/src/data/garden.ts')
+    const moved = { ...garden, islands: garden.islands.map((island: { id: string; x: number }) => island.id === 'right' ? { ...island, x: island.x + 1 } : island) }
+    host.setGarden(moved, gardenPalettes)
+    let error = ''
+    try { host.setGarden({ ...garden, objects: [...garden.objects, garden.objects[0]] }, gardenPalettes) } catch (caught) { error = String(caught) }
+    return { error }
+  })
+  expect(result.error).toContain('Duplicate garden object id "oak"')
+  const moved = await pixels(page)
+  expect(moved).not.toBe(original)
+  await page.evaluate(async () => {
+    const { garden, gardenPalettes } = await import('/src/data/garden.ts')
+    ;(window as unknown as { gardenDev: { setGarden(c: unknown, p: unknown): void } }).gardenDev.setGarden(garden, gardenPalettes)
+  })
+  expect(await pixels(page)).toBe(original)
+})

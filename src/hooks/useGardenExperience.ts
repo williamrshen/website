@@ -30,7 +30,8 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
     let night = false, modalOpen = false, progress = 0, visibleHeight = 0
     let width = 0, height = 0, frame = 0
 
-    const palette = () => night ? gardenPalettes.evening : gardenPalettes.daylight
+    let palettes = gardenPalettes
+    const palette = () => night ? palettes.evening : palettes.daylight
     const render = (time = 0) => scene?.render(time, palette(), motionQuery.matches)
     const animate = (time: number) => {
       frame = 0
@@ -110,7 +111,12 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
     let disposed = false, detachDevTools: (() => void) | undefined
     if (import.meta.env.DEV && scene) {
       void import('../garden/dev/index.ts').then(({ attachDevTools }) => {
-        if (!disposed) detachDevTools = attachDevTools({ scene, canvas: canvasElement, palette, requestRender: () => render(performance.now()) })
+        if (disposed) return
+        detachDevTools = attachDevTools({
+          scene, canvas: canvasElement, palette,
+          requestRender: () => render(performance.now()),
+          setGarden(config, nextPalettes) { scene.setConfig(config); palettes = nextPalettes; scene.invalidate(); render(performance.now()) },
+        })
       })
     }
 

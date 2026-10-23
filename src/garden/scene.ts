@@ -119,11 +119,25 @@ export class GardenScene {
     this.context.setTransform(dpr, 0, 0, dpr, 0, 0)
     this.unit = Math.min(this.width / (this.width <= 680 ? 22.5 : 26), this.height / 20, 56)
     this.origin = { x: this.width * 0.48, y: this.height * 0.59 + this.unit * 0.3 }
+    this.cullTiles()
+  }
+
+  private cullTiles() {
     this.visibleTiles = this.world.tiles.filter((tile) => {
       const point = this.project(tile.x + 0.5, tile.y + 0.5)
       return point.x >= -this.unit && point.x <= this.width + this.unit && point.y >= -this.unit && point.y <= this.height + this.unit
     })
   }
+
+  /** Rebuilds the world from a new config (throws, keeping the old one, if it is invalid). */
+  setConfig(config: GardenConfig) {
+    this.world = buildWorld(config)
+    this.cullTiles()
+    this.invalidate()
+  }
+
+  /** Drops the cached layers, e.g. after a palette was edited in place. */
+  invalidate() { this.layers = {} }
 
   setPointer(point: Point | null) { this.pointer = point }
 
