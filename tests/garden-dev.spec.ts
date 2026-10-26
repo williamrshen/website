@@ -99,6 +99,7 @@ test.describe('?garden=edit', () => {
   })
 
   test('islands can be selected and resized; edits that break the config are refused', async ({ page }) => {
+    const count = (await config(page)).islands.length
     // Open grass on the right island, clear of its pines and rock.
     const island = await at(page, 7.8, -2.1)
     await page.mouse.click(island.x, island.y)
@@ -107,7 +108,7 @@ test.describe('?garden=edit', () => {
     // An island with objects on it can't be deleted.
     await page.keyboard.press('Delete')
     await expect(page.getByRole('status')).toContainText('still has objects on it')
-    expect((await config(page)).islands).toHaveLength(5)
+    expect((await config(page)).islands).toHaveLength(count)
   })
 
   test('add, duplicate, and copy the config as TypeScript', async ({ page }) => {

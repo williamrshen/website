@@ -170,8 +170,9 @@ export const objectTypes: { [K in ObjectType]: ObjectBuilder<K> } = {
   },
 
   scatter(b, { count, flowerEvery, clearRadius, keepOut = 0.12 }) {
+    const islands = b.islands.filter((island) => island.plants !== false)
     for (let i = 0; i < count; i++) {
-      const island = b.islands[Math.floor(b.random() * b.islands.length)]
+      const island = islands[Math.floor(b.random() * islands.length)]
       const angle = b.random() * Math.PI * 2, radius = 0.8 + b.random() * island.radius * 0.48
       const x = island.x + Math.cos(angle) * radius, y = island.y + Math.sin(angle) * radius
       if (Math.hypot(x, y) < clearRadius) continue

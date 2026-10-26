@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { garden } from '../data/garden.ts'
 import { buildWorld, objectTypes } from './objects.ts'
-import type { GardenConfig, GardenObject, Geometry } from './types.ts'
+import type { GardenConfig, GardenObject, Geometry, Island } from './types.ts'
 
 const minimal = (objects: GardenObject[], islands = [{ id: 'a', x: 0, y: 0, radius: 2 }]): GardenConfig => ({
   ground: { extent: 3, seed: 1 },
@@ -172,4 +172,18 @@ test('scattered plants stay out of other objects without moving the plants that 
   const withCreek = plants([scatter, { id: 'creek', type: 'creek', island: 'a', length: 4, width: 1 }])
   assert.ok(withCreek.length < alone.length, 'some plants were kept out of the water')
   assert.ok(withCreek.every((box) => alone.includes(box)), 'every remaining plant is exactly where it was')
+})
+
+test('islands with plants: false widen the grass but get no scattered plants', () => {
+  const scatter: GardenObject = { id: 'plants', type: 'scatter', count: 40, flowerEvery: 3, clearRadius: 0 }
+  const islands: Island[] = [{ id: 'a', x: 0, y: 0, radius: 2 }, { id: 'b', x: 6, y: 0, radius: 2 }]
+  const world = (extra: Island[]) =>
+    buildWorld({ ...minimal([scatter], [...islands, ...extra]), ground: { extent: 10, seed: 1 } })
+  const plain = world([]), widened = world([{ id: 'bare', x: 3, y: 0, radius: 2, plants: false }])
+  // The scatter is unchanged, wherever the bare island sits in the list...
+  assert.deepEqual(canonical(widened.geometry), canonical(plain.geometry))
+  assert.deepEqual(canonical(buildWorld({ ...minimal([scatter], [islands[0], { id: 'bare', x: 3, y: 0, radius: 2, plants: false }, islands[1]]), ground: { extent: 10, seed: 1 } }).geometry), canonical(plain.geometry))
+  // ...but the ground between the islands turns to grass.
+  const grass = (tiles: { x: number; y: number; grass: boolean }[]) => tiles.filter((tile) => tile.grass && tile.x >= 2 && tile.x <= 3 && Math.abs(tile.y) <= 1).length
+  assert.ok(grass(widened.tiles) > grass(plain.tiles))
 })

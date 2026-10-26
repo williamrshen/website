@@ -82,7 +82,11 @@ export type Bloom = { seed: number; period: number; phase: number; scale: number
 type Area = { x: number; y: number; z: number; width: number; depth: number; height: number }
 
 /** A patch of grass. Islands shape the ground, cast a soft shadow, and anchor objects. */
-export type Island = Point & { id: string; radius: number }
+export type Island = Point & {
+  id: string; radius: number
+  /** `false` keeps scatters from planting here, e.g. a patch that only widens the grass under a creek. */
+  plants?: boolean
+}
 
 /** Parameters for each object type, keyed by `type`. Add a type here and in `objectTypes`. */
 export type ObjectParams = {

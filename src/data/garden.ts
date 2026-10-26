@@ -21,6 +21,9 @@ export const garden: GardenConfig = {
     { id: 'right', x: 5.9, y: -2.1, radius: 2.5 },
     { id: 'left', x: -4.9, y: 2.9, radius: 2.2 },
     { id: 'front', x: 3.35, y: 5.2, radius: 2.4 },
+    // Grass under the creek's ends, so the water doesn't run out over bare grid.
+    { id: 'creek-left', x: 1.1, y: 5.1, radius: 1.6, plants: false },
+    { id: 'creek-right', x: 5.6, y: 4.8, radius: 1.5, plants: false },
     { id: 'back', x: -5.2, y: -3.5, radius: 1.6 },
   ],
   objects: [
@@ -38,7 +41,7 @@ export const garden: GardenConfig = {
     { id: 'path', type: 'path', island: 'main', x: 1.3, y: 1.5, stones: 5, step: { x: 0.35, y: 0.48 } },
     { id: 'bench', type: 'bench', island: 'main', x: -2, y: 1.95 },
     // A little creek across the front island, with the path's footbridge over it.
-    { id: 'creek', type: 'creek', island: 'front', length: 3.4, width: 0.75, link: 'hobbies' },
+    { id: 'creek', type: 'creek', island: 'front', length: 5.6, width: 0.75, link: 'hobbies' },
     { id: 'bridge', type: 'bridge', island: 'front', rotate: 90, length: 1.9, link: 'hobbies' },
   ],
   fireflies: { count: 18, seed: 664517015, area: { x: -6.5, y: -4, z: 0.4, width: 13, depth: 10, height: 4 } },
