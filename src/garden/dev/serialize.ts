@@ -11,17 +11,19 @@ export function literal(value: unknown): string {
   if (typeof value === 'object') {
     const entries = Object.entries(value).filter(([, item]) => item !== undefined)
     if (!entries.length) return '{}'
-    return `{ ${entries.map(([key, item]) => `${identifier.test(key) ? key : literal(key)}: ${literal(item)}`).join(', ')} }`
+    return `{ ${entries.map(([key, item]) => `${quoteKey(key)}: ${literal(item)}`).join(', ')} }`
   }
   return 'undefined'
 }
 
+const quoteKey = (name: string) => identifier.test(name) ? name : literal(name)
 const list = (items: unknown[], indent: string) => `[\n${items.map((item) => `${indent}  ${literal(item)},`).join('\n')}\n${indent}]`
 
 /** The `garden` export of `src/data/garden.ts`, one island or object per line. */
 export function serializeGarden(config: GardenConfig) {
   return [
     'export const garden: GardenConfig = {',
+    ...(config.links ? ['  links: {', ...Object.entries(config.links).map(([id, link]) => `    ${quoteKey(id)}: ${literal(link)},`), '  },'] : []),
     `  ground: ${literal(config.ground)},`,
     `  islands: ${list(config.islands, '  ')},`,
     `  objects: ${list(config.objects, '  ')},`,

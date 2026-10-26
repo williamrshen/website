@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from 'react'
 import { garden as gardenConfig, gardenPalettes, gardenSeasons } from '../data/garden'
+import { gardenLinks } from '../garden/links'
 import { currentSeason } from '../garden/seasons'
 import { GardenScene } from '../garden/scene'
 
@@ -14,10 +15,13 @@ const smooth = (value: number) => { const t = clamp(value); return t * t * (3 - 
 type Controller = { setEvening: (value: boolean) => void; setDialogOpen: (value: boolean) => void }
 
 /** Owns the animation lifecycle. Scroll/pointer frames update refs, not React renders. */
-export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
+export function useGardenExperience(evening: boolean, dialogOpen: boolean, classNames: { target: string }) {
   const experience = useRef<HTMLDivElement>(null)
   const garden = useRef<HTMLElement>(null)
   const canvas = useRef<HTMLCanvasElement>(null)
+  const targets = useRef<HTMLDivElement>(null)
+  const label = useRef<HTMLSpanElement>(null)
+  const targetClass = useRef(classNames.target)
   const brand = useRef<HTMLAnchorElement>(null)
   const mode = useRef<HTMLButtonElement>(null)
   const navigation = useRef<HTMLElement>(null)
@@ -29,7 +33,9 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
     const root = experience.current, gardenElement = garden.current, canvasElement = canvas.current
     const brandElement = brand.current, modeElement = mode.current, navElement = navigation.current
     const hintElement = hint.current, cursorElement = cursor.current
+    const targetsElement = targets.current, labelElement = label.current
     if (!root || !gardenElement || !canvasElement || !brandElement || !modeElement || !navElement || !hintElement || !cursorElement) return
+    if (!targetsElement || !labelElement) return
     const context = canvasElement.getContext('2d')
     const scene = context ? new GardenScene(canvasElement, context, gardenConfig) : null
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -41,6 +47,16 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
     const season = gardenSeasons[currentSeason(location.search, new Date())]
     const palette = () => palettes[night ? season.evening : season.daylight]
     const render = (time = 0) => scene?.render(time, palette(), motionQuery.matches)
+    // The oak, pines, and creek link to sections of the page.
+    const links = scene && gardenLinks({
+      scene, container: targetsElement, label: labelElement, className: targetClass.current,
+      redraw: () => render(performance.now()),
+    })
+    /** Canvas CSS pixels under a client point, undoing the scroll-driven transform. */
+    const canvasPoint = (event: MouseEvent) => {
+      const rect = canvasElement.getBoundingClientRect()
+      return { x: (event.clientX - rect.left) * width / rect.width, y: (event.clientY - rect.top) * height / rect.height }
+    }
     const animate = (time: number) => {
       frame = 0
       if (document.hidden || progress >= 1 || motionQuery.matches) return
@@ -56,6 +72,7 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
     }
     const hideCursor = () => {
       scene?.setPointer(null)
+      links?.hover(null)
       cursorElement.style.opacity = '0'
       delete document.body.dataset.gardenCursor
       if (motionQuery.matches) render()
@@ -89,12 +106,14 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
       navElement.inert = progress <= 0.8
       hintElement.inert = progress > 0.18
       canvasElement.setAttribute('aria-hidden', String(progress >= 0.97))
+      links?.setEnabled(progress < 0.97)
       syncAnimation()
     }
     const resize = () => {
       width = canvasElement.clientWidth
       height = canvasElement.clientHeight
       scene?.resize()
+      links?.sync()
       hideCursor()
       updateScroll()
       render()
@@ -106,12 +125,20 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
       cursorElement.style.opacity = '1'
       cursorElement.style.left = `${event.clientX}px`
       cursorElement.style.top = `${event.clientY}px`
-      cursorElement.dataset.active = String(event.target instanceof Element && Boolean(event.target.closest('a,button')))
-      const rect = canvasElement.getBoundingClientRect()
-      scene?.setPointer({ x: (event.clientX - rect.left) * width / rect.width, y: (event.clientY - rect.top) * height / rect.height })
+      const point = canvasPoint(event)
+      scene?.setPointer(point)
+      // Over the canvas, the link under the pointer; elsewhere (header, hint) the element's own.
+      const link = event.target === canvasElement ? links?.hover(point) : links?.hover(null)
+      cursorElement.dataset.active = String(Boolean(link) || (event.target instanceof Element && Boolean(event.target.closest('a,button'))))
       if (motionQuery.matches) render()
     }
-    const onScroll = () => { hideCursor(); updateScroll() }
+    const onClick = (event: MouseEvent) => {
+      if (progress >= 0.97 || modalOpen) return
+      // Clicks are PointerEvents in current browsers; older ones report a mouse.
+      const pointerType = 'pointerType' in event && typeof event.pointerType === 'string' && event.pointerType ? event.pointerType : 'mouse'
+      links?.click(canvasPoint(event), pointerType)
+    }
+    const onScroll = () => { hideCursor(); links?.disarm(); updateScroll() }
     const onVisibility = () => { hideCursor(); syncAnimation() }
     const onMotionChange = () => { syncAnimation(); render() }
 
@@ -125,6 +152,7 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
           requestRender: () => render(performance.now()),
           setGarden(nextConfig, nextPalettes) {
             scene.setConfig(nextConfig)
+            links?.sync()
             config = nextConfig
             palettes = nextPalettes
             scene.invalidate()
@@ -146,6 +174,7 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
     window.addEventListener('resize', resize)
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('pointermove', onPointerMove, { passive: true })
+    canvasElement.addEventListener('click', onClick)
     window.addEventListener('blur', hideCursor)
     document.addEventListener('mouseleave', hideCursor)
     document.addEventListener('visibilitychange', onVisibility)
@@ -160,6 +189,8 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
       window.removeEventListener('resize', resize)
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('pointermove', onPointerMove)
+      canvasElement.removeEventListener('click', onClick)
+      links?.destroy()
       window.removeEventListener('blur', hideCursor)
       document.removeEventListener('mouseleave', hideCursor)
       document.removeEventListener('visibilitychange', onVisibility)
@@ -173,5 +204,5 @@ export function useGardenExperience(evening: boolean, dialogOpen: boolean) {
   useLayoutEffect(() => { controller.current?.setEvening(evening) }, [evening])
   useLayoutEffect(() => { controller.current?.setDialogOpen(dialogOpen) }, [dialogOpen])
 
-  return { experience, garden, canvas, brand, mode, navigation, hint, cursor }
+  return { experience, garden, canvas, targets, label, brand, mode, navigation, hint, cursor }
 }

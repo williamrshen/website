@@ -13,7 +13,9 @@ type Props = {
 }
 
 export function GardenExperience({ evening, dialogOpen, onToggleTheme, onOpenDetail }: Props) {
-  const { experience, garden, canvas, brand, mode, navigation, hint, cursor } = useGardenExperience(evening, dialogOpen)
+  const { experience, garden, canvas, targets, label, brand, mode, navigation, hint, cursor } = useGardenExperience(evening, dialogOpen, {
+    target: styles.target,
+  })
   const themeLabel = evening ? 'switch to daytime' : 'switch to evening'
 
   return (
@@ -54,6 +56,10 @@ export function GardenExperience({ evening, dialogOpen, onToggleTheme, onOpenDet
             role="img"
             aria-label="An interactive isometric garden with a large voxel oak tree, evergreens, a bench, a footbridge over a little creek, flowers, and grass tiles. Move your pointer to illuminate the surrounding grid."
           />
+          {/* Links for the oak, pines, and creek are added here by the hook, one per destination. */}
+          <div className={styles.targets} ref={targets}>
+            <span className={styles.label} ref={label} aria-hidden="true" />
+          </div>
           <a className={styles.hint} ref={hint} href="#about" aria-label="Scroll to introduction">
             <span className={styles.down} aria-hidden="true">↓</span>
           </a>

@@ -405,6 +405,9 @@ export function editor(host: GardenHost) {
     }
   })
 
+  // Clicks select objects here, so they must not follow the garden's links.
+  const linksWere = scene.linksEnabled
+  scene.linksEnabled = false
   canvas.addEventListener('pointerdown', onPointerDown)
   canvas.addEventListener('pointermove', onPointerMove)
   canvas.addEventListener('pointerup', onPointerUp)
@@ -424,5 +427,6 @@ export function editor(host: GardenHost) {
     panel.remove()
     style.remove()
     host.setGarden = setGarden
+    scene.linksEnabled = linksWere
   }
 }

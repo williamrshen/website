@@ -67,6 +67,20 @@ test('invalid configs fail loudly', () => {
   assert.throws(() => buildWorld(minimal([{ id: 'x', type: 'rock', island: 'missing', scale: 1 }])), /unknown island "missing"/)
   assert.throws(() => buildWorld(minimal([{ id: 'x', type: 'rock', scale: 1 }, { id: 'x', type: 'rock', scale: 1 }])), /Duplicate garden object id "x"/)
   assert.throws(() => buildWorld(minimal([], [{ id: 'a', x: 0, y: 0, radius: 1 }, { id: 'a', x: 1, y: 1, radius: 1 }])), /Duplicate garden island id "a"/)
+  assert.throws(() => buildWorld(minimal([{ id: 'x', type: 'rock', scale: 1, link: 'nowhere' }])), /Garden object "x" links to unknown link "nowhere"/)
+})
+
+test('linked objects keep their link', () => {
+  const config = { ...minimal([{ id: 'r', type: 'rock', scale: 1, link: 'home' }, { id: 's', type: 'rock', x: 1, scale: 1 }]), links: { home: { label: 'home', href: '#home' } } }
+  const world = buildWorld(config)
+  assert.deepEqual(world.links, config.links)
+  assert.deepEqual(world.objects.map((object) => object.link), ['home', undefined])
+  // The site's links all point at sections, and every one is used by some object.
+  const site = buildWorld(garden)
+  for (const [id, link] of Object.entries(site.links)) {
+    assert.match(link.href, /^#[\w-]+$/)
+    assert.ok(site.objects.some((object) => object.link === id), `link "${id}" is unused`)
+  }
 })
 
 const orientations = [0, 90, 180, 270].flatMap((rotate) => [false, true].map((mirror) => ({ rotate: rotate as 0 | 90 | 180 | 270, mirror })))

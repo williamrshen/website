@@ -1,5 +1,6 @@
 import { bloomAt, flakeAt, leafAt } from './live.ts'
 import { buildWorld } from './objects.ts'
+import { convexHull, insidePolygon, silhouette } from './outline.ts'
 import type { Faces, GardenConfig, Paint, Palette, PineLayer, Point, Tile, World } from './types.ts'
 
 const allFaces: Faces = { top: true, left: true, right: true }
@@ -17,7 +18,9 @@ function shade(hex: string, factor = 1) {
   return `rgb(${channel(color >> 16)},${channel((color >> 8) & 255)},${channel(color & 255)})`
 }
 
-type Layer = { canvas: HTMLCanvasElement; palette: Palette }
+type Layer = { canvas: HTMLCanvasElement; palette: Palette; highlight?: string }
+/** A shape's on-screen outline and its bounding box, for hit testing. */
+type Shape = { owner: string; outline: Point[]; left: number; top: number; right: number; bottom: number }
 
 /**
  * Canvas renderer for a garden built from config; no event listeners or React state.
@@ -34,7 +37,11 @@ export class GardenScene {
   private target: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
   private world: World
-  private layers: { ground?: Layer; objects?: Layer } = {}
+  private layers: { ground?: Layer; objects?: Layer; highlighted?: Layer } = {}
+  private shapes: Shape[] | null = null
+  private highlight: { link: string; ring: boolean } | null = null
+  /** Turned off by tools that use clicks for something else (the dev editor). */
+  linksEnabled = true
   private dpr = 1
   private view: { center: Point; span: number } | null = null
   /** Development tools draw on top of each frame here, in CSS pixels. */
@@ -134,6 +141,7 @@ export class GardenScene {
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
     this.dpr = dpr
     this.layers = {}
+    this.shapes = null
     this.canvas.width = this.width * dpr
     this.canvas.height = this.height * dpr
     this.context.setTransform(dpr, 0, 0, dpr, 0, 0)
@@ -165,6 +173,8 @@ export class GardenScene {
   /** Rebuilds the world from a new config (throws, keeping the old one, if it is invalid). */
   setConfig(config: GardenConfig) {
     this.world = buildWorld(config)
+    this.shapes = null
+    if (this.highlight && !this.world.links[this.highlight.link]) this.highlight = null
     this.cullTiles()
     this.invalidate()
   }
@@ -173,6 +183,49 @@ export class GardenScene {
   invalidate() { this.layers = {} }
 
   setPointer(point: Point | null) { this.pointer = point }
+
+  /** Screen outlines of every shape in draw order, rebuilt after a resize or config change. */
+  private outlines(): Shape[] {
+    this.shapes ??= this.world.geometry.map((item) => {
+      const outline = silhouette(item, (x, y, z) => this.project(x, y, z))
+      const xs = outline.map((point) => point.x), ys = outline.map((point) => point.y)
+      return { owner: item.owner, outline, left: Math.min(...xs), top: Math.min(...ys), right: Math.max(...xs), bottom: Math.max(...ys) }
+    })
+    return this.shapes
+  }
+
+  /** The link of the frontmost object under a canvas point (CSS pixels), if it has one. */
+  linkAt(point: Point): string | undefined {
+    if (!this.linksEnabled) return undefined
+    const shapes = this.outlines()
+    for (let i = shapes.length - 1; i >= 0; i--) {
+      const shape = shapes[i]
+      if (point.x < shape.left || point.x > shape.right || point.y < shape.top || point.y > shape.bottom) continue
+      if (insidePolygon(point, shape.outline)) return this.world.objects.find((object) => object.id === shape.owner)?.link
+    }
+    return undefined
+  }
+
+  /** Links that at least one object uses, in config order. */
+  get activeLinks() {
+    const used = new Set(this.world.objects.map((object) => object.link))
+    return Object.entries(this.world.links).filter(([id]) => used.has(id)).map(([id, link]) => ({ id, ...link }))
+  }
+
+  /** Outline around everything that uses a link, and where its label goes (centered below it). */
+  linkOutline(link: string) {
+    const owners = new Set(this.world.objects.filter((object) => object.link === link).map((object) => object.id))
+    const outline = convexHull(this.outlines().filter((shape) => owners.has(shape.owner)).flatMap((shape) => shape.outline))
+    if (!outline.length) return null
+    const xs = outline.map((point) => point.x), ys = outline.map((point) => point.y)
+    const bounds = { left: Math.min(...xs), top: Math.min(...ys), right: Math.max(...xs), bottom: Math.max(...ys) }
+    return { outline, bounds, label: { x: (bounds.left + bounds.right) / 2, y: bounds.bottom } }
+  }
+
+  /** Brightens everything using `link`; `ring` also draws the keyboard focus ring around it. */
+  setHighlight(link: string | null, ring = false) {
+    this.highlight = link && this.world.links[link] ? { link, ring } : null
+  }
 
   /** Draws into a cached layer the same size as the visible canvas, with the same transform. */
   private layer(palette: Palette, draw: () => void): Layer {
@@ -221,8 +274,8 @@ export class GardenScene {
     }
   }
 
-  /** Island shadows, then every object back to front. */
-  private drawObjects(palette: Palette) {
+  /** Island shadows, then every object back to front; objects using `highlight` are lit up. */
+  private drawObjects(palette: Palette, highlight?: string) {
     const ctx = this.target, unit = this.unit
     for (const island of this.world.islands) {
       const point = this.project(island.x, island.y), radius = island.radius * unit * 0.72
@@ -238,10 +291,39 @@ export class GardenScene {
       ctx.fill()
       ctx.restore()
     }
+    const lit = highlight ? new Set(this.world.objects.filter((object) => object.link === highlight).map((object) => object.id)) : null
+    const bright = { ...palette, light: { box: palette.light.box * 1.13, pine: palette.light.pine * 1.13 } }
     for (const item of this.world.geometry) {
-      if (item.kind === 'pine') this.drawPine(item, palette)
-      else this.box(item.x, item.y, item.z, item.width, item.depth, item.height, item.paint, palette, item.faces)
+      const paint = lit?.has(item.owner) ? bright : palette
+      if (item.kind === 'pine') this.drawPine(item, paint)
+      else this.box(item.x, item.y, item.z, item.width, item.depth, item.height, item.paint, paint, item.faces)
     }
+  }
+
+  private drawFocusRing(palette: Palette, link: string) {
+    const shape = this.linkOutline(link)
+    if (!shape) return
+    const ctx = this.context, pad = 6, { outline } = shape
+    // Push the hull outward a little so the ring clears the object's edges.
+    const cx = outline.reduce((sum, point) => sum + point.x, 0) / outline.length
+    const cy = outline.reduce((sum, point) => sum + point.y, 0) / outline.length
+    ctx.save()
+    ctx.beginPath()
+    outline.forEach((point, index) => {
+      const length = Math.hypot(point.x - cx, point.y - cy) || 1
+      const x = point.x + (point.x - cx) / length * pad, y = point.y + (point.y - cy) / length * pad
+      if (index) ctx.lineTo(x, y)
+      else ctx.moveTo(x, y)
+    })
+    ctx.closePath()
+    ctx.lineJoin = 'round'
+    ctx.lineWidth = 5
+    ctx.strokeStyle = palette.focusRing.halo
+    ctx.stroke()
+    ctx.lineWidth = 2
+    ctx.strokeStyle = palette.focusRing.color
+    ctx.stroke()
+    ctx.restore()
   }
 
   /**
@@ -329,10 +411,20 @@ export class GardenScene {
     const ctx = this.context, unit = this.unit, layers = this.layers
     ctx.clearRect(0, 0, this.width, this.height)
     if (layers.ground?.palette !== palette) layers.ground = this.layer(palette, () => this.drawGround(palette, null))
-    if (layers.objects?.palette !== palette) layers.objects = this.layer(palette, () => this.drawObjects(palette))
     this.blit(layers.ground)
     if (this.pointer) this.relight(palette, this.pointer)
-    this.blit(layers.objects)
+    const highlight = this.highlight
+    if (highlight) {
+      // A second cached copy of the objects with the linked ones lit, rebuilt only when that changes.
+      if (layers.highlighted?.palette !== palette || layers.highlighted.highlight !== highlight.link) {
+        layers.highlighted = { ...this.layer(palette, () => this.drawObjects(palette, highlight.link)), highlight: highlight.link }
+      }
+      this.blit(layers.highlighted)
+      if (highlight.ring) this.drawFocusRing(palette, highlight.link)
+    } else {
+      if (layers.objects?.palette !== palette) layers.objects = this.layer(palette, () => this.drawObjects(palette))
+      this.blit(layers.objects)
+    }
 
     // Seasonal effect over everything; reduced motion freezes it at t = 0.
     const seconds = reducedMotion ? 0 : time / 1000

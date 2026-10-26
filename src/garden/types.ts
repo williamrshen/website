@@ -31,6 +31,8 @@ export type Palette = {
   firefly: { color: string; size: number; glow?: { blur: number; color: string } }
   /** Glow that follows the pointer, from center to edge. */
   pointerGlow: { center: string; edge: string }
+  /** Keyboard focus ring drawn around a linked object; the halo keeps it visible on any color. */
+  focusRing: { color: string; halo: string }
   /** Blends the tops of boxes (and the upper faces of pines) toward `color`; `cover` is 0–1. */
   snow?: { color: string; cover: number }
   /** What moves over the garden: drifting fireflies (default), falling leaves, snow, or blooming flowers. */
@@ -129,6 +131,8 @@ type Placement = {
   y?: number
   /** Seed for this object's random generator (any 32-bit number). */
   seed?: number
+  /** Id of an entry in the config's `links`; hovering highlights the object and clicking follows it. */
+  link?: string
 } & Orientation
 
 /**
@@ -138,7 +142,12 @@ type Placement = {
 export type Orientation = { rotate?: 0 | 90 | 180 | 270; mirror?: boolean }
 export type GardenObject = { [K in ObjectType]: Placement & { type: K } & ObjectParams[K] }[ObjectType]
 
+/** Where a linked object goes. `label` names it on hover and for screen readers. */
+export type GardenLink = { label: string; href: string }
+
 export type GardenConfig = {
+  /** Destinations objects can link to, in the order keyboard users reach them. */
+  links?: Record<string, GardenLink>
   /** Ground tiles span -extent…extent on both axes; `seed` varies grass shades and tufts. */
   ground: { extent: number; seed: number }
   islands: Island[]
@@ -155,11 +164,12 @@ export type GardenConfig = {
 }
 
 /** Where an object ended up in world space, for tooling. */
-export type PlacedObject = Point & { id: string; type: ObjectType; island?: string; rotate: number; mirror: boolean }
+export type PlacedObject = Point & { id: string; type: ObjectType; island?: string; rotate: number; mirror: boolean; link?: string }
 
 /** Everything the renderer needs, built once from a config. */
 export type World = {
   tiles: Tile[]; geometry: Geometry[]; fireflies: Firefly[]; islands: Island[]; objects: PlacedObject[]
+  links: Record<string, GardenLink>
   leaves: Leaf[]; flakes: Flake[]; blooms: Bloom[]
   /** Grass tiles a bloom can grow on: well inside an island and not hidden behind an object. */
   bloomSpots: Point[]

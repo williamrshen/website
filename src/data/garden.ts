@@ -8,6 +8,13 @@ import type { GardenConfig, Palette } from '../garden/types.ts'
  * change one to reroll just that object, or omit it to derive a seed from the object's id.
  */
 export const garden: GardenConfig = {
+  // Hovering a linked object highlights it; clicking (or tapping twice) goes to the section.
+  links: {
+    about: { label: 'about me', href: '#about' },
+    experience: { label: 'work experience', href: '#experience' },
+    projects: { label: 'projects', href: '#work' },
+    hobbies: { label: 'hobbies', href: '#hobbies' },
+  },
   ground: { extent: 45, seed: 51 },
   islands: [
     { id: 'main', x: 0, y: 0, radius: 5.1 },
@@ -17,10 +24,10 @@ export const garden: GardenConfig = {
     { id: 'back', x: -5.2, y: -3.5, radius: 1.6 },
   ],
   objects: [
-    { id: 'oak', type: 'oak', island: 'main', seed: 2198020462 },
-    { id: 'tall-pine', type: 'pine', island: 'right', scale: 0.86 },
-    { id: 'short-pine', type: 'pine', island: 'right', x: 1.1, y: 0.7, scale: 0.49 },
-    { id: 'left-pine', type: 'pine', island: 'left', scale: 0.66 },
+    { id: 'oak', type: 'oak', island: 'main', seed: 2198020462, link: 'about' },
+    { id: 'tall-pine', type: 'pine', island: 'right', scale: 0.86, link: 'projects' },
+    { id: 'short-pine', type: 'pine', island: 'right', x: 1.1, y: 0.7, scale: 0.49, link: 'projects' },
+    { id: 'left-pine', type: 'pine', island: 'left', scale: 0.66, link: 'experience' },
     // Plants scatter around every island but stay clear of the big oak's trunk.
     { id: 'plants', type: 'scatter', count: 44, flowerEvery: 3, clearRadius: 1.1, seed: 3263619596 },
     { id: 'bench-rock', type: 'rock', island: 'main', x: -2, y: 1.7, scale: 0.46 },
@@ -31,8 +38,8 @@ export const garden: GardenConfig = {
     { id: 'path', type: 'path', island: 'main', x: 1.3, y: 1.5, stones: 5, step: { x: 0.35, y: 0.48 } },
     { id: 'bench', type: 'bench', island: 'main', x: -2, y: 1.95 },
     // A little creek across the front island, with the path's footbridge over it.
-    { id: 'creek', type: 'creek', island: 'front', length: 3.4, width: 0.75 },
-    { id: 'bridge', type: 'bridge', island: 'front', rotate: 90, length: 1.9 },
+    { id: 'creek', type: 'creek', island: 'front', length: 3.4, width: 0.75, link: 'hobbies' },
+    { id: 'bridge', type: 'bridge', island: 'front', rotate: 90, length: 1.9, link: 'hobbies' },
   ],
   fireflies: { count: 18, seed: 664517015, area: { x: -6.5, y: -4, z: 0.4, width: 13, depth: 10, height: 4 } },
   // Seasonal effects; a palette's `live` picks which one runs.
@@ -62,6 +69,7 @@ const daylight: Palette = {
   shadow: { center: '#4a643630', edge: '#4a643600' },
   firefly: { color: '#a4b576', size: 1.7 },
   pointerGlow: { center: '#dce9aa14', edge: '#dce9aa00' },
+  focusRing: { color: '#283d32', halo: '#f3f2e9' },
 }
 
 /**
@@ -76,6 +84,7 @@ const atEvening = (palette: Palette, overrides: Partial<Palette> = {}): Palette 
   shadow: { center: '#071b2459', edge: '#4a643600' },
   firefly: { color: '#e7efb0', size: 2.3, glow: { blur: 9, color: '#e4f7a6' } },
   pointerGlow: { center: '#dff9a816', edge: '#dce9aa00' },
+  focusRing: { color: '#e1e9cf', halo: '#192a29' },
   ...overrides,
 })
 

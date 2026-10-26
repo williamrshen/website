@@ -259,9 +259,10 @@ export function buildWorld(config: GardenConfig): World {
   for (const object of config.objects) {
     if (ids.has(object.id)) throw new Error(`Duplicate garden object id "${object.id}"`)
     ids.add(object.id)
-    const { type, id, island: _island, x: _x, y: _y, seed, rotate, mirror, ...params } = object
+    const { type, id, island: _island, x: _x, y: _y, seed, rotate, mirror, link, ...params } = object
+    if (link !== undefined && !config.links?.[link]) throw new Error(`Garden object "${id}" links to unknown link "${link}"`)
     const at = position(object, islands)
-    placed.push({ ...at, id, type, island: object.island, rotate: rotate ?? 0, mirror: mirror ?? false })
+    placed.push({ ...at, id, type, island: object.island, rotate: rotate ?? 0, mirror: mirror ?? false, link })
     const build = () => {
       const builder = createBuilder(id, at, orientation(id, { rotate, mirror }),
         createRandom(seed ?? seedFromId(id)), config.islands, geometry)
@@ -281,5 +282,5 @@ export function buildWorld(config: GardenConfig): World {
     z: area.z + random() * area.height, phase: random() * Math.PI * 2,
   }))
   const tiles = buildGround(config)
-  return { tiles, geometry, fireflies, islands: config.islands, objects: placed, ...buildLive(config, tiles, geometry, placed) }
+  return { tiles, geometry, fireflies, islands: config.islands, objects: placed, links: config.links ?? {}, ...buildLive(config, tiles, geometry, placed) }
 }

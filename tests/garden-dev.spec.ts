@@ -84,7 +84,7 @@ test.describe('?garden=edit', () => {
     expect(await object(page, 'oak')).toMatchObject({ rotate: 90, mirror: true, x: 0.25 })
     await expect(panel).toContainText('unsaved changes')
     for (let i = 0; i < 3; i++) await page.keyboard.press('Control+z')
-    expect(await object(page, 'oak')).toEqual({ id: 'oak', type: 'oak', island: 'main', seed: 2198020462 })
+    expect(await object(page, 'oak')).toEqual({ id: 'oak', type: 'oak', island: 'main', seed: 2198020462, link: 'about' })
     await expect(panel).toContainText('matches file')
   })
 

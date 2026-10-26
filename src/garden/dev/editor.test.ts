@@ -15,6 +15,9 @@ test('serialized garden config round-trips', () => {
   assert.deepEqual(evaluate(text), garden)
   // One island or object per line keeps diffs readable.
   assert.equal(text.split('\n').filter((line) => line.includes("{ id: '")).length, garden.islands.length + garden.objects.length)
+  // Links serialize too, quoting ids that aren't identifiers.
+  const linked = { ...garden, links: { 'my-page': { label: "it's", href: '#x' } } }
+  assert.deepEqual(evaluate(serializeGarden(linked)).links, linked.links)
 })
 
 test('serialized palettes round-trip', () => {

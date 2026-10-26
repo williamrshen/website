@@ -49,6 +49,37 @@
   will-change: transform, opacity;
 }
 
+/* Keyboard/screen-reader links for the garden's objects, laid over the canvas with the same transform. */
+.targets {
+  position: absolute;
+  inset: 0;
+  height: 100svh;
+  transform-origin: 50% 0;
+  transform: translateY(var(--scene-y)) scale(var(--scene-scale));
+  opacity: var(--scene-opacity);
+  pointer-events: none;
+}
+
+/* Invisible: the canvas draws the highlight and focus ring. Clicks go to the canvas. */
+.target { position: absolute; opacity: 0; pointer-events: none; }
+
+.label {
+  position: absolute;
+  transform: translate(-50%, 12px);
+  padding: 4px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 13px;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px #283d3214;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.label[data-visible='true'] { opacity: 1; }
+
 .header {
   position: fixed;
   inset: 0 0 auto;
@@ -187,5 +218,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .world { transform: none; will-change: auto; }
+  .world, .targets { transform: none; will-change: auto; }
+  .label { transition: none; }
 }
