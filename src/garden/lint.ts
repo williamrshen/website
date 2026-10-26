@@ -78,5 +78,17 @@ export function lintGarden(config: GardenConfig, world = buildWorld(config)): Ga
       warnings.push({ object: object.id, message: `sets a seed, but ${object.type} objects don't use randomness` })
     }
   }
+  for (const id of Object.keys(config.links ?? {})) {
+    if (!config.objects.some((object) => object.link === id)) {
+      warnings.push({ object: `links.${id}`, message: 'is not used by any object, so it is not shown' })
+    }
+  }
   return warnings
+}
+
+/** Links to `#id` where `hasId` says the page has no such element (a renamed section, a typo). */
+export function missingSections(config: GardenConfig, hasId: (id: string) => boolean): GardenWarning[] {
+  return Object.entries(config.links ?? {})
+    .filter(([, link]) => link.href.startsWith('#') && !hasId(decodeURIComponent(link.href.slice(1))))
+    .map(([id, link]) => ({ object: `links.${id}`, message: `goes to "${link.href}", but the page has no element with that id` }))
 }

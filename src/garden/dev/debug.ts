@@ -61,6 +61,20 @@ export function debugOverlay({ scene }: GardenHost) {
       label(`${warning ? '⚠ ' : ''}${object.id}${flags ? ` ${flags}` : ''}`, at.x + 6, at.y - 6, warning ? '#dc2626' : '#7c2d12')
     }
 
+    // Links: the area that highlights for each destination, and where it goes.
+    ctx.setLineDash([3, 3])
+    ctx.strokeStyle = '#7c3aed'
+    for (const link of scene.activeLinks) {
+      const shape = scene.linkOutline(link.id)
+      if (!shape) continue
+      ctx.beginPath()
+      shape.outline.forEach((point, index) => index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y))
+      ctx.closePath()
+      ctx.stroke()
+      label(`link ${link.id} → ${link.href}`, shape.bounds.left, shape.bounds.top - 4, '#5b21b6')
+    }
+    ctx.setLineDash([])
+
     const boxes = world.geometry.length
     const warnings = currentWarnings().length
     label(`garden debug · ${world.objects.length} objects · ${boxes} shapes · ${world.islands.length} islands · ${warnings ? `⚠ ${warnings} warnings (see console)` : 'no warnings'}`, 12, ctx.canvas.clientHeight - 14, warnings ? '#dc2626' : undefined)

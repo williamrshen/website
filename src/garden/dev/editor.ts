@@ -287,6 +287,8 @@ export function editor(host: GardenHost) {
     const object = target as GardenObject & Record<string, unknown>
     const islands = ['', ...draft.config.islands.map((island) => island.id)]
       .map((id) => `<option value="${escape(id)}" ${id === (object.island ?? '') ? 'selected' : ''}>${id || '(world origin)'}</option>`).join('')
+    const links = ['', ...Object.keys(draft.config.links ?? {})]
+      .map((id) => `<option value="${escape(id)}" ${id === (object.link ?? '') ? 'selected' : ''}>${id ? `${escape(id)} → ${escape(draft.config.links![id].href)}` : '(none)'}</option>`).join('')
     const extras = Object.entries(object)
       .filter(([key, value]) => typeof value === 'number' && !['x', 'y', 'seed', 'rotate'].includes(key))
       .map(([key, value]) => field(`param:${key}`, key, value, 'type=number step=0.05')).join('')
@@ -295,6 +297,7 @@ export function editor(host: GardenHost) {
       ${field('x', 'x', object.x ?? 0, 'type=number step=0.05')}${field('y', 'y', object.y ?? 0, 'type=number step=0.05')}
       <label>rotate<select name="rotate">${turns.map((turn) => `<option ${turn === (object.rotate ?? 0) ? 'selected' : ''}>${turn}</option>`).join('')}</select></label>
       <label>mirror<input type="checkbox" name="mirror" ${object.mirror ? 'checked' : ''}></label>
+      <label>link<select name="link">${links}</select></label>
       ${extras}
       <label>seed<span class="row" style="margin:0;flex-wrap:nowrap"><input name="seed" type="number" value="${object.seed ?? ''}" placeholder="from id"><button data-action="reseed" title="random seed (s)">new</button><button data-action="explore" title="compare seeds (e)">explore</button></span></label>`
   }
@@ -368,6 +371,7 @@ export function editor(host: GardenHost) {
       const object = target as unknown as Record<string, unknown>
       if (input.name === 'mirror') object.mirror = (input as HTMLInputElement).checked || undefined
       else if (input.name === 'rotate') object.rotate = number || undefined
+      else if (input.name === 'link') object.link = input.value || undefined
       else if (input.name === 'seed') object.seed = input.value === '' ? undefined : number >>> 0
       else if (input.name.startsWith('param:')) object[input.name.slice(6)] = number
       else if (input.value !== '' && Number.isFinite(number)) object[input.name] = number

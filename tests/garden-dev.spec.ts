@@ -124,6 +124,20 @@ test.describe('?garden=edit', () => {
     expect(text).toContain("{ id: 'rock-2-2', type: 'rock', island: 'main', scale: 0.4, x: 0.5 },")
   })
 
+  test("an object's link can be changed or removed", async ({ page }) => {
+    const panel = page.getByRole('complementary', { name: 'Garden editor' })
+    const trunk = await at(page, 0, 0, 2)
+    await page.mouse.click(trunk.x, trunk.y)
+    const link = panel.getByRole('combobox', { name: 'link' })
+    await expect(link).toHaveValue('about')
+    await link.selectOption('hobbies')
+    expect((await object(page, 'oak') as { link?: string }).link).toBe('hobbies')
+    await link.selectOption('')
+    expect((await object(page, 'oak') as { link?: string }).link).toBeUndefined()
+    await page.keyboard.press('Control+z')
+    expect((await object(page, 'oak') as { link?: string }).link).toBe('hobbies')
+  })
+
   test('palette colors edit live', async ({ page }) => {
     const before = await pixels(page)
     const panel = page.getByRole('complementary', { name: 'Garden editor' })

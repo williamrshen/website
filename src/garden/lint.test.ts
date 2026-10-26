@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { garden } from '../data/garden.ts'
-import { lintGarden } from './lint.ts'
+import { lintGarden, missingSections } from './lint.ts'
 import type { GardenConfig, GardenObject } from './types.ts'
 
 const config = (objects: GardenObject[]): GardenConfig => ({
@@ -47,4 +47,20 @@ test('scattered plants growing inside other objects are tallied per scatter', ()
 test('seeds on objects that never use randomness', () => {
   assert.deepEqual(messages([{ id: 'rock', type: 'rock', island: 'a', scale: 1, seed: 4 }]), ["rock sets a seed, but rock objects don't use randomness"])
   assert.deepEqual(messages([{ id: 'oak', type: 'oak', island: 'a', scale: 0.4, seed: 4 }]), [])
+})
+
+test('links no object uses', () => {
+  const links = { home: { label: 'home', href: '#home' }, away: { label: 'away', href: '#away' } }
+  const warnings = lintGarden({ ...config([{ id: 'r', type: 'rock', island: 'a', scale: 0.5, link: 'home' }]), links })
+  assert.deepEqual(warnings.map((warning) => `${warning.object} ${warning.message}`), ['links.away is not used by any object, so it is not shown'])
+})
+
+test('links to sections the page lacks', () => {
+  const page = (...ids: string[]) => (id: string) => ids.includes(id)
+  assert.deepEqual(missingSections(garden, page('about', 'experience', 'work', 'hobbies')), [])
+  assert.deepEqual(missingSections(garden, page('about', 'experience', 'hobbies')), [
+    { object: 'links.projects', message: 'goes to "#work", but the page has no element with that id' },
+  ])
+  // Only in-page links are checked.
+  assert.deepEqual(missingSections({ ...garden, links: { cv: { label: 'cv', href: '/resume.pdf' } } }, page()), [])
 })

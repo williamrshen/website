@@ -1,4 +1,4 @@
-import { lintGarden, type GardenWarning } from '../lint.ts'
+import { lintGarden, missingSections, type GardenWarning } from '../lint.ts'
 import type { GardenConfig } from '../types.ts'
 import type { GardenHost } from './index.ts'
 
@@ -9,7 +9,7 @@ export const currentWarnings = () => latest
 
 /** Logs likely mistakes in the config to the console; returns them. */
 export function reportWarnings(config: GardenConfig) {
-  latest = lintGarden(config)
+  latest = [...lintGarden(config), ...missingSections(config, (id) => document.getElementById(id) !== null)]
   if (latest.length) {
     console.groupCollapsed(`[garden] ${latest.length} config warning${latest.length === 1 ? '' : 's'} in src/data/garden.ts`)
     for (const warning of latest) console.warn(`"${warning.object}" ${warning.message}`)
