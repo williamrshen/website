@@ -19,7 +19,7 @@ test('the site garden builds deterministically', () => {
   assert.deepEqual(a, b)
   assert.equal(a.tiles.length, (garden.ground.extent * 2 + 1) ** 2)
   assert.equal(a.fireflies.length, garden.fireflies.count)
-  assert.ok(a.geometry.length > 400)
+  assert.ok(a.geometry.length > 300)
 })
 
 test('geometry is sorted back to front', () => {
@@ -30,7 +30,8 @@ test('geometry is sorted back to front', () => {
 test('every registered object type builds', () => {
   const params: { [K in keyof typeof objectTypes]: Omit<Extract<GardenObject, { type: K }>, 'id' | 'type'> } = {
     oak: { scale: 0.5 }, pine: { scale: 1 }, plant: { flower: true }, rock: { scale: 1 },
-    path: { stones: 3, step: { x: 0.3, y: 0.3 } }, bench: {}, scatter: { count: 10, flowerEvery: 2, clearRadius: 0 },
+    path: { stones: 3, step: { x: 0.3, y: 0.3 } }, bench: {}, creek: { length: 2, width: 0.5 }, bridge: {},
+    scatter: { count: 10, flowerEvery: 2, clearRadius: 0 },
   }
   for (const [type, value] of Object.entries(params)) {
     const world = buildWorld(minimal([{ id: type, type, ...value } as GardenObject]))
@@ -125,4 +126,36 @@ test('scattered plants stay around their islands however the scatter is turned',
 
 test('invalid rotations are rejected', () => {
   assert.throws(() => buildWorld(minimal([{ id: 'r', type: 'rock', scale: 1, rotate: 45 as 90 }])), /Garden object "r" has rotate 45/)
+})
+
+test('the creek and bridge build, and the bridge only touches the ground on its footings', () => {
+  const world = buildWorld(minimal([
+    { id: 'creek', type: 'creek', island: 'a', length: 3, width: 0.7 },
+    { id: 'bridge', type: 'bridge', island: 'a', rotate: 90 },
+  ], [{ id: 'a', x: 0, y: 0, radius: 3 }]))
+  const water = boxes(world.geometry).filter((box) => box.paint === 'water')
+  assert.ok(water.length >= 10)
+  // The water runs along x and is widest in the middle.
+  const widths = water.map((box) => box.depth)
+  assert.ok(Math.max(...widths) > widths[0] && Math.max(...widths) > widths.at(-1)!)
+  const footings = boxes(world.geometry).filter((box) => box.owner === 'bridge' && box.z < 0.1)
+  assert.equal(footings.length, 2)
+  for (const footing of footings) {
+    for (const box of water) {
+      const overlapX = Math.min(footing.x + footing.width, box.x + box.width) - Math.max(footing.x, box.x)
+      const overlapY = Math.min(footing.y + footing.depth, box.y + box.depth) - Math.max(footing.y, box.y)
+      assert.ok(overlapX <= 0 || overlapY <= 0, 'footings stay on the banks')
+    }
+  }
+})
+
+test('scattered plants stay out of other objects without moving the plants that remain', () => {
+  const islands = [{ id: 'a', x: 0, y: 0, radius: 3 }]
+  const scatter: GardenObject = { id: 'plants', type: 'scatter', count: 60, flowerEvery: 3, clearRadius: 0 }
+  const plants = (objects: GardenObject[]) => canonical(buildWorld(minimal(objects, islands)).geometry.filter((item) => item.owner === 'plants'))
+  const alone = plants([scatter])
+  // Listed before the creek, the scatter is still built after it.
+  const withCreek = plants([scatter, { id: 'creek', type: 'creek', island: 'a', length: 4, width: 1 }])
+  assert.ok(withCreek.length < alone.length, 'some plants were kept out of the water')
+  assert.ok(withCreek.every((box) => alone.includes(box)), 'every remaining plant is exactly where it was')
 })

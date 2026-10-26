@@ -59,6 +59,11 @@ export type Builder = {
   pineLayer(x: number, y: number, z: number, radius: number, height: number): void
   /** Places another object type at a local position, sharing this object's random generator. */
   place<K extends ObjectType>(type: K, params: ObjectParams[K] & Partial<Point> & Orientation): void
+  /**
+   * True if a local point is within `margin` of something another object put on the ground.
+   * Scatters are built after every other object, so they see the whole garden.
+   */
+  occupied(x: number, y: number, margin: number): boolean
 }
 
 type ObjectBuilder<K extends ObjectType> = (builder: Builder, params: ObjectParams[K]) => void
@@ -131,12 +136,52 @@ export const objectTypes: { [K in ObjectType]: ObjectBuilder<K> } = {
     b.box(0, 0.38, 0.65, 1.32, 0.1, 0.35, 'benchBack')
   },
 
-  scatter(b, { count, flowerEvery, clearRadius }) {
+  creek(b, { length, width, meander = 0.2, pebbles = 6 }) {
+    const step = 0.2, segments = Math.round(length / step), bank = 0.09
+    const centerAt = (t: number) => Math.sin(t * Math.PI * 2) * meander
+    for (let i = 0; i < segments; i++) {
+      const t = (i + 0.5) / segments, x = -length / 2 + i * step
+      // Tapers to a trickle at both ends; the bank is a darker rim just below the water.
+      const w = Math.max(0.12, width * Math.sqrt(Math.sin(t * Math.PI))), center = centerAt(t)
+      b.box(x, center - w / 2 - bank, -0.025, step, w + bank * 2, 0.04, 'creekBank')
+      b.box(x, center - w / 2, -0.02, step, w, 0.04, 'water')
+    }
+    for (let i = 0; i < pebbles; i++) {
+      const t = 0.12 + b.random() * 0.76, side = b.random() > 0.5 ? 1 : -1, size = 0.08 + b.random() * 0.07
+      const w = width * Math.sqrt(Math.sin(t * Math.PI))
+      b.box(-length / 2 + t * length - size / 2, centerAt(t) + side * (w / 2 + bank) - size / 2, 0, size, size * 0.8, size * 0.55, 'rock')
+    }
+  },
+
+  bridge(b, { length = 1.8, width = 0.62, rise = 0.3 }) {
+    const planks = 11, step = length / planks, deck = (t: number) => 0.09 + rise * Math.sin(Math.PI * t)
+    // Stone footings on the banks carry the ends of the deck.
+    for (const end of [-1, 1]) b.box(end < 0 ? -length / 2 - 0.12 : length / 2 - 0.18, -width / 2 - 0.05, 0, 0.3, width + 0.1, 0.13, 'rock')
+    for (let i = 0; i < planks; i++) {
+      const t = (i + 0.5) / planks, x = -length / 2 + i * step, z = deck(t)
+      b.box(x + 0.01, -width / 2, z, step - 0.02, width, 0.06, 'bridgeDeck')
+      // Handrails follow the arch in short pieces so they sort correctly against the planks.
+      for (const y of [-width / 2, width / 2 - 0.05]) b.box(x, y, z + 0.3, step, 0.05, 0.045, 'bridgeRail')
+    }
+    for (const t of [0.04, 0.5, 0.96]) {
+      const x = -length / 2 + t * length - 0.035
+      for (const y of [-width / 2, width / 2 - 0.06]) b.box(x, y, deck(t) + 0.04, 0.07, 0.06, 0.3, 'bridgeRail')
+    }
+  },
+
+  scatter(b, { count, flowerEvery, clearRadius, keepOut = 0.12 }) {
     for (let i = 0; i < count; i++) {
       const island = b.islands[Math.floor(b.random() * b.islands.length)]
       const angle = b.random() * Math.PI * 2, radius = 0.8 + b.random() * island.radius * 0.48
       const x = island.x + Math.cos(angle) * radius, y = island.y + Math.sin(angle) * radius
-      if (Math.hypot(x, y) >= clearRadius) b.place('plant', { x, y, scale: 0.5 + b.random() * 0.5, flower: i % flowerEvery === 0 })
+      if (Math.hypot(x, y) < clearRadius) continue
+      const scale = 0.5 + b.random() * 0.5, flower = i % flowerEvery === 0
+      if (b.occupied(x, y, keepOut)) {
+        // Burn the flower's color draw too, so every later plant is unchanged.
+        if (flower) b.random()
+        continue
+      }
+      b.place('plant', { x, y, scale, flower })
     }
   },
 }
@@ -167,6 +212,11 @@ function createBuilder(
       const child = createBuilder(owner, { x: origin.x + offset.x, y: origin.y + offset.y },
         multiply(m, orientation(owner, { rotate, mirror })), random, islands, geometry)
       ;(objectTypes[type] as ObjectBuilder<typeof type>)(child, params as ObjectParams[typeof type])
+    },
+    occupied(x, y, margin) {
+      const at = apply(m, { x, y }), wx = origin.x + at.x, wy = origin.y + at.y
+      return geometry.some((item) => item.kind === 'box' && item.owner !== owner && item.z < 0.1 &&
+        wx > item.x - margin && wx < item.x + item.width + margin && wy > item.y - margin && wy < item.y + item.depth + margin)
     },
   }
 }
@@ -205,17 +255,23 @@ export function buildWorld(config: GardenConfig): World {
     islands.set(island.id, island)
   }
   const ids = new Set<string>()
-  const geometry: Geometry[] = [], placed: PlacedObject[] = []
+  const geometry: Geometry[] = [], placed: PlacedObject[] = [], scatters: (() => void)[] = []
   for (const object of config.objects) {
     if (ids.has(object.id)) throw new Error(`Duplicate garden object id "${object.id}"`)
     ids.add(object.id)
     const { type, id, island: _island, x: _x, y: _y, seed, rotate, mirror, ...params } = object
     const at = position(object, islands)
     placed.push({ ...at, id, type, island: object.island, rotate: rotate ?? 0, mirror: mirror ?? false })
-    const builder = createBuilder(id, at, orientation(id, { rotate, mirror }),
-      createRandom(seed ?? seedFromId(id)), config.islands, geometry)
-    ;(objectTypes[type] as ObjectBuilder<typeof type>)(builder, params as ObjectParams[typeof type])
+    const build = () => {
+      const builder = createBuilder(id, at, orientation(id, { rotate, mirror }),
+        createRandom(seed ?? seedFromId(id)), config.islands, geometry)
+      ;(objectTypes[type] as ObjectBuilder<typeof type>)(builder, params as ObjectParams[typeof type])
+    }
+    // Scatters go last so their plants can stay out of everything else.
+    if (type === 'scatter') scatters.push(build)
+    else build()
   }
+  for (const build of scatters) build()
   // Painter's algorithm: back to front. Array.sort is stable, so ties keep config order.
   geometry.sort((a, b) => a.order - b.order)
 

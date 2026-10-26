@@ -13,7 +13,7 @@ export const garden: GardenConfig = {
     { id: 'main', x: 0, y: 0, radius: 5.1 },
     { id: 'right', x: 5.9, y: -2.1, radius: 2.5 },
     { id: 'left', x: -4.9, y: 2.9, radius: 2.2 },
-    { id: 'front', x: 3.3, y: 5.4, radius: 2.1 },
+    { id: 'front', x: 3.35, y: 5.2, radius: 2.4 },
     { id: 'back', x: -5.2, y: -3.5, radius: 1.6 },
   ],
   objects: [
@@ -21,7 +21,6 @@ export const garden: GardenConfig = {
     { id: 'tall-pine', type: 'pine', island: 'right', scale: 0.86 },
     { id: 'short-pine', type: 'pine', island: 'right', x: 1.1, y: 0.7, scale: 0.49 },
     { id: 'left-pine', type: 'pine', island: 'left', scale: 0.66 },
-    { id: 'sapling', type: 'oak', island: 'front', x: 0.3, scale: 0.24, seed: 1581092675 },
     // Plants scatter around every island but stay clear of the big oak's trunk.
     { id: 'plants', type: 'scatter', count: 44, flowerEvery: 3, clearRadius: 1.1, seed: 3263619596 },
     { id: 'bench-rock', type: 'rock', island: 'main', x: -2, y: 1.7, scale: 0.46 },
@@ -31,6 +30,9 @@ export const garden: GardenConfig = {
     { id: 'back-pebble', type: 'rock', island: 'back', x: 0.75, y: 0.1, scale: 0.32 },
     { id: 'path', type: 'path', island: 'main', x: 1.3, y: 1.5, stones: 5, step: { x: 0.35, y: 0.48 } },
     { id: 'bench', type: 'bench', island: 'main', x: -2, y: 1.95 },
+    // A little creek across the front island, with the path's footbridge over it.
+    { id: 'creek', type: 'creek', island: 'front', length: 3.4, width: 0.75 },
+    { id: 'bridge', type: 'bridge', island: 'front', rotate: 90, length: 1.9 },
   ],
   fireflies: { count: 18, seed: 664517015, area: { x: -6.5, y: -4, z: 0.4, width: 13, depth: 10, height: 4 } },
   // Seasonal effects; a palette's `live` picks which one runs.
@@ -48,6 +50,7 @@ const daylight: Palette = {
     rock: '#b2b5a1', rockTop: '#c0c2af',
     benchLeg: '#8b7050', benchSeat: '#b69869', benchBack: '#a78c61',
     grass: '#a6ba83', grassLight: '#b3c391', grassTuft: '#c8d3a4',
+    water: '#8fbcc4', creekBank: '#8ea36f', bridgeDeck: '#b8956a', bridgeRail: '#8d7051',
   },
   swatches: {
     leaves: ['#819b4d', '#8ba352', '#91a957', '#789648', '#9ab15c', '#88a04c'],
@@ -86,6 +89,7 @@ const autumn: Palette = {
     ...daylight.colors,
     stem: '#7a7448', plantLeaf: '#a9a04f', plantLeafDark: '#8f8a45',
     grass: '#b2b07a', grassLight: '#c0bd87', grassTuft: '#d0c796',
+    creekBank: '#9e9765',
   },
   swatches: {
     leaves: ['#c8742f', '#d18a3a', '#b85c2c', '#d9a441', '#a8502a', '#c98b2e'],
@@ -108,6 +112,8 @@ const winter: Palette = {
     stem: '#7c7f6c', plantLeaf: '#9aa48f', plantLeafDark: '#868f7b',
     rock: '#b9bcb3', rockTop: '#c9ccc4',
     grass: '#c3cbc0', grassLight: '#d0d6cd', grassTuft: '#e3e7e1',
+    // Frozen over.
+    water: '#c4d9e3', creekBank: '#aab4ad',
   },
   swatches: {
     leaves: ['#8f9a80', '#98a389', '#a3ad94', '#879377', '#b3bba6', '#929d84'],
@@ -135,6 +141,7 @@ const spring: Palette = {
     ...daylight.colors,
     plantLeaf: '#9cc06a', plantLeafDark: '#7fa652',
     grass: '#a9c47f', grassLight: '#b8d08e', grassTuft: '#d4e2a8',
+    water: '#89c2cc', creekBank: '#8aaa66',
   },
   swatches: {
     leaves: ['#9cbf5a', '#a8c862', '#f2b8c6', '#94b753', '#e8a5b8', '#a3c45e'],

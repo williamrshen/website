@@ -108,7 +108,7 @@ export function openSeedExplorer(host: GardenHost, config: GardenConfig, id: str
 export function seedExplorer(host: GardenHost) {
   const config = host.config()
   const requested = new URLSearchParams(location.search).get('object')
-  const randomized = config.objects.filter((object) => ['oak', 'scatter', 'plant'].includes(object.type))
+  const randomized = config.objects.filter((object) => ['oak', 'scatter', 'plant', 'creek'].includes(object.type))
   const id = requested ?? randomized[0]?.id
   if (!id || !config.objects.some((object) => object.id === id)) {
     console.warn(`[garden] seeds: no object "${requested}". Try ?garden=seeds&object=${randomized.map((object) => object.id).join('|')}`)

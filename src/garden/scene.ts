@@ -105,7 +105,9 @@ export class GardenScene {
     const color = this.paint(paint, palette), dim = palette.light.box
     if (faces.left) this.polygon([d, c, c0, d0], shade(color, 0.73 * dim))
     if (faces.right) this.polygon([b, c, c0, b0], shade(color, 0.88 * dim))
-    if (faces.top) this.polygon([a, b, c, d], shade(palette.snow ? mix(color, palette.snow.color, palette.snow.cover) : color, 1.09 * dim))
+    // Snow covers top faces; water only frosts over.
+    const snow = palette.snow && mix(color, palette.snow.color, palette.snow.cover * (paint === 'water' ? 0.35 : 1))
+    if (faces.top) this.polygon([a, b, c, d], shade(snow || color, 1.09 * dim))
   }
 
   private drawPine(layer: PineLayer, palette: Palette) {

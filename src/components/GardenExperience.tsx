@@ -52,7 +52,7 @@ export function GardenExperience({ evening, dialogOpen, onToggleTheme, onOpenDet
             ref={canvas}
             id="world"
             role="img"
-            aria-label="An interactive isometric garden with a large voxel oak tree, small evergreens, flowers, and grass tiles. Move your pointer to illuminate the surrounding grid."
+            aria-label="An interactive isometric garden with a large voxel oak tree, evergreens, a bench, a footbridge over a little creek, flowers, and grass tiles. Move your pointer to illuminate the surrounding grid."
           />
           <a className={styles.hint} ref={hint} href="#about" aria-label="Scroll to introduction">
             <span className={styles.down} aria-hidden="true">↓</span>

@@ -37,7 +37,8 @@ test('objects that overlap at the ground', () => {
 test('scattered plants growing inside other objects are tallied per scatter', () => {
   const warnings = messages([
     { id: 'boulder', type: 'rock', island: 'a', x: -2, y: -2, scale: 4 },
-    { id: 'plants', type: 'scatter', count: 30, flowerEvery: 3, clearRadius: 0 },
+    // keepOut below zero turns avoidance off, so plants can land in the boulder.
+    { id: 'plants', type: 'scatter', count: 30, flowerEvery: 3, clearRadius: 0, keepOut: -10 },
   ])
   assert.equal(warnings.length, 1)
   assert.match(warnings[0], /^plants has plant parts growing inside boulder \(\d+\); try another seed/)

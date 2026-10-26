@@ -163,9 +163,9 @@ test.describe('seed explorer', () => {
     expect(await oak()).toBe(2198020462)
   })
 
-  test('on its own: ?garden=seeds&object=sapling, closed with Escape', async ({ page }) => {
-    await open(page, '?garden=seeds&object=sapling')
-    const dialog = page.getByRole('dialog', { name: 'Seeds for sapling' })
+  test('on its own: ?garden=seeds&object=creek, closed with Escape', async ({ page }) => {
+    await open(page, '?garden=seeds&object=creek')
+    const dialog = page.getByRole('dialog', { name: 'Seeds for creek' })
     await expect(dialog.locator('canvas')).toHaveCount(12)
     await dialog.getByRole('button', { name: 'more seeds' }).click()
     await expect(dialog.locator('canvas')).toHaveCount(12)

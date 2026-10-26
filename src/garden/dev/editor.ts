@@ -10,7 +10,8 @@ type Draft = { config: GardenConfig; palettes: Palettes }
 
 const defaults: { [K in ObjectType]: ObjectParams[K] } = {
   oak: { scale: 0.4 }, pine: { scale: 0.6 }, plant: { scale: 0.8, flower: true }, rock: { scale: 0.4 },
-  path: { stones: 3, step: { x: 0.35, y: 0.48 } }, bench: {}, scatter: { count: 10, flowerEvery: 3, clearRadius: 0 },
+  path: { stones: 3, step: { x: 0.35, y: 0.48 } }, bench: {}, creek: { length: 2, width: 0.5 }, bridge: {},
+  scatter: { count: 10, flowerEvery: 3, clearRadius: 0 },
 }
 const turns = [0, 90, 180, 270] as const
 const clone = <T>(value: T): T => structuredClone(value)

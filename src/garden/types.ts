@@ -6,6 +6,7 @@ export type ColorName =
   | 'rock' | 'rockTop'
   | 'benchLeg' | 'benchSeat' | 'benchBack'
   | 'grass' | 'grassLight' | 'grassTuft'
+  | 'water' | 'creekBank' | 'bridgeDeck' | 'bridgeRail'
 
 /** A list of related colors; objects pick one by index (wrapping if a palette has fewer entries). */
 export type SwatchName = 'leaves' | 'flowers' | 'pine' | 'path'
@@ -95,6 +96,13 @@ export type ObjectParams = {
   path: { stones: number; step: Point }
   /** A slatted bench facing the camera. */
   bench: Record<never, never>
+  /**
+   * A stream flowing along local x, `length` long and up to `width` wide, tapering at both ends.
+   * It wiggles `meander` to each side and is lined with a few pebbles.
+   */
+  creek: { length: number; width: number; meander?: number; pebbles?: number }
+  /** An arched footbridge spanning `length` along local x, with handrails and stone footings. */
+  bridge: { length?: number; width?: number; rise?: number }
   /** Scatters plants around islands. */
   scatter: {
     count: number
@@ -102,6 +110,12 @@ export type ObjectParams = {
     flowerEvery: number
     /** Keeps plants out of a circle this wide around the scatter's own position. */
     clearRadius: number
+    /**
+     * Plants landing within this distance of another object's footprint (water, rocks, footings…)
+     * are skipped. Skipping still uses up the plant's random draws, so the others stay put.
+     * Defaults to 0.12; a negative value turns it off.
+     */
+    keepOut?: number
   }
 }
 export type ObjectType = keyof ObjectParams
