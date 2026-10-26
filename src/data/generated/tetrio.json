@@ -1,37 +1,37 @@
 {
   "schemaVersion": 1,
   "username": "uselessleaf",
-  "fetchedAt": "2026-10-19T04:01:28.312Z",
+  "fetchedAt": "2026-10-26T10:09:51.650Z",
   "stats": [
     {
       "label": "league rank",
       "value": "U",
-      "detail": "#90 Canada · #1,566 global"
+      "detail": "#86 Canada · #1,449 global"
     },
     {
       "label": "TR",
-      "value": "20693",
+      "value": "20888",
       "detail": "best rank U"
     },
     {
       "label": "APM / PPS / VS",
-      "value": "82.5 / 2.02 / 169.0",
+      "value": "85.6 / 2.09 / 177.1",
       "detail": "last 10 games stats"
     },
     {
       "label": "40L PB",
       "value": "32.950s",
-      "detail": "#405 Canada · #6,477 global"
+      "detail": "#406 Canada · #6,500 global"
     },
     {
       "label": "Blitz PB",
       "value": "587,087",
-      "detail": "#145 Canada · #1,969 global"
+      "detail": "#145 Canada · #1,974 global"
     },
     {
       "label": "win rate",
       "value": "49.9%",
-      "detail": "3,377 / 6,773 games played · 858h time played"
+      "detail": "3,390 / 6,797 games played · 862h time played"
     }
   ],
   "history": {
@@ -47,139 +47,139 @@
       },
       {
         "label": "Oct 7, 2024",
-        "value": 19095
+        "value": 19100
       },
       {
         "label": "Oct 22, 2024",
-        "value": 20080
+        "value": 20081
       },
       {
         "label": "Nov 9, 2024",
-        "value": 19984
+        "value": 20172
       },
       {
-        "label": "Nov 26, 2024",
-        "value": 20393
+        "label": "Nov 27, 2024",
+        "value": 20359
       },
       {
-        "label": "Dec 9, 2024",
-        "value": 20507
+        "label": "Dec 10, 2024",
+        "value": 20543
       },
       {
-        "label": "Dec 17, 2024",
-        "value": 20376
+        "label": "Dec 18, 2024",
+        "value": 20493
       },
       {
-        "label": "Dec 26, 2024",
-        "value": 20150
+        "label": "Dec 27, 2024",
+        "value": 20410
       },
       {
-        "label": "Jan 6, 2025",
-        "value": 19975
+        "label": "Jan 8, 2025",
+        "value": 20235
       },
       {
         "label": "Feb 11, 2025",
-        "value": 20691
+        "value": 20294
       },
       {
-        "label": "Mar 24, 2025",
-        "value": 19964
+        "label": "Apr 3, 2025",
+        "value": 19656
       },
       {
-        "label": "Apr 16, 2025",
-        "value": 20016
+        "label": "Apr 19, 2025",
+        "value": 20108
       },
       {
-        "label": "May 8, 2025",
-        "value": 19759
+        "label": "May 11, 2025",
+        "value": 20290
       },
       {
-        "label": "May 22, 2025",
-        "value": 19745
+        "label": "May 26, 2025",
+        "value": 20149
       },
       {
-        "label": "Jun 4, 2025",
-        "value": 20620
+        "label": "Jun 7, 2025",
+        "value": 20686
       },
       {
-        "label": "Jul 17, 2025",
-        "value": 20234
+        "label": "Jul 22, 2025",
+        "value": 20430
       },
       {
-        "label": "Aug 2, 2025",
-        "value": 19758
+        "label": "Aug 6, 2025",
+        "value": 19629
       },
       {
-        "label": "Aug 13, 2025",
-        "value": 20023
+        "label": "Sep 6, 2025",
+        "value": 19797
       },
       {
-        "label": "Oct 6, 2025",
-        "value": 20197
+        "label": "Oct 7, 2025",
+        "value": 20454
       },
       {
-        "label": "Oct 20, 2025",
-        "value": 20815
+        "label": "Oct 29, 2025",
+        "value": 21004
       },
       {
-        "label": "Nov 12, 2025",
-        "value": 20425
+        "label": "Nov 24, 2025",
+        "value": 20051
       },
       {
-        "label": "Nov 30, 2025",
-        "value": 19962
+        "label": "Dec 8, 2025",
+        "value": 19874
       },
       {
-        "label": "Dec 19, 2025",
-        "value": 19550
+        "label": "Dec 22, 2025",
+        "value": 19627
       },
       {
-        "label": "Dec 26, 2025",
-        "value": 20159
+        "label": "Jan 1, 2026",
+        "value": 19959
       },
       {
-        "label": "Jan 13, 2026",
-        "value": 19962
+        "label": "Jan 19, 2026",
+        "value": 19908
       },
       {
-        "label": "Jan 27, 2026",
-        "value": 19855
+        "label": "Jan 29, 2026",
+        "value": 19831
       },
       {
-        "label": "Feb 4, 2026",
-        "value": 19871
+        "label": "Feb 11, 2026",
+        "value": 19947
       },
       {
-        "label": "Feb 18, 2026",
-        "value": 20142
+        "label": "Feb 25, 2026",
+        "value": 20162
       },
       {
-        "label": "Mar 9, 2026",
-        "value": 19815
+        "label": "Mar 19, 2026",
+        "value": 19888
       },
       {
-        "label": "Mar 30, 2026",
-        "value": 19751
+        "label": "Apr 7, 2026",
+        "value": 19840
       },
       {
-        "label": "Apr 17, 2026",
-        "value": 19876
+        "label": "Apr 30, 2026",
+        "value": 19784
       },
       {
-        "label": "May 16, 2026",
-        "value": 20350
+        "label": "Jun 1, 2026",
+        "value": 20688
       },
       {
-        "label": "Jun 25, 2026",
-        "value": 20689
+        "label": "Jul 25, 2026",
+        "value": 20278
       },
       {
-        "label": "Aug 30, 2026",
-        "value": 20407
+        "label": "Oct 8, 2026",
+        "value": 20630
       },
       {
-        "label": "Oct 18, 2026",
-        "value": 20693
+        "label": "Oct 25, 2026",
+        "value": 20888
       }
     ]
   }

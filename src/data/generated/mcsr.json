@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "username": "uselessleaf",
-  "fetchedAt": "2026-10-19T04:13:14.339Z",
+  "fetchedAt": "2026-10-26T10:09:53.360Z",
   "stats": [
     {
       "label": "current elo",
-      "value": "1,178",
-      "detail": "rank #4,495 · Gold III"
+      "value": "1,159",
+      "detail": "rank #4,997 · Gold III"
     },
     {
       "label": "all-time best",
@@ -15,7 +15,7 @@
     },
     {
       "label": "ranked record",
-      "value": "374–346",
+      "value": "378–351",
       "detail": "51.9% win rate"
     }
   ],
@@ -31,16 +31,12 @@
         "value": 1082
       },
       {
-        "label": "Aug 31, 2026",
-        "value": 1101
+        "label": "Sep 1, 2026",
+        "value": 1121
       },
       {
         "label": "Sep 1, 2026",
         "value": 1141
-      },
-      {
-        "label": "Sep 1, 2026",
-        "value": 1121
       },
       {
         "label": "Sep 1, 2026",
@@ -51,16 +47,12 @@
         "value": 1161
       },
       {
-        "label": "Sep 1, 2026",
-        "value": 1142
-      },
-      {
         "label": "Sep 18, 2026",
         "value": 1121
       },
       {
         "label": "Sep 18, 2026",
-        "value": 1101
+        "value": 1121
       },
       {
         "label": "Sep 18, 2026",
@@ -72,7 +64,7 @@
       },
       {
         "label": "Sep 21, 2026",
-        "value": 1118
+        "value": 1099
       },
       {
         "label": "Sep 21, 2026",
@@ -81,10 +73,6 @@
       {
         "label": "Sep 21, 2026",
         "value": 1139
-      },
-      {
-        "label": "Sep 24, 2026",
-        "value": 1160
       },
       {
         "label": "Sep 24, 2026",
@@ -104,10 +92,6 @@
       },
       {
         "label": "Oct 1, 2026",
-        "value": 1198
-      },
-      {
-        "label": "Oct 1, 2026",
         "value": 1179
       },
       {
@@ -121,10 +105,6 @@
       {
         "label": "Oct 6, 2026",
         "value": 1178
-      },
-      {
-        "label": "Oct 6, 2026",
-        "value": 1160
       },
       {
         "label": "Oct 6, 2026",
@@ -152,11 +132,7 @@
       },
       {
         "label": "Oct 11, 2026",
-        "value": 1198
-      },
-      {
-        "label": "Oct 11, 2026",
-        "value": 1177
+        "value": 1197
       },
       {
         "label": "Oct 11, 2026",
@@ -165,6 +141,30 @@
       {
         "label": "Oct 17, 2026",
         "value": 1178
+      },
+      {
+        "label": "Oct 23, 2026",
+        "value": 1218
+      },
+      {
+        "label": "Oct 23, 2026",
+        "value": 1198
+      },
+      {
+        "label": "Oct 24, 2026",
+        "value": 1159
+      },
+      {
+        "label": "Oct 25, 2026",
+        "value": 1140
+      },
+      {
+        "label": "Oct 26, 2026",
+        "value": 1139
+      },
+      {
+        "label": "Oct 26, 2026",
+        "value": 1159
       }
     ]
   }
