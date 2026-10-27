@@ -309,9 +309,15 @@ export function expandBed(config: GardenConfig): { objects: GardenObject[]; link
   if (bed.plants.length > bed.spots.length) {
     throw new Error(`The garden bed has ${bed.plants.length} plants but only ${bed.spots.length} spots; add spots to it`)
   }
-  const plants: GardenObject[] = bed.plants.map((plant, index) => ({
-    id: plant.id, type: 'specimen', island: bed.island, ...bed.spots[index], species: plant.species, scale: bed.scale, link: plant.id,
-  }))
+  const plants: GardenObject[] = bed.plants.map((plant, index) => {
+    // A little variety, fixed by the id: up to 8% smaller or 4% bigger, and maybe mirrored.
+    const variety = seedFromId(`${plant.id}:look`)
+    const scale = Math.round((bed.scale ?? 1) * (0.92 + (variety % 1000) / 1000 * 0.12) * 100) / 100
+    return {
+      id: plant.id, type: 'specimen', island: bed.island, ...bed.spots[index], species: plant.species, scale,
+      ...(variety & 0x10000 ? { mirror: true } : {}), link: plant.id,
+    }
+  })
   const own = Object.fromEntries(bed.plants.map(({ id, label, href }) => [id, { label, href }]))
   const entries = Object.entries(links), after = bed.section === undefined ? -1 : entries.findIndex(([id]) => id === bed.section)
   const at = after < 0 ? entries.length : after + 1

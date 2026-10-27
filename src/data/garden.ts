@@ -3,7 +3,7 @@ import type { BedPlant, GardenConfig, Palette } from '../garden/types.ts'
 import { projectEntries } from './projectEntries.ts'
 
 /**
- * One plant per project (its `plant` in projectEntries.ts) for the bed by the pines. Hovering names
+ * One plant per project (its `plant` in projectEntries.ts) for the bed around the pines. Hovering names
  * the project and clicking opens it in the projects section. Ids come from the project, so adding
  * one grows one new plant and leaves the others as they were.
  */
@@ -25,10 +25,10 @@ export const garden: GardenConfig = {
     projects: { label: 'projects', href: '#work' },
     hobbies: { label: 'hobbies', href: '#hobbies' },
   },
-  // The project bed in front of the pines, in a staggered row; projects fill the spots left to right.
+  // Project plants growing around the pines, clear of their lowest branches; projects fill the spots in order.
   bed: {
-    island: 'bed', section: 'projects', scale: 1.4, plants: projectPlants,
-    spots: [{ x: -1.3, y: 1.2 }, { x: -0.55, y: 0.75 }, { x: 0, y: 0 }, { x: 0.75, y: -0.55 }, { x: 1.2, y: -1.3 }],
+    island: 'right', section: 'projects', scale: 1.1, plants: projectPlants,
+    spots: [{ x: -0.9, y: 1.25 }, { x: 0.25, y: 1.65 }, { x: 0.95, y: -1.45 }, { x: 1.95, y: 1.35 }, { x: 1.85, y: -0.45 }],
   },
   ground: { extent: 45, seed: 51 },
   islands: [
@@ -39,8 +39,8 @@ export const garden: GardenConfig = {
     // Grass under the creek's ends, so the water doesn't run out over bare grid.
     { id: 'creek-left', x: 1.1, y: 5.1, radius: 1.6, plants: false },
     { id: 'creek-right', x: 5.6, y: 4.8, radius: 1.5, plants: false },
-    // Grass for the project bed, just in front of the right island.
-    { id: 'bed', x: 7.9, y: 0.1, radius: 2.8, plants: false },
+    // Grass for the project plants around the pines.
+    { id: 'bed', x: 6.6, y: -1.9, radius: 3.2, plants: false },
     { id: 'back', x: -5.2, y: -3.5, radius: 1.6 },
   ],
   objects: [

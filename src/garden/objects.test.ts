@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { garden } from '../data/garden.ts'
 import { projectEntries } from '../data/projectEntries.ts'
-import { buildWorld, objectTypes } from './objects.ts'
+import { buildWorld, expandBed, objectTypes } from './objects.ts'
 import { species, type GardenConfig, type GardenObject, type Geometry, type Island } from './types.ts'
 
 const minimal = (objects: GardenObject[], islands = [{ id: 'a', x: 0, y: 0, radius: 2 }]): GardenConfig => ({
@@ -213,6 +213,13 @@ test('a bed plants one linked specimen per plant, its links right after the sect
   assert.deepEqual(shapes(grown.geometry, 'one'), shapes(world.geometry, 'one'))
   assert.deepEqual(shapes(grown.geometry, 'two'), shapes(world.geometry, 'two'))
   assert.throws(() => buildWorld(config(['a', 'b', 'c', 'd'].map(plant))), /4 plants but only 3 spots/)
+  // Each plant's size varies a little around the bed's scale, the same on every build.
+  const scaled = { ...config([plant('one'), plant('two')]), bed: { ...config([]).bed!, scale: 2, plants: [plant('one'), plant('two')] } }
+  for (const object of expandBed(scaled).objects.filter((item) => item.type === 'specimen')) {
+    const { scale } = object as { scale: number }
+    assert.ok(scale >= 1.84 && scale <= 2.08, `${object.id} ${scale}`)
+  }
+  assert.deepEqual(expandBed(scaled), expandBed(scaled))
 })
 
 test('every project grows in the site garden and links to its card', () => {
