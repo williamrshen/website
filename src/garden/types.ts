@@ -7,6 +7,7 @@ export type ColorName =
   | 'benchLeg' | 'benchSeat' | 'benchBack'
   | 'grass' | 'grassLight' | 'grassTuft'
   | 'water' | 'creekBank' | 'bridgeDeck' | 'bridgeRail'
+  | 'sunflowerPetal' | 'sunflowerCenter' | 'tulip' | 'lavender' | 'snowball' | 'mushroomCap' | 'mushroomStem'
 
 /** A list of related colors; objects pick one by index (wrapping if a palette has fewer entries). */
 export type SwatchName = 'leaves' | 'flowers' | 'pine' | 'path'
@@ -88,6 +89,10 @@ export type Island = Point & {
   plants?: boolean
 }
 
+/** Plants a `specimen` can be. */
+export const species = ['sunflower', 'tulips', 'lavender', 'snowball', 'mushrooms'] as const
+export type Species = typeof species[number]
+
 /** Parameters for each object type, keyed by `type`. Add a type here and in `objectTypes`. */
 export type ObjectParams = {
   /** Voxel oak with a trunk, branches, and a three-lobed canopy. */
@@ -109,6 +114,8 @@ export type ObjectParams = {
   creek: { length: number; width: number; meander?: number; pebbles?: number }
   /** An arched footbridge spanning `length` along local x, with handrails and stone footings. */
   bridge: { length?: number; width?: number; rise?: number }
+  /** A showpiece plant, bigger than the scattered ones: one of a few species. */
+  specimen: { species: Species; scale?: number }
   /** Scatters plants around islands. */
   scatter: {
     count: number
@@ -149,9 +156,17 @@ export type GardenObject = { [K in ObjectType]: Placement & { type: K } & Object
 /** Where a linked object goes. `label` names it on hover and for screen readers. */
 export type GardenLink = { label: string; href: string }
 
+/** One plant in a `bed`: it becomes a specimen object and a link, both named `id`. */
+export type BedPlant = GardenLink & { id: string; species: Species }
+
 export type GardenConfig = {
   /** Destinations objects can link to, in the order keyboard users reach them. */
   links?: Record<string, GardenLink>
+  /**
+   * A bed of linked specimen plants, e.g. one per project: the n-th plant grows in the n-th spot
+   * (relative to `island`'s center). Their links follow the `section` link in tab order.
+   */
+  bed?: { island: string; section?: string; spots: Point[]; plants: BedPlant[]; scale?: number }
   /** Ground tiles span -extent…extent on both axes; `seed` varies grass shades and tufts. */
   ground: { extent: number; seed: number }
   islands: Island[]

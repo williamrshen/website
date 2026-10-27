@@ -19,11 +19,20 @@ export function literal(value: unknown): string {
 const quoteKey = (name: string) => identifier.test(name) ? name : literal(name)
 const list = (items: unknown[], indent: string) => `[\n${items.map((item) => `${indent}  ${literal(item)},`).join('\n')}\n${indent}]`
 
+/**
+ * The bed, with its plants written as `projectPlants` (generated from the project data in
+ * `src/data/garden.ts`) rather than copied in, so pasting keeps them in sync with the projects.
+ */
+function bed({ plants: _plants, spots, ...rest }: NonNullable<GardenConfig['bed']>) {
+  return `  bed: {\n    ${Object.entries(rest).map(([key, value]) => `${key}: ${literal(value)}`).join(', ')}, plants: projectPlants,\n    spots: ${literal(spots)},\n  },`
+}
+
 /** The `garden` export of `src/data/garden.ts`, one island or object per line. */
 export function serializeGarden(config: GardenConfig) {
   return [
     'export const garden: GardenConfig = {',
     ...(config.links ? ['  links: {', ...Object.entries(config.links).map(([id, link]) => `    ${quoteKey(id)}: ${literal(link)},`), '  },'] : []),
+    ...(config.bed ? [bed(config.bed)] : []),
     `  ground: ${literal(config.ground)},`,
     `  islands: ${list(config.islands, '  ')},`,
     `  objects: ${list(config.objects, '  ')},`,

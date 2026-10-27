@@ -139,6 +139,18 @@ test.describe('?garden=edit', () => {
     expect((await object(page, 'oak') as { link?: string }).link).toBe('hobbies')
   })
 
+  test('project plants explain where they are edited', async ({ page }) => {
+    const plant = await page.evaluate(() => {
+      const { scene } = (window as unknown as { gardenDev: { scene: { built: { objects: { id: string; x: number; y: number }[] }; project(x: number, y: number, z: number): { x: number; y: number } } } }).gardenDev
+      const object = scene.built.objects.find((item) => item.id === 'project-snowballistic')!
+      const point = scene.project(object.x, object.y, 0.3), rect = document.querySelector('#world')!.getBoundingClientRect()
+      return { x: point.x + rect.left, y: point.y + rect.top }
+    })
+    await page.mouse.click(plant.x, plant.y)
+    await expect(page.getByRole('status')).toContainText('src/data/projectEntries.ts')
+    await expect(page).not.toHaveURL(/#/)
+  })
+
   test('palette colors edit live', async ({ page }) => {
     const before = await pixels(page)
     const panel = page.getByRole('complementary', { name: 'Garden editor' })

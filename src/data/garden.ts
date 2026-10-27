@@ -1,5 +1,15 @@
 import type { Season } from '../garden/seasons.ts'
-import type { GardenConfig, Palette } from '../garden/types.ts'
+import type { BedPlant, GardenConfig, Palette } from '../garden/types.ts'
+import { projectEntries } from './projectEntries.ts'
+
+/**
+ * One plant per project (its `plant` in projectEntries.ts) for the bed by the pines. Hovering names
+ * the project and clicking opens it in the projects section. Ids come from the project, so adding
+ * one grows one new plant and leaves the others as they were.
+ */
+export const projectPlants: BedPlant[] = projectEntries.map((project) => ({
+  id: `project-${project.id}`, label: project.name, href: `#work/${project.id}`, species: project.plant,
+}))
 
 /**
  * The garden layout. Units are ground tiles; +x runs toward the lower right of the screen and +y
@@ -15,6 +25,11 @@ export const garden: GardenConfig = {
     projects: { label: 'projects', href: '#work' },
     hobbies: { label: 'hobbies', href: '#hobbies' },
   },
+  // The project bed in front of the pines, in a staggered row; projects fill the spots left to right.
+  bed: {
+    island: 'bed', section: 'projects', scale: 1.4, plants: projectPlants,
+    spots: [{ x: -1.3, y: 1.2 }, { x: -0.55, y: 0.75 }, { x: 0, y: 0 }, { x: 0.75, y: -0.55 }, { x: 1.2, y: -1.3 }],
+  },
   ground: { extent: 45, seed: 51 },
   islands: [
     { id: 'main', x: 0, y: 0, radius: 5.1 },
@@ -24,6 +39,8 @@ export const garden: GardenConfig = {
     // Grass under the creek's ends, so the water doesn't run out over bare grid.
     { id: 'creek-left', x: 1.1, y: 5.1, radius: 1.6, plants: false },
     { id: 'creek-right', x: 5.6, y: 4.8, radius: 1.5, plants: false },
+    // Grass for the project bed, just in front of the right island.
+    { id: 'bed', x: 7.9, y: 0.1, radius: 2.8, plants: false },
     { id: 'back', x: -5.2, y: -3.5, radius: 1.6 },
   ],
   objects: [
@@ -61,6 +78,8 @@ const daylight: Palette = {
     benchLeg: '#8b7050', benchSeat: '#b69869', benchBack: '#a78c61',
     grass: '#a6ba83', grassLight: '#b3c391', grassTuft: '#c8d3a4',
     water: '#8fbcc4', creekBank: '#8ea36f', bridgeDeck: '#b8956a', bridgeRail: '#8d7051',
+    sunflowerPetal: '#e2b443', sunflowerCenter: '#7b5534', tulip: '#cf5a4c', lavender: '#9886c2',
+    snowball: '#f0eee2', mushroomCap: '#c45a43', mushroomStem: '#ebe2cb',
   },
   swatches: {
     leaves: ['#819b4d', '#8ba352', '#91a957', '#789648', '#9ab15c', '#88a04c'],

@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { garden } from '../data/garden.ts'
+import { projectEntries } from '../data/projectEntries.ts'
 import { buildWorld, objectTypes } from './objects.ts'
-import type { GardenConfig, GardenObject, Geometry, Island } from './types.ts'
+import { species, type GardenConfig, type GardenObject, type Geometry, type Island } from './types.ts'
 
 const minimal = (objects: GardenObject[], islands = [{ id: 'a', x: 0, y: 0, radius: 2 }]): GardenConfig => ({
   ground: { extent: 3, seed: 1 },
@@ -31,11 +32,18 @@ test('every registered object type builds', () => {
   const params: { [K in keyof typeof objectTypes]: Omit<Extract<GardenObject, { type: K }>, 'id' | 'type'> } = {
     oak: { scale: 0.5 }, pine: { scale: 1 }, plant: { flower: true }, rock: { scale: 1 },
     path: { stones: 3, step: { x: 0.3, y: 0.3 } }, bench: {}, creek: { length: 2, width: 0.5 }, bridge: {},
-    scatter: { count: 10, flowerEvery: 2, clearRadius: 0 },
+    specimen: { species: 'sunflower' }, scatter: { count: 10, flowerEvery: 2, clearRadius: 0 },
   }
   for (const [type, value] of Object.entries(params)) {
     const world = buildWorld(minimal([{ id: type, type, ...value } as GardenObject]))
     assert.ok(world.geometry.length > 0, type)
+  }
+})
+
+test('every specimen species builds', () => {
+  for (const kind of species) {
+    const { geometry } = buildWorld(minimal([{ id: kind, type: 'specimen', species: kind }]))
+    assert.ok(geometry.length >= 6, kind)
   }
 })
 
@@ -78,7 +86,7 @@ test('linked objects keep their link', () => {
   // The site's links all point at sections, and every one is used by some object.
   const site = buildWorld(garden)
   for (const [id, link] of Object.entries(site.links)) {
-    assert.match(link.href, /^#[\w-]+$/)
+    assert.match(link.href, /^#[\w-]+(\/[\w-]+)?$/)
     assert.ok(site.objects.some((object) => object.link === id), `link "${id}" is unused`)
   }
 })
@@ -186,4 +194,32 @@ test('islands with plants: false widen the grass but get no scattered plants', (
   // ...but the ground between the islands turns to grass.
   const grass = (tiles: { x: number; y: number; grass: boolean }[]) => tiles.filter((tile) => tile.grass && tile.x >= 2 && tile.x <= 3 && Math.abs(tile.y) <= 1).length
   assert.ok(grass(widened.tiles) > grass(plain.tiles))
+})
+
+test('a bed plants one linked specimen per plant, its links right after the section link', () => {
+  const plant = (id: string) => ({ id, label: id, href: `#work/${id}`, species: 'tulips' as const })
+  const config = (plants: ReturnType<typeof plant>[]): GardenConfig => ({
+    ...minimal([{ id: 'r', type: 'rock', scale: 0.3, link: 'work' }]),
+    links: { about: { label: 'about', href: '#about' }, work: { label: 'work', href: '#work' }, fun: { label: 'fun', href: '#fun' } },
+    bed: { island: 'a', section: 'work', spots: [{ x: -1, y: 0 }, { x: 0, y: 0 }, { x: 1, y: 0 }], plants },
+  })
+  const world = buildWorld(config([plant('one'), plant('two')]))
+  assert.deepEqual(Object.keys(world.links), ['about', 'work', 'one', 'two', 'fun'])
+  assert.deepEqual(world.objects.filter((object) => object.type === 'specimen').map(({ id, x, link }) => ({ id, x, link })),
+    [{ id: 'one', x: -1, link: 'one' }, { id: 'two', x: 0, link: 'two' }])
+  // Adding a plant grows just that one; the others keep their shapes.
+  const shapes = (items: Geometry[], owner: string) => canonical(items.filter((item) => item.owner === owner))
+  const grown = buildWorld(config([plant('one'), plant('two'), plant('three')]))
+  assert.deepEqual(shapes(grown.geometry, 'one'), shapes(world.geometry, 'one'))
+  assert.deepEqual(shapes(grown.geometry, 'two'), shapes(world.geometry, 'two'))
+  assert.throws(() => buildWorld(config(['a', 'b', 'c', 'd'].map(plant))), /4 plants but only 3 spots/)
+})
+
+test('every project grows in the site garden and links to its card', () => {
+  const world = buildWorld(garden)
+  for (const project of projectEntries) {
+    const object = world.objects.find((item) => item.id === `project-${project.id}`)
+    assert.ok(object, project.id)
+    assert.equal(world.links[object.link!].href, `#work/${project.id}`)
+  }
 })

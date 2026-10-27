@@ -54,7 +54,7 @@ export function GardenExperience({ evening, dialogOpen, onToggleTheme, onOpenDet
             ref={canvas}
             id="world"
             role="img"
-            aria-label="An interactive isometric garden with a large voxel oak tree, evergreens, a bench, a footbridge over a little creek, flowers, and grass tiles. Move your pointer to illuminate the surrounding grid."
+            aria-label="An interactive isometric garden with a large voxel oak tree, evergreens, a bench, a footbridge over a little creek, a bed of flowers and mushrooms with one plant for each project, and grass tiles. Move your pointer to illuminate the surrounding grid."
           />
           {/* Links for the oak, pines, and creek are added here by the hook, one per destination. */}
           <div className={styles.targets} ref={targets}>

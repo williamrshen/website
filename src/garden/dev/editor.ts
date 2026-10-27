@@ -11,6 +11,7 @@ type Draft = { config: GardenConfig; palettes: Palettes }
 const defaults: { [K in ObjectType]: ObjectParams[K] } = {
   oak: { scale: 0.4 }, pine: { scale: 0.6 }, plant: { scale: 0.8, flower: true }, rock: { scale: 0.4 },
   path: { stones: 3, step: { x: 0.35, y: 0.48 } }, bench: {}, creek: { length: 2, width: 0.5 }, bridge: {},
+  specimen: { species: 'sunflower' },
   scatter: { count: 10, flowerEvery: 3, clearRadius: 0 },
 }
 const turns = [0, 90, 180, 270] as const
@@ -118,6 +119,14 @@ export function editor(host: GardenHost) {
     event.preventDefault()
     const point = local(event), ground = scene.unproject(point)
     const object = pickObject(scene.built, scene.project.bind(scene), point)
+    if (object && !objectById(object) && draft.config.bed?.plants.some((plant) => plant.id === object)) {
+      // Bed plants come from the project data, so there's nothing here to edit.
+      selection = null
+      drag = null
+      say(`"${object}" grows in the project bed: change its plant in src/data/projectEntries.ts and its spot in the bed's spots.`)
+      host.requestRender()
+      return
+    }
     if (object) selection = { kind: 'object', id: object }
     else {
       // The smallest island under the cursor, so small islands inside big ones stay reachable.

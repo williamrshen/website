@@ -1,4 +1,4 @@
-import { buildWorld } from './objects.ts'
+import { buildWorld, expandBed } from './objects.ts'
 import type { Box, GardenConfig, GardenObject, World } from './types.ts'
 
 export type GardenWarning = { object: string; message: string }
@@ -14,7 +14,7 @@ const footprints = (world: World) => world.geometry.filter((item): item is Box =
 /** True if the object's random generator changes its shape. */
 function usesRandom(config: GardenConfig, object: GardenObject) {
   const alone = (seed: number) => JSON.stringify(buildWorld({
-    ...config, objects: [{ ...object, seed }], fireflies: { ...config.fireflies, count: 0 },
+    ...config, objects: [{ ...object, seed }], bed: undefined, fireflies: { ...config.fireflies, count: 0 },
   }).geometry)
   return alone(1) !== alone(2)
 }
@@ -26,8 +26,9 @@ function usesRandom(config: GardenConfig, object: GardenObject) {
 export function lintGarden(config: GardenConfig, world = buildWorld(config)): GardenWarning[] {
   const warnings: GardenWarning[] = []
   const islands = new Map(config.islands.map((island) => [island.id, island]))
-  const types = new Map(config.objects.map((object) => [object.id, object.type]))
-  const order = new Map(config.objects.map((object, index) => [object.id, index]))
+  const { objects, links } = expandBed(config)
+  const types = new Map(objects.map((object) => [object.id, object.type]))
+  const order = new Map(objects.map((object, index) => [object.id, index]))
 
   for (const placed of world.objects) {
     const island = placed.island === undefined ? undefined : islands.get(placed.island)
@@ -78,8 +79,8 @@ export function lintGarden(config: GardenConfig, world = buildWorld(config)): Ga
       warnings.push({ object: object.id, message: `sets a seed, but ${object.type} objects don't use randomness` })
     }
   }
-  for (const id of Object.keys(config.links ?? {})) {
-    if (!config.objects.some((object) => object.link === id)) {
+  for (const id of Object.keys(links)) {
+    if (!objects.some((object) => object.link === id)) {
       warnings.push({ object: `links.${id}`, message: 'is not used by any object, so it is not shown' })
     }
   }
@@ -88,7 +89,9 @@ export function lintGarden(config: GardenConfig, world = buildWorld(config)): Ga
 
 /** Links to `#id` where `hasId` says the page has no such element (a renamed section, a typo). */
 export function missingSections(config: GardenConfig, hasId: (id: string) => boolean): GardenWarning[] {
-  return Object.entries(config.links ?? {})
-    .filter(([, link]) => link.href.startsWith('#') && !hasId(decodeURIComponent(link.href.slice(1))))
-    .map(([id, link]) => ({ object: `links.${id}`, message: `goes to "${link.href}", but the page has no element with that id` }))
+  // `#section/item` deep links need the section.
+  const target = (href: string) => decodeURIComponent(href.slice(1).split('/')[0])
+  return Object.entries(expandBed(config).links)
+    .filter(([, link]) => link.href.startsWith('#') && !hasId(target(link.href)))
+    .map(([id, link]) => ({ object: `links.${id}`, message: `goes to "${link.href}", but the page has no element with id "${target(link.href)}"` }))
 }

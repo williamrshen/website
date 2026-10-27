@@ -1,7 +1,7 @@
 import { buildLive } from './live.ts'
 import { createRandom, seedFromId, type Random } from './random.ts'
 import type {
-  Faces, GardenConfig, GardenObject, Geometry, Island, ObjectParams, ObjectType, Orientation, Paint, PlacedObject, Point, Tile, World,
+  Faces, GardenConfig, GardenLink, GardenObject, Geometry, Island, ObjectParams, ObjectType, Orientation, Paint, PlacedObject, Point, Tile, World,
 } from './types.ts'
 
 const allFaces: Faces = { top: true, left: true, right: true }
@@ -169,6 +169,57 @@ export const objectTypes: { [K in ObjectType]: ObjectBuilder<K> } = {
     }
   },
 
+  specimen(b, { species, scale = 1 }) {
+    /** A box centered on (x, y), sized by `scale`. */
+    const at = (x: number, y: number, z: number, width: number, depth: number, height: number, paint: Paint) =>
+      b.box((x - width / 2) * scale, (y - depth / 2) * scale, z * scale, width * scale, depth * scale, height * scale, paint)
+    const jitter = (amount: number) => (b.random() - 0.5) * 2 * amount
+    if (species === 'sunflower') {
+      // A tall stem with two leaves and a broad yellow head with a dark center.
+      at(0, 0, 0, 0.07, 0.07, 0.84, 'stem')
+      at(0.13, 0, 0.3, 0.19, 0.08, 0.06, 'plantLeaf')
+      at(0, 0.13, 0.48, 0.08, 0.19, 0.06, 'plantLeafDark')
+      at(0, 0, 0.84, 0.34, 0.34, 0.07, 'sunflowerPetal')
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) at(dx * 0.22, dy * 0.22, 0.85, dx ? 0.1 : 0.16, dy ? 0.1 : 0.16, 0.05, 'sunflowerPetal')
+      at(0, 0, 0.91, 0.17, 0.17, 0.04, 'sunflowerCenter')
+    } else if (species === 'tulips') {
+      // Three cups of different heights, each crowned with four petal tips.
+      for (const [x, y, height] of [[0, 0, 0.56], [0.17, 0.12, 0.42], [-0.12, 0.16, 0.34]]) {
+        const h = height + jitter(0.04)
+        at(x, y, 0, 0.05, 0.05, h, 'stem')
+        at(x + 0.05, y, 0, 0.05, 0.04, h * 0.45, 'plantLeaf')
+        at(x, y, h, 0.15, 0.15, 0.12, 'tulip')
+        for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) at(x + dx * 0.05, y + dy * 0.05, h + 0.12, 0.05, 0.05, 0.05, 'tulip')
+      }
+    } else if (species === 'lavender') {
+      // A low tuft with spikes of purple buds.
+      at(0, 0, 0, 0.32, 0.32, 0.09, 'plantLeafDark')
+      for (let i = 0; i < 7; i++) {
+        const angle = (i / 7) * Math.PI * 2 + jitter(0.3), radius = i ? 0.1 + b.random() * 0.04 : 0
+        const x = Math.cos(angle) * radius, y = Math.sin(angle) * radius, h = 0.36 + b.random() * 0.2
+        at(x, y, 0.09, 0.035, 0.035, h - 0.09, 'stem')
+        for (let bud = 0; bud < 3; bud++) at(x, y, h + bud * 0.065, 0.065, 0.065, 0.05, 'lavender')
+      }
+    } else if (species === 'snowball') {
+      // A rounded shrub with round white flower heads on top and around its sides.
+      at(0, 0, 0, 0.46, 0.46, 0.3, 'plantLeafDark')
+      at(0, 0, 0.3, 0.32, 0.32, 0.12, 'plantLeaf')
+      at(0, 0, 0.42, 0.14, 0.14, 0.1, 'snowball')
+      for (const [x, y, z] of [[0.26, 0.05, 0.12], [0.02, 0.26, 0.16], [0.21, 0.21, 0.31], [-0.2, 0.08, 0.31], [0.08, -0.2, 0.31]]) {
+        at(x + jitter(0.02), y + jitter(0.02), z, 0.12, 0.12, 0.11, 'snowball')
+      }
+    } else {
+      // A big toadstool with a smaller one beside it.
+      for (const [x, y, size] of [[0, 0, 1], [0.24, 0.14, 0.62]]) {
+        at(x, y, 0, 0.1 * size, 0.1 * size, 0.24 * size, 'mushroomStem')
+        at(x, y, 0.24 * size, 0.32 * size, 0.32 * size, 0.08 * size, 'mushroomCap')
+        at(x, y, 0.32 * size, 0.18 * size, 0.18 * size, 0.05 * size, 'mushroomCap')
+        // White spots on the lower ring of the cap.
+        for (const [dx, dy] of [[0.12, 0.02], [-0.02, 0.12], [-0.11, -0.06]]) at(x + dx * size, y + dy * size, 0.32 * size, 0.05 * size, 0.05 * size, 0.012, 'mushroomStem')
+      }
+    }
+  },
+
   scatter(b, { count, flowerEvery, clearRadius, keepOut = 0.12 }) {
     const islands = b.islands.filter((island) => island.plants !== false)
     for (let i = 0; i < count; i++) {
@@ -248,6 +299,28 @@ function buildGround({ ground, islands }: GardenConfig): Tile[] {
   return tiles
 }
 
+/**
+ * The config's objects and links with the `bed` planted: one specimen and one link per plant.
+ * Fails if there are more plants than spots.
+ */
+export function expandBed(config: GardenConfig): { objects: GardenObject[]; links: Record<string, GardenLink> } {
+  const { bed } = config, links = config.links ?? {}
+  if (!bed) return { objects: config.objects, links }
+  if (bed.plants.length > bed.spots.length) {
+    throw new Error(`The garden bed has ${bed.plants.length} plants but only ${bed.spots.length} spots; add spots to it`)
+  }
+  const plants: GardenObject[] = bed.plants.map((plant, index) => ({
+    id: plant.id, type: 'specimen', island: bed.island, ...bed.spots[index], species: plant.species, scale: bed.scale, link: plant.id,
+  }))
+  const own = Object.fromEntries(bed.plants.map(({ id, label, href }) => [id, { label, href }]))
+  const entries = Object.entries(links), after = bed.section === undefined ? -1 : entries.findIndex(([id]) => id === bed.section)
+  const at = after < 0 ? entries.length : after + 1
+  return {
+    objects: [...config.objects, ...plants],
+    links: Object.fromEntries([...entries.slice(0, at), ...Object.entries(own), ...entries.slice(at)]),
+  }
+}
+
 /** Builds the world geometry from a config. Pure and deterministic, so it can run anywhere. */
 export function buildWorld(config: GardenConfig): World {
   const islands = new Map<string, Island>()
@@ -255,13 +328,13 @@ export function buildWorld(config: GardenConfig): World {
     if (islands.has(island.id)) throw new Error(`Duplicate garden island id "${island.id}"`)
     islands.set(island.id, island)
   }
-  const ids = new Set<string>()
+  const ids = new Set<string>(), { objects, links } = expandBed(config)
   const geometry: Geometry[] = [], placed: PlacedObject[] = [], scatters: (() => void)[] = []
-  for (const object of config.objects) {
+  for (const object of objects) {
     if (ids.has(object.id)) throw new Error(`Duplicate garden object id "${object.id}"`)
     ids.add(object.id)
     const { type, id, island: _island, x: _x, y: _y, seed, rotate, mirror, link, ...params } = object
-    if (link !== undefined && !config.links?.[link]) throw new Error(`Garden object "${id}" links to unknown link "${link}"`)
+    if (link !== undefined && !links[link]) throw new Error(`Garden object "${id}" links to unknown link "${link}"`)
     const at = position(object, islands)
     placed.push({ ...at, id, type, island: object.island, rotate: rotate ?? 0, mirror: mirror ?? false, link })
     const build = () => {
@@ -283,5 +356,5 @@ export function buildWorld(config: GardenConfig): World {
     z: area.z + random() * area.height, phase: random() * Math.PI * 2,
   }))
   const tiles = buildGround(config)
-  return { tiles, geometry, fireflies, islands: config.islands, objects: placed, links: config.links ?? {}, ...buildLive(config, tiles, geometry, placed) }
+  return { tiles, geometry, fireflies, islands: config.islands, objects: placed, links, ...buildLive(config, tiles, geometry, placed) }
 }

@@ -1,18 +1,21 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { garden, gardenPalettes } from '../../data/garden.ts'
+import { garden, gardenPalettes, projectPlants } from '../../data/garden.ts'
 import { buildWorld } from '../objects.ts'
 import type { GardenConfig, Point } from '../types.ts'
 import { convexHull, insidePolygon, objectOutline, pickObject } from '../outline.ts'
 import { literal, serializeGarden, serializePalette } from './serialize.ts'
 
-/** Evaluates exported TypeScript from the serializers (type annotations stripped). */
-const evaluate = (source: string) => new Function(source.replace(/^(export )?const \w+(: \w+)? =/, 'return'))()
+/** Evaluates exported TypeScript from the serializers (type annotations stripped), with `projectPlants` in scope. */
+const evaluate = (source: string) => new Function('projectPlants', source.replace(/^(export )?const \w+(: \w+)? =/, 'return'))(projectPlants)
 
 test('serialized garden config round-trips', () => {
   const text = serializeGarden(garden)
   assert.match(text, /^export const garden: GardenConfig = \{/)
   assert.deepEqual(evaluate(text), garden)
+  // The bed refers to the generated plants instead of copying them.
+  assert.match(text, /plants: projectPlants,/)
+  assert.doesNotMatch(text, /project-snowballistic/)
   // One island or object per line keeps diffs readable.
   assert.equal(text.split('\n').filter((line) => line.includes("{ id: '")).length, garden.islands.length + garden.objects.length)
   // Links serialize too, quoting ids that aren't identifiers.

@@ -7,7 +7,11 @@ import { expect, test, type Page } from '@playwright/test'
  */
 test.use({ reducedMotion: 'reduce' })
 
-type Dev = { scene: { built: { objects: { id: string; x: number; y: number }[] }; project(x: number, y: number, z: number): { x: number; y: number } } }
+type Dev = { scene: {
+  built: { objects: { id: string; x: number; y: number; link?: string }[] }
+  project(x: number, y: number, z: number): { x: number; y: number }
+  linkAt(point: { x: number; y: number }): string | undefined
+} }
 
 async function openGarden(page: Page, query = '') {
   await page.addInitScript(() => localStorage.setItem('theme', 'daylight'))
@@ -25,6 +29,21 @@ function pointOn(page: Page, id: string, z: number) {
     const point = scene.project(object.x, object.y, z), rect = document.querySelector('#world')!.getBoundingClientRect()
     return { x: point.x + rect.left, y: point.y + rect.top }
   }, [id, z] as const)
+}
+
+/** A page point that hits an object's link: the lowest height above its base that does. */
+function linkPointOn(page: Page, id: string) {
+  return page.evaluate((id) => {
+    const { scene } = (window as unknown as { gardenDev: Dev }).gardenDev
+    const object = scene.built.objects.find((item) => item.id === id)
+    if (!object) throw new Error(`no object ${id}`)
+    const rect = document.querySelector('#world')!.getBoundingClientRect()
+    for (let z = 0.05; z < 3; z += 0.05) {
+      const point = scene.project(object.x, object.y, z)
+      if (scene.linkAt(point) === object.link) return { x: point.x + rect.left, y: point.y + rect.top }
+    }
+    throw new Error(`no point on ${id} hits its link`)
+  }, id)
 }
 
 const canvasPixels = (page: Page) => page.locator('#world').evaluate((canvas: HTMLCanvasElement) => canvas.toDataURL('image/png'))
@@ -54,6 +73,50 @@ for (const destination of destinations) {
     await expect(page.locator(destination.hash)).toBeInViewport()
   })
 }
+
+const projects = [
+  { id: 'communal-catalogue', name: 'Communal Catalogue' },
+  { id: 'snowballistic', name: 'Snowballistic' },
+  { id: 'competitive-programming', name: 'Competitive Programming' },
+  { id: 'gendentify', name: 'Gendentify' },
+  { id: 'youtube', name: 'YouTube Channel' },
+]
+const panel = (page: Page) => page.locator('#work [role="region"]')
+
+for (const project of projects) {
+  test(`the ${project.id} plant opens its project`, async ({ page }) => {
+    await openGarden(page)
+    const point = await linkPointOn(page, `project-${project.id}`)
+    await page.mouse.move(point.x, point.y)
+    await expect(label(page)).toHaveText(`${project.name} →`)
+    await page.mouse.click(point.x, point.y)
+    await expect(page).toHaveURL(new RegExp(`#work/${project.id}$`))
+    await expect(panel(page).getByRole('heading', { level: 3 })).toHaveText(project.name)
+    await expect(panel(page)).toBeInViewport()
+    await expect(page.locator('#work').getByRole('button', { name: new RegExp(project.name) })).toBeFocused()
+  })
+}
+
+test('a project link opens its panel on load, again when followed twice, and is forgotten on close', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('theme', 'daylight'))
+  await page.goto('/?season=summer#work/gendentify')
+  await expect(panel(page).getByRole('heading', { level: 3 })).toHaveText('Gendentify')
+  await expect(panel(page)).toBeInViewport()
+  // Back up to the garden and pick the same plant: the URL doesn't change, but it still scrolls there.
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await page.waitForFunction(() => 'gardenDev' in window)
+  await expect(page.locator('[data-garden-link]').first().locator('..')).toHaveJSProperty('inert', false)
+  const point = await linkPointOn(page, 'project-gendentify')
+  await page.mouse.click(point.x, point.y)
+  await expect(panel(page)).toBeInViewport()
+  // Switching through the card list doesn't touch the URL; closing clears the project from it.
+  await panel(page).getByRole('button', { name: 'Close details' }).click()
+  await expect(panel(page)).toHaveCount(0)
+  await expect(page).toHaveURL(/\?season=summer$/)
+  // Unknown projects are ignored.
+  await page.goto('/?season=summer#work/nope')
+  await expect(panel(page)).toHaveCount(0)
+})
 
 test('objects without a link do nothing', async ({ page }) => {
   await openGarden(page)
@@ -98,8 +161,10 @@ test.describe('on a touch screen', () => {
 test('keyboard users tab to each destination once, in order, and follow it with Enter', async ({ page }) => {
   await openGarden(page)
   const links = page.locator('[data-garden-link]')
-  await expect(links).toHaveText(['about me', 'work experience', 'projects', 'hobbies'])
-  expect(await links.evaluateAll((anchors) => anchors.map((anchor) => anchor.getAttribute('href')))).toEqual(['#about', '#experience', '#work', '#hobbies'])
+  // The project plants come right after the projects link.
+  await expect(links).toHaveText(['about me', 'work experience', 'projects', ...projects.map((project) => project.name), 'hobbies'])
+  expect(await links.evaluateAll((anchors) => anchors.map((anchor) => anchor.getAttribute('href'))))
+    .toEqual(['#about', '#experience', '#work', ...projects.map((project) => `#work/${project.id}`), '#hobbies'])
   const before = await canvasPixels(page)
   await links.first().focus()
   await page.keyboard.press('Tab')

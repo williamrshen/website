@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { garden } from '../data/garden.ts'
+import { garden, projectPlants } from '../data/garden.ts'
 import { lintGarden, missingSections } from './lint.ts'
 import type { GardenConfig, GardenObject } from './types.ts'
 
@@ -58,9 +58,11 @@ test('links no object uses', () => {
 test('links to sections the page lacks', () => {
   const page = (...ids: string[]) => (id: string) => ids.includes(id)
   assert.deepEqual(missingSections(garden, page('about', 'experience', 'work', 'hobbies')), [])
-  assert.deepEqual(missingSections(garden, page('about', 'experience', 'hobbies')), [
-    { object: 'links.projects', message: 'goes to "#work", but the page has no element with that id' },
-  ])
+  // Deep links to a project need the projects section.
+  assert.deepEqual(missingSections(garden, page('about', 'experience', 'hobbies')).map((warning) => warning.object),
+    ['links.projects', ...projectPlants.map((plant) => `links.${plant.id}`)])
+  assert.match(missingSections(garden, page())[0].message, /goes to "#about", but the page has no element with id "about"/)
+  assert.match(missingSections(garden, page())[3].message, /goes to "#work\/communal-catalogue", but the page has no element with id "work"/)
   // Only in-page links are checked.
-  assert.deepEqual(missingSections({ ...garden, links: { cv: { label: 'cv', href: '/resume.pdf' } } }, page()), [])
+  assert.deepEqual(missingSections({ ...garden, bed: undefined, links: { cv: { label: 'cv', href: '/resume.pdf' } } }, page()), [])
 })
