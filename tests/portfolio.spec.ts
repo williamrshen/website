@@ -639,3 +639,20 @@ test('introduction shows identity, portrait, and current focus', async ({ page }
     await expect(about.getByText(removed)).toHaveCount(0)
   }
 })
+
+test("#section/<id> links open the card's side panel, on load and when followed", async ({ page }) => {
+  await page.goto('/#experience/young-engineers')
+  const role = page.locator('#experience [role="region"]')
+  await expect(role.getByRole('heading', { level: 3 })).toHaveText(experience.find((item) => item.id === 'young-engineers')!.title)
+  await expect(role).toBeInViewport()
+  // A link to another section's item opens it there.
+  await page.evaluate(() => { location.hash = '#work/snowballistic' })
+  const project = page.locator('#work [role="region"]')
+  await expect(project.getByRole('heading', { level: 3 })).toHaveText('Snowballistic')
+  await expect(project).toBeInViewport()
+  await expect(page.locator('#work').getByRole('button', { name: /Snowballistic/ })).toBeFocused()
+  // Closing the panel forgets the item.
+  await project.getByRole('button', { name: 'Close details' }).click()
+  await expect(project).toHaveCount(0)
+  await expect(page).toHaveURL(/\/$/)
+})

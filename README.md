@@ -27,7 +27,7 @@ Open the localhost URL printed by Vite. No sharing service or deployment is need
 
 ## Routing
 
-The site is a single page at `/`. Navigation uses in-page anchors (`#about`, `#experience`, `#work`, `#hobbies`), and dialogs open without changing the URL.
+The site is a single page at `/`. Navigation uses in-page anchors (`#about`, `#experience`, `#work`, `#hobbies`), and dialogs open without changing the URL. `#experience/<id>` and `#work/<id>` (ids from `src/data/experience.ts` and `src/data/projectEntries.ts`) scroll to the section and open that item's side panel, on load or when followed; closing the panel removes the item from the URL. Unknown ids just go to the section.
 
 Every other path, including the old site's `/hobbies`, `/coding`, and `/blog`, shows `404.html` with a real `404` status:
 

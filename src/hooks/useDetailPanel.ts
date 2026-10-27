@@ -90,6 +90,21 @@ export function useDetailPanel<T extends { id: string }>(items: T[], prefix: str
     else morph(cardRefs.current, prefix, options, () => flushSync(() => setSelectedId(id)))
   }
 
+  /**
+   * Show an item without toggling it closed if it's already open, e.g. from a link. `animate: false`
+   * skips the morph, which would fight a scroll to the section; `focus` moves focus to its card
+   * (call it from an event handler, not while rendering).
+   */
+  const open = (id: string, { animate = true, focus = false } = {}) => {
+    if (id !== selectedId) {
+      if (split || !animate) {
+        if (focus) flushSync(() => setSelectedId(id))
+        else setSelectedId(id)
+      } else morph(cardRefs.current, prefix, options, () => flushSync(() => setSelectedId(id)))
+    }
+    if (focus) cardRefs.current.get(id)?.focus({ preventScroll: true })
+  }
+
   /** Ref callback for each card, so the morph and focus restore can find it. */
   const cardRef = (id: string) => (element: HTMLElement | null) => {
     if (element) cardRefs.current.set(id, element)
@@ -111,5 +126,5 @@ export function useDetailPanel<T extends { id: string }>(items: T[], prefix: str
     },
   }
 
-  return { selected, split, select, close, cardProps, containerProps, itemsRef, panelRef, panelId, panelTitleId }
+  return { selected, split, select, open, close, cardProps, containerProps, itemsRef, panelRef, panelId, panelTitleId }
 }

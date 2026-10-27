@@ -1,4 +1,4 @@
-import { useId, useState, type CSSProperties } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import type { CardItem, OpenDetail } from '../data/types'
 import { useDetailPanel } from '../hooks/useDetailPanel'
 import { DetailPanel } from './DetailPanel'
@@ -35,9 +35,47 @@ export function CardSection({
     // Keep the extra cards open if the selection lives there, so focus can return to it.
     onClose: (closedId) => {
       if (extra.some((item) => item.id === closedId)) setExpanded(true)
+      // Closing forgets a deep link to this section, so reloading doesn't reopen it.
+      if (location.hash.startsWith(`#${id}/`)) history.replaceState(history.state, '', location.pathname + location.search)
     },
   })
   const { selected, split: isSplit, itemsRef, panelRef } = panel
+
+  // `#<section>/<item>` links (the garden's project plants, or a shared URL) open that item.
+  const openFromLink = useRef((_item: string, _focus: boolean) => {})
+  useLayoutEffect(() => {
+    openFromLink.current = (item, focus) => {
+      document.getElementById(id)?.scrollIntoView({ block: 'start' })
+      panel.open(item, { animate: false, focus })
+    }
+  })
+  useEffect(() => {
+    if (layout !== 'panel') return
+    const prefix = `#${id}/`
+    const linked = (hash: string) => {
+      if (!hash.startsWith(prefix)) return null
+      const item = decodeURIComponent(hash.slice(prefix.length))
+      return items.some((entry) => entry.id === item) ? item : null
+    }
+    const onHashChange = () => {
+      const item = linked(location.hash)
+      if (item) openFromLink.current(item, true)
+    }
+    // Following the link that's already in the URL doesn't fire `hashchange`, so watch for that click.
+    const onClick = (event: MouseEvent) => {
+      const href = event.target instanceof Element ? event.target.closest('a[href^="#"]')?.getAttribute('href') : null
+      const item = href && href === location.hash ? linked(href) : null
+      if (item) { event.preventDefault(); openFromLink.current(item, true) }
+    }
+    const initial = linked(location.hash)
+    if (initial) openFromLink.current(initial, false)
+    window.addEventListener('hashchange', onHashChange)
+    document.addEventListener('click', onClick)
+    return () => {
+      window.removeEventListener('hashchange', onHashChange)
+      document.removeEventListener('click', onClick)
+    }
+  }, [id, items, layout])
 
   const renderCard = (item: CardItem, index: number) => {
     const cardProps = panel.cardProps(item.id)
