@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "wcaId": "2016SHEN13",
-  "generatedAt": "2026-10-26T10:09:48.106Z",
+  "generatedAt": "2026-11-02T12:27:53.931Z",
   "sources": {
     "official": {
-      "fetchedAt": "2026-10-26T10:09:48.106Z",
-      "exportDate": "2026-10-24T00:00:12Z",
+      "fetchedAt": "2026-11-02T12:27:53.931Z",
+      "exportDate": "2026-10-31T16:33:31Z",
       "country": "CA",
       "competitionCount": 6,
       "events": {
@@ -14,8 +14,8 @@
             "timeMs": 2820,
             "precisionMs": 10,
             "rank": {
-              "world": 23289,
-              "continent": 6432,
+              "world": 23362,
+              "continent": 6443,
               "country": 832
             }
           },
@@ -23,8 +23,8 @@
             "timeMs": 3640,
             "precisionMs": 10,
             "rank": {
-              "world": 10001,
-              "continent": 2789,
+              "world": 10039,
+              "continent": 2791,
               "country": 371
             },
             "kind": "ao5"
@@ -89,8 +89,8 @@
             "timeMs": 8150,
             "precisionMs": 10,
             "rank": {
-              "world": 8874,
-              "continent": 2292,
+              "world": 8912,
+              "continent": 2302,
               "country": 309
             }
           },
@@ -98,8 +98,8 @@
             "timeMs": 8790,
             "precisionMs": 10,
             "rank": {
-              "world": 3890,
-              "continent": 1046,
+              "world": 3907,
+              "continent": 1049,
               "country": 144
             },
             "kind": "ao5"
@@ -202,8 +202,8 @@
             "timeMs": 37080,
             "precisionMs": 10,
             "rank": {
-              "world": 7529,
-              "continent": 1810,
+              "world": 7557,
+              "continent": 1815,
               "country": 209
             }
           },
@@ -211,8 +211,8 @@
             "timeMs": 42690,
             "precisionMs": 10,
             "rank": {
-              "world": 7451,
-              "continent": 1811,
+              "world": 7476,
+              "continent": 1818,
               "country": 211
             },
             "kind": "ao5"
@@ -286,8 +286,8 @@
             "timeMs": 271750,
             "precisionMs": 10,
             "rank": {
-              "world": 9217,
-              "continent": 2075,
+              "world": 9234,
+              "continent": 2077,
               "country": 267
             }
           },
@@ -322,8 +322,8 @@
             "timeMs": 19110,
             "precisionMs": 10,
             "rank": {
-              "world": 13564,
-              "continent": 3230,
+              "world": 13607,
+              "continent": 3233,
               "country": 392
             }
           },
@@ -331,8 +331,8 @@
             "timeMs": 20930,
             "precisionMs": 10,
             "rank": {
-              "world": 9154,
-              "continent": 2166,
+              "world": 9181,
+              "continent": 2169,
               "country": 271
             },
             "kind": "ao5"
@@ -378,8 +378,8 @@
             "timeMs": 49590,
             "precisionMs": 10,
             "rank": {
-              "world": 31787,
-              "continent": 10765,
+              "world": 31901,
+              "continent": 10803,
               "country": 1018
             }
           },
@@ -414,8 +414,8 @@
             "timeMs": 5690,
             "precisionMs": 10,
             "rank": {
-              "world": 23255,
-              "continent": 6169,
+              "world": 23327,
+              "continent": 6174,
               "country": 730
             }
           },
@@ -423,8 +423,8 @@
             "timeMs": 9320,
             "precisionMs": 10,
             "rank": {
-              "world": 26855,
-              "continent": 7095,
+              "world": 26925,
+              "continent": 7101,
               "country": 885
             },
             "kind": "ao5"
@@ -470,8 +470,8 @@
             "timeMs": 5070,
             "precisionMs": 10,
             "rank": {
-              "world": 13882,
-              "continent": 3856,
+              "world": 13921,
+              "continent": 3860,
               "country": 432
             }
           },
@@ -479,8 +479,8 @@
             "timeMs": 7510,
             "precisionMs": 10,
             "rank": {
-              "world": 11464,
-              "continent": 3041,
+              "world": 11493,
+              "continent": 3045,
               "country": 365
             },
             "kind": "ao5"
@@ -526,8 +526,8 @@
             "timeMs": 35000,
             "precisionMs": 10,
             "rank": {
-              "world": 14999,
-              "continent": 4858,
+              "world": 15035,
+              "continent": 4864,
               "country": 535
             }
           },
@@ -535,8 +535,8 @@
             "timeMs": 39460,
             "precisionMs": 10,
             "rank": {
-              "world": 12207,
-              "continent": 3962,
+              "world": 12229,
+              "continent": 3966,
               "country": 423
             },
             "kind": "ao5"
@@ -580,7 +580,7 @@
       }
     },
     "unofficial": {
-      "fetchedAt": "2026-10-26T10:09:48.106Z",
+      "fetchedAt": "2026-11-02T12:27:53.931Z",
       "events": {
         "222": {
           "single": {
@@ -1252,7 +1252,7 @@
             "precisionMs": 10,
             "kind": "ao5"
           },
-          "solveCount": 66542,
+          "solveCount": 67254,
           "sessionCount": 1,
           "extras": {
             "mo3": {
@@ -1307,9 +1307,9 @@
             }
           },
           "sessionAverage": {
-            "timeMs": 9911.018153947882,
+            "timeMs": 9904.79733547447,
             "precisionMs": 10,
-            "validSolveCount": 66542
+            "validSolveCount": 67254
           },
           "progression": {
             "single": {
