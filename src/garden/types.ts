@@ -6,7 +6,7 @@ export type ColorName =
   | 'rock' | 'rockTop'
   | 'benchLeg' | 'benchSeat' | 'benchBack'
   | 'grass' | 'grassLight' | 'grassTuft'
-  | 'water' | 'creekBank' | 'bridgeDeck' | 'bridgeRail'
+  | 'water' | 'waterLight' | 'creekBank' | 'bridgeDeck' | 'bridgeRail'
   | 'sunflowerPetal' | 'sunflowerCenter' | 'tulip' | 'lavender' | 'snowball' | 'mushroomCap' | 'mushroomStem'
 
 /** A list of related colors; objects pick one by index (wrapping if a palette has fewer entries). */
@@ -116,11 +116,15 @@ export type ObjectParams = {
   /** A slatted bench facing the camera. */
   bench: Record<never, never>
   /**
-   * A stream flowing along local x, `length` long and up to `width` wide, tapering at both ends.
-   * It wiggles `meander` to each side and is lined with a few pebbles.
+   * A stream flowing along local x, `length` long and up to `width` wide, narrowing near both ends,
+   * built from small square cells with a bank around it. It wiggles `meander` (default 0.28) to
+   * each side over one full wave and is lined with `pebbles` (default 6) on its banks.
    */
   creek: { length: number; width: number; meander?: number; pebbles?: number }
-  /** An arched footbridge spanning `length` along local x, with handrails and stone footings. */
+  /**
+   * An arched footbridge spanning `length` along local x, `width` across (default 0.75), rising
+   * `rise` (default 0.42) in the middle, with posts and handrails on stone footings.
+   */
   bridge: { length?: number; width?: number; rise?: number }
   /** A showpiece plant, bigger than the scattered ones: one of a few species. */
   specimen: { species: Species; scale?: number }

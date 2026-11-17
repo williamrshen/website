@@ -77,7 +77,7 @@ const daylight: Palette = {
     rock: '#b2b5a1', rockTop: '#c0c2af',
     benchLeg: '#8b7050', benchSeat: '#b69869', benchBack: '#a78c61',
     grass: '#a6ba83', grassLight: '#b3c391', grassTuft: '#c8d3a4',
-    water: '#8fbcc4', creekBank: '#8ea36f', bridgeDeck: '#b8956a', bridgeRail: '#8d7051',
+    water: '#8fbcc4', waterLight: '#a9cfd4', creekBank: '#8ea36f', bridgeDeck: '#b8956a', bridgeRail: '#8d7051',
     sunflowerPetal: '#e2b443', sunflowerCenter: '#7b5534', tulip: '#cf5a4c', lavender: '#9886c2',
     snowball: '#f0eee2', mushroomCap: '#c45a43', mushroomStem: '#ebe2cb',
   },
@@ -144,7 +144,7 @@ const winter: Palette = {
     rock: '#b9bcb3', rockTop: '#c9ccc4',
     grass: '#c3cbc0', grassLight: '#d0d6cd', grassTuft: '#e3e7e1',
     // Frozen over.
-    water: '#c4d9e3', creekBank: '#aab4ad',
+    water: '#c4d9e3', waterLight: '#d6e5ec', creekBank: '#aab4ad',
   },
   swatches: {
     leaves: ['#8f9a80', '#98a389', '#a3ad94', '#879377', '#b3bba6', '#929d84'],
@@ -172,7 +172,7 @@ const spring: Palette = {
     ...daylight.colors,
     plantLeaf: '#9cc06a', plantLeafDark: '#7fa652',
     grass: '#a9c47f', grassLight: '#b8d08e', grassTuft: '#d4e2a8',
-    water: '#89c2cc', creekBank: '#8aaa66',
+    water: '#89c2cc', waterLight: '#a6d3da', creekBank: '#8aaa66',
   },
   swatches: {
     leaves: ['#9cbf5a', '#a8c862', '#f2b8c6', '#94b753', '#e8a5b8', '#a3c45e'],

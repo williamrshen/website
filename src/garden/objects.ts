@@ -161,36 +161,43 @@ export const objectTypes: { [K in ObjectType]: ObjectBuilder<K> } = {
     b.box(0, 0.38, 0.65, 1.32, 0.1, 0.35, 'benchBack')
   },
 
-  creek(b, { length, width, meander = 0.2, pebbles = 6 }) {
-    const step = 0.2, segments = Math.round(length / step), bank = 0.09
-    const centerAt = (t: number) => Math.sin(t * Math.PI * 2) * meander
-    for (let i = 0; i < segments; i++) {
-      const t = (i + 0.5) / segments, x = -length / 2 + i * step
-      // Tapers to a trickle at both ends; the bank is a darker rim just below the water.
-      const w = Math.max(0.12, width * Math.sqrt(Math.sin(t * Math.PI))), center = centerAt(t)
-      b.box(x, center - w / 2 - bank, -0.025, step, w + bank * 2, 0.04, 'creekBank')
-      b.box(x, center - w / 2, -0.02, step, w, 0.04, 'water')
+  creek(b, { length, width, meander = 0.28, pebbles = 6 }) {
+    // Water and bank are laid out on a grid of small square cells, so the edges step like the voxels.
+    const cell = 0.25, bank = 0.2, half = length / 2
+    const centerAt = (x: number) => Math.sin((x / length) * Math.PI * 2) * meander
+    // Full width through the middle, narrowing to about a third over the last 0.9 tiles at each end.
+    const halfWidthAt = (x: number) => (width / 2) * (0.35 + 0.65 * Math.min(1, (half - Math.abs(x)) / 0.9))
+    const rows = Math.ceil((width / 2 + meander + bank) / cell)
+    for (let i = 0; (i + 0.5) * cell <= length; i++) {
+      const x = -half + i * cell, center = centerAt(x + cell / 2), halfWidth = halfWidthAt(x + cell / 2)
+      for (let j = -rows; j <= rows; j++) {
+        const off = Math.abs(j * cell - center), y = j * cell - cell / 2
+        // A few lighter cells catch the light on the water.
+        if (off < halfWidth) b.box(x, y, -0.025, cell, cell, 0.05, b.random() < 0.12 ? 'waterLight' : 'water')
+        else if (off < halfWidth + bank) b.box(x, y, -0.015, cell, cell, 0.035, 'creekBank')
+      }
     }
     for (let i = 0; i < pebbles; i++) {
-      const t = 0.12 + b.random() * 0.76, side = b.random() > 0.5 ? 1 : -1, size = 0.08 + b.random() * 0.07
-      const w = width * Math.sqrt(Math.sin(t * Math.PI))
-      b.box(-length / 2 + t * length - size / 2, centerAt(t) + side * (w / 2 + bank) - size / 2, 0, size, size * 0.8, size * 0.55, 'rock')
+      const x = (0.12 + b.random() * 0.76 - 0.5) * length, side = b.random() > 0.5 ? 1 : -1, size = 0.08 + b.random() * 0.07
+      b.box(x - size / 2, centerAt(x) + side * (halfWidthAt(x) + bank) - size / 2, 0, size, size * 0.8, size * 0.55, 'rock')
     }
   },
 
-  bridge(b, { length = 1.8, width = 0.62, rise = 0.3 }) {
-    const planks = 11, step = length / planks, deck = (t: number) => 0.09 + rise * Math.sin(Math.PI * t)
-    // Stone footings on the banks carry the ends of the deck.
-    for (const end of [-1, 1]) b.box(end < 0 ? -length / 2 - 0.12 : length / 2 - 0.18, -width / 2 - 0.05, 0, 0.3, width + 0.1, 0.13, 'rock')
+  bridge(b, { length = 1.8, width = 0.75, rise = 0.42 }) {
+    const planks = Math.max(7, Math.round(length * 5.5)), step = length / planks
+    // The deck rests on stone footings at both ends and arches up between them.
+    const footing = 0.1, deck = (t: number) => footing + rise * Math.sin(Math.PI * t)
+    for (const end of [-1, 1]) b.box(end * length / 2 - 0.125, -width / 2 - 0.1, -0.05, 0.25, width + 0.2, footing + 0.05, 'rock')
     for (let i = 0; i < planks; i++) {
-      const t = (i + 0.5) / planks, x = -length / 2 + i * step, z = deck(t)
-      b.box(x + 0.01, -width / 2, z, step - 0.02, width, 0.06, 'bridgeDeck')
-      // Handrails follow the arch in short pieces so they sort correctly against the planks.
-      for (const y of [-width / 2, width / 2 - 0.05]) b.box(x, y, z + 0.3, step, 0.05, 0.045, 'bridgeRail')
-    }
-    for (const t of [0.04, 0.5, 0.96]) {
-      const x = -length / 2 + t * length - 0.035
-      for (const y of [-width / 2, width / 2 - 0.06]) b.box(x, y, deck(t) + 0.04, 0.07, 0.06, 0.3, 'bridgeRail')
+      const t = i / (planks - 1), x = -length / 2 + t * length, z = deck(t)
+      b.box(x - step * 0.44, -width / 2, z, step * 0.88, width, 0.08, 'bridgeDeck')
+      // Posts on every other plank, each carrying a short length of handrail, so pieces sort correctly against the planks.
+      if (i % 2) continue
+      for (const side of [-1, 1]) {
+        const y = side * width / 2
+        b.box(x - 0.03, y - 0.03, z + 0.08, 0.06, 0.06, 0.32, 'bridgeRail')
+        b.box(x - step, y - 0.025, z + 0.38, step * 2, 0.05, 0.05, 'bridgeRail')
+      }
     }
   },
 

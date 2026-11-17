@@ -155,10 +155,12 @@ test('the creek and bridge build, and the bridge only touches the ground on its 
     { id: 'creek', type: 'creek', island: 'a', length: 3, width: 0.7 },
     { id: 'bridge', type: 'bridge', island: 'a', rotate: 90 },
   ], [{ id: 'a', x: 0, y: 0, radius: 3 }]))
-  const water = boxes(world.geometry).filter((box) => box.paint === 'water')
+  const water = boxes(world.geometry).filter((box) => box.paint === 'water' || box.paint === 'waterLight')
   assert.ok(water.length >= 10)
-  // The water runs along x and is widest in the middle.
-  const widths = water.map((box) => box.depth)
+  // The water runs along x and is widest in the middle: count its cells in each column across it.
+  const columns = new Map<number, number>()
+  for (const box of water) columns.set(Math.round(box.x * 100), (columns.get(Math.round(box.x * 100)) ?? 0) + 1)
+  const widths = [...columns.entries()].sort(([a], [b]) => a - b).map(([, count]) => count)
   assert.ok(Math.max(...widths) > widths[0] && Math.max(...widths) > widths.at(-1)!)
   const footings = boxes(world.geometry).filter((box) => box.owner === 'bridge' && box.z < 0.1)
   assert.equal(footings.length, 2)
