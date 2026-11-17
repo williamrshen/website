@@ -118,7 +118,7 @@ export class GardenScene {
   }
 
   private drawPine(layer: PineLayer, palette: Palette) {
-    const { x, y, z, radius, height, tip: lean } = layer
+    const { x, y, z, radius, height, tip: lean, tier } = layer
     const a = this.project(x - radius, y - radius, z)
     const b = this.project(x + radius, y - radius, z)
     const c = this.project(x + radius, y + radius, z)
@@ -126,12 +126,13 @@ export class GardenScene {
     const tip = this.project(x + lean.x, y + lean.y, z + height)
     const dim = palette.light.pine, snow = palette.snow
     // Sloped faces hold less snow than flat tops, so pines are frosted evenly rather than capped.
-    const [upperRight, frontRight, frontLeft, upperLeft] = palette.swatches.pine
-      .map((color) => snow ? mix(color, snow.color, snow.cover * 0.35) : color)
-    this.polygon([a, b, tip], shade(upperRight, dim))
-    this.polygon([b, c, tip], shade(frontRight, dim))
-    this.polygon([c, d, tip], shade(frontLeft, dim))
-    this.polygon([d, a, tip], shade(upperLeft, dim))
+    const greens = palette.swatches.pine.map((color) => snow ? mix(color, snow.color, snow.cover * 0.35) : color)
+    const lit = shade(greens[tier % greens.length], dim), shadowed = shade(greens[(tier + 1) % greens.length], 0.84 * dim)
+    // The back faces only peek out above the front ones, so they continue the front halves' colors.
+    this.polygon([a, b, tip], lit)
+    this.polygon([b, c, tip], lit)
+    this.polygon([c, d, tip], shadowed)
+    this.polygon([d, a, tip], shadowed)
   }
 
   resize() {
@@ -151,7 +152,8 @@ export class GardenScene {
       this.unit = Math.min(this.width, this.height) / span
       this.origin = { x: this.width / 2 - (center.x - center.y) * this.unit, y: this.height / 2 - (center.x + center.y) * this.unit * 0.5 }
     } else {
-      this.unit = Math.min(this.width / (this.width <= 680 ? 22.5 : 26), this.height / 20, 56)
+      // 26 tiles across keeps the whole garden, edge to edge, on screen at any width.
+      this.unit = Math.min(this.width / 26, this.height / 20, 56)
       this.origin = { x: this.width * 0.48, y: this.height * 0.59 + this.unit * 0.3 }
     }
     this.cullTiles()
@@ -255,9 +257,8 @@ export class GardenScene {
       const point = this.project(tile.x + 0.5, tile.y + 0.5)
       const light = pointer ? Math.max(0, 1 - Math.hypot(point.x - pointer.x, point.y - pointer.y) / (unit * 3.9)) : 0
       const alpha = Math.max(tile.gridFade * 0.85, light * 0.9)
-      if (alpha < 0.008) continue
+      if (alpha < 0.008 && !tile.grass) continue
       if (tile.grass) {
-        ctx.globalAlpha = Math.min(1, tile.fade * 2.5)
         this.box(tile.x + 0.045, tile.y + 0.045, -0.15, 0.91, 0.91, 0.145, tile.variation > 0.65 ? 'grassLight' : 'grass', palette)
         if (tile.variation > 0.8) {
           ctx.globalAlpha = tile.fade * 0.55

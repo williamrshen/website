@@ -14,7 +14,7 @@ export const projectPlants: BedPlant[] = projectEntries.map((project) => ({
 /**
  * The garden layout. Units are ground tiles; +x runs toward the lower right of the screen and +y
  * toward the lower left, so screen-right is +x/-y and the front of the scene is +x/+y.
- * Objects placed on an island move with it. Seeds reproduce the original hand-tuned garden;
+ * Objects placed on an island move with it. Seeds fix each object's hand-picked look;
  * change one to reroll just that object, or omit it to derive a seed from the object's id.
  */
 export const garden: GardenConfig = {
@@ -25,10 +25,10 @@ export const garden: GardenConfig = {
     projects: { label: 'projects', href: '#work' },
     hobbies: { label: 'hobbies', href: '#hobbies' },
   },
-  // Project plants growing around the pines, clear of their lowest branches; projects fill the spots in order.
+  // Project plants spread around the pines, clear of their lowest branches; projects fill the spots in order.
   bed: {
     island: 'right', section: 'projects', scale: 1.1, plants: projectPlants,
-    spots: [{ x: -0.9, y: 1.25 }, { x: 0.25, y: 1.65 }, { x: 0.95, y: -1.45 }, { x: 1.95, y: 1.35 }, { x: 1.85, y: -0.45 }],
+    spots: [{ x: -0.9, y: 1.6 }, { x: 1.9, y: -1.3 }, { x: 2.25, y: 1 }, { x: 0.5, y: 2.3 }, { x: -1.5, y: 0.7 }],
   },
   ground: { extent: 45, seed: 51 },
   islands: [
@@ -48,14 +48,14 @@ export const garden: GardenConfig = {
     { id: 'tall-pine', type: 'pine', island: 'right', scale: 0.86, link: 'projects' },
     { id: 'short-pine', type: 'pine', island: 'right', x: 1.1, y: 0.7, scale: 0.49, link: 'projects' },
     { id: 'left-pine', type: 'pine', island: 'left', scale: 0.66, link: 'experience' },
-    // Plants scatter around every island but stay clear of the big oak's trunk.
-    { id: 'plants', type: 'scatter', count: 44, flowerEvery: 3, clearRadius: 1.1, seed: 3263619596 },
+    // Wildflowers scatter across every island but stay clear of the big oak's trunk.
+    { id: 'plants', type: 'scatter', count: 34, flowerEvery: 2, clearRadius: 1.1, seed: 3263619596 },
     { id: 'bench-rock', type: 'rock', island: 'main', x: -2, y: 1.7, scale: 0.46 },
     { id: 'bench-pebble', type: 'rock', island: 'main', x: -2.3, y: 1.95, scale: 0.27 },
     { id: 'right-rock', type: 'rock', island: 'right', x: -1.5, y: -0.1, scale: 0.4 },
     { id: 'back-rock', type: 'rock', island: 'back', x: 0.2, scale: 0.6 },
     { id: 'back-pebble', type: 'rock', island: 'back', x: 0.75, y: 0.1, scale: 0.32 },
-    { id: 'path', type: 'path', island: 'main', x: 1.3, y: 1.5, stones: 5, step: { x: 0.35, y: 0.48 } },
+    { id: 'path', type: 'path', island: 'main', x: 1.55, y: 1.75, stones: 5, step: { x: 0.35, y: 0.48 }, sway: { x: 0.11, y: -0.08 } },
     { id: 'bench', type: 'bench', island: 'main', x: -2, y: 1.95 },
     // A little creek across the front island, with the path's footbridge over it.
     { id: 'creek', type: 'creek', island: 'front', length: 5.6, width: 0.75, link: 'hobbies' },
@@ -83,7 +83,7 @@ const daylight: Palette = {
   },
   swatches: {
     leaves: ['#819b4d', '#8ba352', '#91a957', '#789648', '#9ab15c', '#88a04c'],
-    flowers: ['#dfc17a', '#ece2b7'],
+    flowers: ['#dfc17a', '#ece2b7', '#e98aa7', '#9886c2', '#f3efe6'],
     pine: ['#819d6a', '#668650', '#527446', '#72975d'],
     path: ['#d1c8a7', '#c5bf9e'],
   },

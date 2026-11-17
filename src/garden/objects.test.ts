@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { garden } from '../data/garden.ts'
 import { projectEntries } from '../data/projectEntries.ts'
-import { buildWorld, expandBed, objectTypes } from './objects.ts'
+import { buildWorld, canopyBase, canopyVoxel, expandBed, objectTypes, scatterReach } from './objects.ts'
 import { species, type GardenConfig, type GardenObject, type Geometry, type Island } from './types.ts'
 
 const minimal = (objects: GardenObject[], islands = [{ id: 'a', x: 0, y: 0, radius: 2 }]): GardenConfig => ({
@@ -122,10 +122,10 @@ test('pine tiers lean with the object', () => {
 
 test('canopy faces stay culled correctly in every orientation', () => {
   for (const orientation of orientations) {
-    const scale = 1, size = 0.66 * scale
+    const scale = 1, size = canopyVoxel * scale
     const leaves = boxes(buildWorld(minimal([{ id: 'oak', type: 'oak', scale, ...orientation }])).geometry)
       .filter((box) => typeof box.paint === 'object' && box.paint.swatch === 'leaves')
-    const cell = (box: (typeof leaves)[number]) => [Math.round(box.x / size), Math.round(box.y / size), Math.round((box.z / scale - 4.1) / 0.66)]
+    const cell = (box: (typeof leaves)[number]) => [Math.round(box.x / size), Math.round(box.y / size), Math.round((box.z / scale - canopyBase) / canopyVoxel)]
     const occupied = new Set(leaves.map((box) => cell(box).join()))
     assert.ok(leaves.length > 100)
     for (const box of leaves) {
@@ -142,7 +142,7 @@ test('scattered plants stay around their islands however the scatter is turned',
   for (const orientation of orientations) {
     const islands = [{ id: 'a', x: 3, y: -2, radius: 2 }]
     const plants = boxes(buildWorld(minimal([{ id: 's', type: 'scatter', x: 1, y: 1, count: 30, flowerEvery: 2, clearRadius: 0, ...orientation }], islands)).geometry)
-    for (const box of plants) assert.ok(Math.hypot(box.x - 3, box.y + 2) < 0.8 + 2 * 0.48 + 0.5, JSON.stringify(orientation))
+    for (const box of plants) assert.ok(Math.hypot(box.x - 3, box.y + 2) < 2 * scatterReach + 0.5, JSON.stringify(orientation))
   }
 })
 

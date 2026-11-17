@@ -55,8 +55,11 @@ export type Builder = {
    */
   facing: { right: Point; left: Point }
   box(x: number, y: number, z: number, width: number, depth: number, height: number, paint: Paint, faces?: Faces): void
-  /** A pine tier centered at (x, y), `height` tall from base to tip. */
-  pineLayer(x: number, y: number, z: number, radius: number, height: number): void
+  /**
+   * A pine tier centered at (x, y), `height` tall from base to tip. `tier` counts up from the
+   * bottom and shifts which greens it uses, so neighboring tiers stand apart.
+   */
+  pineLayer(x: number, y: number, z: number, radius: number, height: number, tier?: number): void
   /** Places another object type at a local position, sharing this object's random generator. */
   place<K extends ObjectType>(type: K, params: ObjectParams[K] & Partial<Point> & Orientation): void
   /**
@@ -70,28 +73,42 @@ type ObjectBuilder<K extends ObjectType> = (builder: Builder, params: ObjectPara
 
 /** Number of leaf shades the oak picks between; palettes with fewer entries wrap. */
 const leafShades = 6
+/** Number of flower colors scattered plants pick between; palettes with fewer entries wrap. */
+const flowerShades = 5
+
+/** How far out from an island's center scattered plants grow, as a fraction of its radius. */
+export const scatterReach = 0.9
+
+/** Size of one oak canopy voxel, and the height of the lowest voxel layer, at scale 1. */
+export const canopyVoxel = 0.66
+export const canopyBase = 3.8
+/** The canopy: a broad crown with lobes reaching left and toward the camera's right. */
+const canopyLobes = [
+  { x: 0, y: 0, z: 5.7, rx: 3.4, ry: 3.3, rz: 2 },
+  { x: -1.7, y: 1, z: 5, rx: 2.1, ry: 2, rz: 1.4 },
+  { x: 1.3, y: -1.5, z: 5.3, rx: 2, ry: 2, rz: 1.4 },
+]
 
 /** Registry of object types. Each builder only describes shapes; placement is handled for it. */
 export const objectTypes: { [K in ObjectType]: ObjectBuilder<K> } = {
   oak(b, { scale = 1 }) {
-    b.box(-0.33 * scale, -0.3 * scale, 0.04, 0.66 * scale, 0.6 * scale, 4.45 * scale, 'trunk')
-    b.box(-0.62 * scale, -0.49 * scale, 0.02, 1.1 * scale, 0.9 * scale, 0.35 * scale, 'trunkBase')
-    for (let i = 0; i < 3; i++) {
-      b.box(-(0.58 + i * 0.43) * scale, -0.1 * scale, (2.2 + i * 0.55) * scale, 0.6 * scale, 0.46 * scale, 0.7 * scale, 'trunk')
-      b.box(0.2 * scale, -(0.5 + i * 0.4) * scale, (2.65 + i * 0.5) * scale, 0.5 * scale, 0.62 * scale, 0.7 * scale, 'branch')
+    b.box(-0.475 * scale, -0.45 * scale, 0.02, 0.95 * scale, 0.9 * scale, 0.55 * scale, 'trunkBase')
+    b.box(-0.33 * scale, -0.31 * scale, 0.04, 0.66 * scale, 0.62 * scale, 4.6 * scale, 'trunk')
+    for (const side of [-1, 1]) {
+      b.box((side * 0.5 - 0.25) * scale, -0.2 * scale, 3.24 * scale, 0.5 * scale, 0.4 * scale, 0.35 * scale, 'branch')
+      b.box(-0.2 * scale, (side * 0.5 - 0.25) * scale, 3.54 * scale, 0.4 * scale, 0.5 * scale, 0.35 * scale, 'branch')
     }
 
-    // Overlapping ellipsoids form a broad oak canopy. Only exposed voxel faces are drawn.
+    // Overlapping ellipsoids with slightly ragged edges form the canopy. Only exposed voxel faces are drawn.
     const voxels = new Map<string, { x: number; y: number; z: number }>()
-    const voxelSize = 0.66 * scale
-    for (let ix = -5; ix <= 5; ix++) {
-      for (let iy = -5; iy <= 5; iy++) {
-        for (let iz = 0; iz < 6; iz++) {
-          const xx = ix * 0.66, yy = iy * 0.66, zz = iz * 0.66
-          const main = xx ** 2 / 9 + yy ** 2 / 7.9 + (zz - 1.65) ** 2 / 4.3 < 1
-          const left = (xx + 2.05) ** 2 / 3.2 + (yy - 0.2) ** 2 / 4 + (zz - 1.05) ** 2 / 2.1 < 1
-          const right = (xx - 1.9) ** 2 / 2.8 + (yy + 0.5) ** 2 / 3.3 + (zz - 1.25) ** 2 / 2.6 < 1
-          if ((main || left || right) && b.random() > 0.045) voxels.set(`${ix},${iy},${iz}`, { x: ix, y: iy, z: iz })
+    const voxelSize = canopyVoxel * scale
+    for (let ix = -7; ix <= 7; ix++) {
+      for (let iy = -7; iy <= 7; iy++) {
+        for (let iz = 0; iz <= 6; iz++) {
+          const xx = (ix + 0.5) * canopyVoxel, yy = (iy + 0.5) * canopyVoxel, zz = canopyBase + (iz + 0.5) * canopyVoxel
+          const reach = Math.min(...canopyLobes.map((lobe) =>
+            ((xx - lobe.x) / lobe.rx) ** 2 + ((yy - lobe.y) / lobe.ry) ** 2 + ((zz - lobe.z) / lobe.rz) ** 2))
+          if (reach < 1 + (b.random() - 0.5) * 0.12 && b.random() > 0.04) voxels.set(`${ix},${iy},${iz}`, { x: ix, y: iy, z: iz })
         }
       }
     }
@@ -103,21 +120,26 @@ export const objectTypes: { [K in ObjectType]: ObjectBuilder<K> } = {
         right: !voxels.has(`${ix + right.x},${iy + right.y},${iz}`),
       }
       if (!faces.top && !faces.left && !faces.right) continue
-      b.box(ix * voxelSize, iy * voxelSize, (4.1 + iz * 0.66) * scale,
+      b.box(ix * voxelSize, iy * voxelSize, (canopyBase + iz * canopyVoxel) * scale,
         voxelSize, voxelSize, voxelSize, { swatch: 'leaves', index: Math.floor(b.random() * leafShades) }, faces)
     }
   },
 
   pine(b, { scale }) {
-    b.box(-0.12, -0.12, 0, 0.24, 0.24, scale, 'pineTrunk')
-    for (let i = 0; i < 4; i++) b.pineLayer(0, 0, (0.65 + i * 0.6) * scale, (1.2 - i * 0.23) * scale, 1.6 * scale)
+    b.box(-0.11 * scale, -0.11 * scale, 0, 0.22 * scale, 0.22 * scale, scale, 'pineTrunk')
+    // Tiers narrow and shorten toward the top: [radius, base height, height].
+    const tiers = [[1.05, 0.6, 1.5], [0.85, 1.3, 1.35], [0.64, 1.95, 1.15], [0.42, 2.55, 0.95]]
+    tiers.forEach(([radius, z, height], tier) => b.pineLayer(0, 0, z * scale, radius * scale, height * scale, tier))
   },
 
   plant(b, { scale = 1, flower = false }) {
-    b.box(0, 0, 0.04, 0.075, 0.075, 0.55 * scale, 'stem')
-    b.box(-0.18 * scale, 0, 0.17 * scale, 0.22 * scale, 0.12 * scale, 0.12 * scale, 'plantLeaf')
-    b.box(0.03, -0.14 * scale, 0.28 * scale, 0.15 * scale, 0.23 * scale, 0.13 * scale, 'plantLeafDark')
-    if (flower) b.box(-0.08, -0.07, 0.52 * scale, 0.23 * scale, 0.23 * scale, 0.17 * scale, { swatch: 'flowers', index: b.random() > 0.5 ? 0 : 1 })
+    b.box(-0.035 * scale, -0.035 * scale, 0, 0.07 * scale, 0.07 * scale, 0.34 * scale, 'stem')
+    b.box(0.01 * scale, -0.035 * scale, 0.12 * scale, 0.14 * scale, 0.07 * scale, 0.07 * scale, 'plantLeaf')
+    b.box(-0.035 * scale, -0.15 * scale, 0.2 * scale, 0.07 * scale, 0.14 * scale, 0.07 * scale, 'plantLeafDark')
+    if (flower) {
+      b.box(-0.07 * scale, -0.07 * scale, 0.34 * scale, 0.14 * scale, 0.14 * scale, 0.08 * scale,
+        { swatch: 'flowers', index: Math.floor(b.random() * flowerShades) })
+    }
   },
 
   rock(b, { scale }) {
@@ -125,8 +147,11 @@ export const objectTypes: { [K in ObjectType]: ObjectBuilder<K> } = {
     b.box(scale * 0.18, scale * 0.08, scale * 0.51, scale * 0.64, scale * 0.55, scale * 0.12, 'rockTop')
   },
 
-  path(b, { stones, step }) {
-    for (let i = 0; i < stones; i++) b.box(i * step.x, i * step.y, 0.035, 0.57, 0.48, 0.055, { swatch: 'path', index: i % 2 })
+  path(b, { stones, step, sway = { x: 0, y: 0 } }) {
+    for (let i = 0; i < stones; i++) {
+      const side = i % 2 ? 1 : -1
+      b.box(i * step.x + side * sway.x - 0.22, i * step.y + side * sway.y - 0.24, 0, 0.44, 0.48, 0.07, { swatch: 'path', index: i % 2 })
+    }
   },
 
   bench(b) {
@@ -222,12 +247,15 @@ export const objectTypes: { [K in ObjectType]: ObjectBuilder<K> } = {
 
   scatter(b, { count, flowerEvery, clearRadius, keepOut = 0.12 }) {
     const islands = b.islands.filter((island) => island.plants !== false)
+    // Bigger islands get proportionally more plants, spread evenly out to near their edge.
+    const total = islands.reduce((sum, island) => sum + island.radius ** 2, 0)
     for (let i = 0; i < count; i++) {
-      const island = islands[Math.floor(b.random() * islands.length)]
-      const angle = b.random() * Math.PI * 2, radius = 0.8 + b.random() * island.radius * 0.48
+      let pick = b.random() * total, island = islands[0]
+      for (const candidate of islands) { island = candidate; if ((pick -= candidate.radius ** 2) <= 0) break }
+      const angle = b.random() * Math.PI * 2, radius = Math.sqrt(b.random()) * island.radius * scatterReach
       const x = island.x + Math.cos(angle) * radius, y = island.y + Math.sin(angle) * radius
       if (Math.hypot(x, y) < clearRadius) continue
-      const scale = 0.5 + b.random() * 0.5, flower = i % flowerEvery === 0
+      const scale = 0.8 + b.random() * 0.4, flower = i % flowerEvery === 0
       if (b.occupied(x, y, keepOut)) {
         // Burn the flower's color draw too, so every later plant is unchanged.
         if (flower) b.random()
@@ -255,9 +283,9 @@ function createBuilder(
       const wx = origin.x + sx.min, wy = origin.y + sy.min
       geometry.push({ kind: 'box', owner, x: wx, y: wy, z, width: sx.size, depth: sy.size, height, paint, faces, order: wx + wy + z * 0.8 })
     },
-    pineLayer(x, y, z, radius, height) {
+    pineLayer(x, y, z, radius, height, tier = 0) {
       const center = apply(m, { x, y }), wx = origin.x + center.x, wy = origin.y + center.y
-      geometry.push({ kind: 'pine', owner, x: wx, y: wy, z, radius, height, tip: apply(m, pineLean), order: wx + wy + z * 0.8 })
+      geometry.push({ kind: 'pine', owner, x: wx, y: wy, z, radius, height, tip: apply(m, pineLean), tier, order: wx + wy + z * 0.8 })
     },
     place(type, { x = 0, y = 0, rotate, mirror, ...params }) {
       const offset = apply(m, { x, y })
@@ -292,8 +320,9 @@ function buildGround({ ground, islands }: GardenConfig): Tile[] {
         // Measure in screen space so each grid fade is circular, not an isometric ellipse.
         gridInfluence = Math.max(gridInfluence, Math.max(0, 1 - Math.hypot(dx - dy, (dx + dy) * 0.5) / (island.radius * 1.4)))
       }
+      // Every tile whose center lies inside an island is grass, so islands read as solid patches.
       const variation = random()
-      tiles.push({ x, y, fade: influence ** 1.45, gridFade: gridInfluence ** 1.8, variation, grass: influence > 0.38 && variation > 0.13 })
+      tiles.push({ x, y, fade: influence ** 1.45, gridFade: gridInfluence ** 1.8, variation, grass: influence > 0 })
     }
   }
   return tiles

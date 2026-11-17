@@ -22,7 +22,10 @@ export type Palette = {
    */
   light: { box: number; pine: number }
   colors: Record<ColorName, string>
-  /** `pine` lists the four faces of each pine tier on screen: upper right, front right, front left, upper left. */
+  /**
+   * `pine` lists four greens. A tier's right half uses entry `tier` and its left half, in shadow,
+   * the next one, wrapping around, so each tier up shifts by one and stands apart from its neighbors.
+   */
   swatches: Record<SwatchName, string[]>
   /** Grid lines and tile tint. RGB values are `"r,g,b"`; alphas scale with the fade and pointer light. */
   ground: { fill: string; fillGrid: number; fillLight: number; stroke: string; strokeAlpha: number }
@@ -68,6 +71,8 @@ export type PineLayer = {
   height: number
   /** Offset of the tip from the center, so tiers lean slightly toward the back. */
   tip: Point
+  /** Position in its pine, counting from the bottom; picks the tier's greens. */
+  tier: number
   order: number
 }
 export type Geometry = Box | PineLayer
@@ -95,7 +100,7 @@ export type Species = typeof species[number]
 
 /** Parameters for each object type, keyed by `type`. Add a type here and in `objectTypes`. */
 export type ObjectParams = {
-  /** Voxel oak with a trunk, branches, and a three-lobed canopy. */
+  /** Voxel oak with a tall trunk and a broad three-lobed canopy. */
   oak: { scale?: number }
   /** Four stacked pyramids on a thin trunk. */
   pine: { scale: number }
@@ -103,8 +108,11 @@ export type ObjectParams = {
   plant: { scale?: number; flower?: boolean }
   /** A boulder with a lighter cap. */
   rock: { scale: number }
-  /** Stepping stones laid diagonally, `step` apart. */
-  path: { stones: number; step: Point }
+  /**
+   * Stepping stones centered `step` apart; `sway` shifts them alternately to either side
+   * (minus on the first stone, plus on the next), so the path zigzags.
+   */
+  path: { stones: number; step: Point; sway?: Point }
   /** A slatted bench facing the camera. */
   bench: Record<never, never>
   /**
@@ -116,7 +124,7 @@ export type ObjectParams = {
   bridge: { length?: number; width?: number; rise?: number }
   /** A showpiece plant, bigger than the scattered ones: one of a few species. */
   specimen: { species: Species; scale?: number }
-  /** Scatters plants around islands. */
+  /** Scatters plants across islands, more on bigger ones, out to near their edges. */
   scatter: {
     count: number
     /** Every nth plant gets a flower. */
